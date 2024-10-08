@@ -16,25 +16,25 @@ return new class extends Migration
             $table->id(); // Equivalent to: $table->bigIncrements('id');
 
             // Define 'type' as a string
-            $table->string('type')->nullable()->charset('utf8mb4')->collation('utf8mb4_unicode_ci');
+            $table->string('type')->nullable();
 
             // Define 'data' as longText with a collation
-            $table->longText('data')->nullable()->charset('utf8mb4')->collation('utf8mb4_bin');
+            $table->longText('data')->nullable();
 
             // Define 'notifiable_id' as an unsigned big integer
             $table->unsignedBigInteger('notifiable_id')->nullable();
 
             // Define 'notifiable_type' as a string
-            $table->string('notifiable_type')->nullable()->charset('utf8mb4')->collation('utf8mb4_unicode_ci');
+            $table->string('notifiable_type')->nullable();
 
             // Define 'read_at' as a nullable timestamp
             $table->timestamp('read_at')->nullable();
 
             // Define 'user_id' as a string
-            $table->string('user_id')->nullable()->charset('utf8mb4')->collation('utf8mb4_unicode_ci');
+            $table->string('user_id')->nullable();
 
             // Define 'message' as a string
-            $table->string('message')->nullable()->charset('utf8mb4')->collation('utf8mb4_unicode_ci');
+            $table->string('message')->nullable();
 
             // Define 'created_at' and 'updated_at' timestamps
             $table->timestamps();
