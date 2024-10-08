@@ -1,0 +1,44 @@
+.profile-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: inherit;
+    margin-left: -10px;
+}
+
+.profile-icon {
+    width: 60px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    margin-left: 10px;
+}
+
+.hamburger {
+    font-size: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-left: -35px;
+    margin-bottom: 0;
+    color: #fff;
+    margin-right: 78px;
+
+}
+
+.lowerSides {
+    margin-top: auto; /* Push to the bottom */
+    padding-top: 330px;
+    /* Add some padding */
+    font-family: var(--font-inter);
+    font-size: 13px;
+    text-decoration: none;
+    position: fixed;
+    text-align: left;
+}

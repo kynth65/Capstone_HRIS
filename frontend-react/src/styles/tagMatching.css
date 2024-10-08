@@ -1,0 +1,148 @@
+.container {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 80%;
+    max-width: 800px;
+    text-align: center;
+}
+
+.titleTag {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.upload-section {
+    margin-bottom: 20px;
+}
+
+.upload-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.upload-button:hover {
+    background-color: #0056b3;
+}
+
+.upload-button input {
+    display: none;
+}
+
+.chosen-files,
+.tags-section,
+.ranked-resumes {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.chosen-files ul,
+.ranked-resumes ul {
+    list-style-type: none;
+    position: relative;
+    padding: 0;
+}
+
+.tags-section label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.tags-section textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.rank-button {
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.rank-button:hover {
+    background-color: #218838;
+}
+
+.rank-button:disabled {
+    background-color: #94d3a2;
+    cursor: not-allowed;
+}
+.remove-icon {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 24px;
+    cursor: pointer;
+    color: #dc3545;
+    transition: color 0.3s;
+}
+
+.remove-icon:hover {
+    color: #c82333;
+}
+
+.ranking-results {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
+
+.labels {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.ranking-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ranking-table th,
+.ranking-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.ranking-table th {
+    background-color: #4caf50;
+    color: white;
+}
+
+.ranking-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.ranking-table tr:hover {
+    background-color: #ddd;
+}
+
+.ranking-table th,
+.ranking-table td {
+    padding: 12px 15px;
+}
+
+.ranking-table th {
+    text-align: center;
+}
+
+.ranking-table td {
+    text-align: center;
+}
