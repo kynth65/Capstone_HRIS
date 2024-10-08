@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'rfid' => '1234567890', // Add a value for the 'rfid' field
         ]);
     }
 }
