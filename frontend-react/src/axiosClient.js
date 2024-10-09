@@ -4,7 +4,7 @@ import useRefreshToken from "./hooks/useRefreshToken";
 
 // Create an Axios instance
 const axiosClient = axios.create({
-    baseURL: "http://127.0.0.1:8000/api",
+    baseURL: process.env.REACT_APP_API_BASE_URL,
     headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
