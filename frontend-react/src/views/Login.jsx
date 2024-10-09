@@ -56,7 +56,18 @@ function Login() {
 
         axiosClient
             .post("/login", payload)
-            .then(({ data }) => {})
+            .then(({ data }) => {
+                setToken(data.token);
+                setUser(data.user);
+
+                // Store token and user data in localStorage
+                localStorage.setItem("access_token", data.token);
+                localStorage.setItem("user", JSON.stringify(data.user));
+                localStorage.setItem("isLoggedIn", true);
+
+                navigateBasedOnRole(data.user); // Navigate based on role
+                clearTimeout(errorTimeoutRef.current);
+            })
             .catch((err) => {
                 const response = err.response;
                 if (response && response.status === 422) {
