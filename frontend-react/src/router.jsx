@@ -37,43 +37,7 @@ const ErrorPage = () => (
 const router = createBrowserRouter([
     {
         path: "/",
-        element: <Recruitment_Management />,
-    },
-    {
-        path: "dashboard",
-        element: <HR_Dashboard />,
-    },
-    {
-        path: "employee_list",
-        element: <EmployeeList />,
-    },
-    {
-        path: "recruitment_management",
-        element: <Recruitment_Management />,
-    },
-    {
-        path: "payroll",
-        element: <Payroll />,
-    },
-    {
-        path: "/register",
-        element: <Register />,
-    },
-    {
-        path: "onboarding",
-        element: <Onboarding />,
-    },
-    {
-        path: "attendance",
-        element: <Attendace />,
-    },
-    {
-        path: "profile",
-        element: <User />,
-    },
-    {
-        path: "certificate",
-        element: <Certificate />,
+        element: <Home />,
     },
     {
         path: "/applicantportal",
@@ -126,7 +90,44 @@ const router = createBrowserRouter([
     {
         path: "/",
         element: <DefaultLayout />,
-        children: [],
+        children: [
+            {
+                path: "dashboard",
+                element: <HR_Dashboard />,
+            },
+            {
+                path: "employee_list",
+                element: <EmployeeList />,
+            },
+            {
+                path: "recruitment_management",
+                element: <Recruitment_Management />,
+            },
+            {
+                path: "payroll",
+                element: <Payroll />,
+            },
+            {
+                path: "/register",
+                element: <Register />,
+            },
+            {
+                path: "onboarding",
+                element: <Onboarding />,
+            },
+            {
+                path: "attendance",
+                element: <Attendace />,
+            },
+            {
+                path: "profile",
+                element: <User />,
+            },
+            {
+                path: "certificate",
+                element: <Certificate />,
+            },
+        ],
         errorElement: <ErrorPage />,
     },
 
@@ -151,12 +152,12 @@ const router = createBrowserRouter([
                 element: <EmployeeCertificate />,
             },
             {
-                path: "employee-attendance",
-                element: <EmployeeAttendance />,
-            },
-            {
                 path: "employee-profile",
                 element: <User />,
+            },
+            {
+                path: "employee-attendance",
+                element: <EmployeeAttendance />,
             },
         ],
         errorElement: <ErrorPage />,
