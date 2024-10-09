@@ -37,7 +37,7 @@ const ErrorPage = () => (
 const router = createBrowserRouter([
     {
         path: "/",
-        element: <Home />,
+        element: <Login />,
     },
     {
         path: "/applicantportal",
