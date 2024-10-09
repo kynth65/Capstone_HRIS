@@ -105,7 +105,7 @@ function Home() {
                                         setShowNavigator(!showNavigator)
                                     }
                                 >
-                                    About
+                                    Aboutsssas
                                 </a>
                                 <a
                                     href="#contacts"
