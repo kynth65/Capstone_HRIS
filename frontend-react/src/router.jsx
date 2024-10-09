@@ -99,10 +99,7 @@ const router = createBrowserRouter([
                 path: "employee_list",
                 element: <EmployeeList />,
             },
-            {
-                path: "recruitment_management",
-                element: <Recruitment_Management />,
-            },
+
             {
                 path: "payroll",
                 element: <Payroll />,
@@ -181,6 +178,10 @@ const router = createBrowserRouter([
     {
         path: "*",
         element: <ErrorPage />,
+    },
+    {
+        path: "recruitment_management",
+        element: <Recruitment_Management />,
     },
 ]);
 
