@@ -37,7 +37,43 @@ const ErrorPage = () => (
 const router = createBrowserRouter([
     {
         path: "/",
-        element: <Home />,
+        element: <Recruitment_Management />,
+    },
+    {
+        path: "dashboard",
+        element: <HR_Dashboard />,
+    },
+    {
+        path: "employee_list",
+        element: <EmployeeList />,
+    },
+    {
+        path: "recruitment_management",
+        element: <Recruitment_Management />,
+    },
+    {
+        path: "payroll",
+        element: <Payroll />,
+    },
+    {
+        path: "/register",
+        element: <Register />,
+    },
+    {
+        path: "onboarding",
+        element: <Onboarding />,
+    },
+    {
+        path: "attendance",
+        element: <Attendace />,
+    },
+    {
+        path: "profile",
+        element: <User />,
+    },
+    {
+        path: "certificate",
+        element: <Certificate />,
     },
     {
         path: "/applicantportal",
@@ -90,41 +126,7 @@ const router = createBrowserRouter([
     {
         path: "/",
         element: <DefaultLayout />,
-        children: [
-            {
-                path: "dashboard",
-                element: <HR_Dashboard />,
-            },
-            {
-                path: "employee_list",
-                element: <EmployeeList />,
-            },
-
-            {
-                path: "payroll",
-                element: <Payroll />,
-            },
-            {
-                path: "/register",
-                element: <Register />,
-            },
-            {
-                path: "onboarding",
-                element: <Onboarding />,
-            },
-            {
-                path: "attendance",
-                element: <Attendace />,
-            },
-            {
-                path: "profile",
-                element: <User />,
-            },
-            {
-                path: "certificate",
-                element: <Certificate />,
-            },
-        ],
+        children: [],
         errorElement: <ErrorPage />,
     },
 
@@ -178,10 +180,6 @@ const router = createBrowserRouter([
     {
         path: "*",
         element: <ErrorPage />,
-    },
-    {
-        path: "recruitment_management",
-        element: <Recruitment_Management />,
     },
 ]);
 
