@@ -81,7 +81,7 @@ class HRDashboardController extends Controller
     public function leaveRequest()
     {
         Log::info('Fetching leave requests.');
-
+    
         $leaveRequests = DB::table('leave_requests')
             ->join('users', 'leave_requests.user_id', '=', 'users.user_id')
             ->select(
@@ -89,16 +89,19 @@ class HRDashboardController extends Controller
                 'users.name as user_name', // Rename for clarity
                 'leave_requests.file_name',
                 'leave_requests.file_path',
-                'leave_requests.statuses' // Match the frontend field name
+                'leave_requests.statuses', // Match the frontend field name
+                'leave_requests.start_date', // Include start date
+                'leave_requests.end_date',   // Include end date
+                'leave_requests.days_requested' // Include days requested
             )
             ->get();
-
+    
         Log::info('Leave requests fetched successfully.', ['leaveRequests' => $leaveRequests]);
-
+    
         $data = [
             'leaveRequests' => $leaveRequests
         ];
-
+    
         return response()->json($data);
     }
 
