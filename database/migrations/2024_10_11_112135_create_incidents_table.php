@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('title');
             $table->text('description');
             $table->date('date');
+            $table->string('status');
             $table->enum('severity', ['low', 'high', 'severe']);
             $table->string('pdf_file_path')->nullable(); // Add PDF file path here
             $table->timestamps();

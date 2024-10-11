@@ -15,6 +15,7 @@ class Incident extends Model
         'date',
         'severity',
         'pdf_file_path',
+        'status'
     ];
     
 }

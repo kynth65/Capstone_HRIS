@@ -153,6 +153,14 @@ function DefaultLayout() {
                         </span>
                     </Link>
                     <Link
+                        to="/incident-management"
+                        onClick={() => handleHeaderChange("Incident Management")}
+                    >
+                        <span className="block h-10 pt-3 cursor-pointer text-white hover:bg-opacity-70 hover:bg-gray-600 rounded-lg transition">
+                            Incident Management
+                        </span>
+                    </Link>
+                    <Link
                         to="/certificate"
                         onClick={() =>
                             handleHeaderChange("Certificate Management")
