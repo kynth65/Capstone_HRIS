@@ -26,6 +26,9 @@ import EmployeeList from "./views/HR_Employee_List.jsx";
 import AdminDashboard from "./views/Admin_Dashboard.jsx";
 import EmployeeCertificate from "./views/EmployeeCertificates";
 import EmployeeAttendance from "./views/EmployeeAttendance.jsx";
+import IncidentReportForm from "./views/IncidentsReportForm.jsx";
+import IncidentManagement from "./views/IncidentManagement.jsx";
+import HR_Leave_Management from "./views/HR_Leave_Management.jsx";
 
 const ErrorPage = () => (
     <div>
@@ -124,6 +127,14 @@ const router = createBrowserRouter([
                 element: <User />,
             },
             {
+                path: "hr-leave-management",
+                element: <HR_Leave_Management />,
+            },
+            {
+                path: "incident-management",
+                element: <IncidentManagement />,
+            },
+            {
                 path: "certificate",
                 element: <Certificate />,
             },
@@ -158,6 +169,10 @@ const router = createBrowserRouter([
             {
                 path: "employee-attendance",
                 element: <EmployeeAttendance />,
+            },
+            {
+                path: "incident-form",
+                element: <IncidentReportForm />,
             },
         ],
         errorElement: <ErrorPage />,

@@ -89,7 +89,10 @@ class HRDashboardController extends Controller
                 'users.name as user_name', // Rename for clarity
                 'leave_requests.file_name',
                 'leave_requests.file_path',
-                'leave_requests.statuses' // Match the frontend field name
+                'leave_requests.statuses', // Match the frontend field name
+                'leave_requests.start_date', // Include start date
+                'leave_requests.end_date',   // Include end date
+                'leave_requests.days_requested' // Include days requested
             )
             ->get();
 

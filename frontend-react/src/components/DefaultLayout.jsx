@@ -119,6 +119,16 @@ function DefaultLayout() {
                         </span>
                     </Link>
                     <Link
+<<<<<<< HEAD
+=======
+                        to="/hr-leave-management"
+                        onClick={() => handleHeaderChange("Leave Management")}
+                        className="h-10 cursor-pointer text-white hover:bg-opacity-70 hover:bg-gray-600 rounded-lg transition flex items-center justify-center"
+                    >
+                        Leave Management
+                    </Link>
+                    <Link
+>>>>>>> d26b0f35f379e4fd272b1199bd63070c9e40ca70
                         to="/recruitment_management"
                         onClick={() =>
                             handleHeaderChange("Recruitment Management")
@@ -153,6 +163,17 @@ function DefaultLayout() {
                         </span>
                     </Link>
                     <Link
+<<<<<<< HEAD
+=======
+                        to="/incident-management"
+                        onClick={() => handleHeaderChange("Incident Management")}
+                    >
+                        <span className="block h-10 pt-3 cursor-pointer text-white hover:bg-opacity-70 hover:bg-gray-600 rounded-lg transition">
+                            Incident Management
+                        </span>
+                    </Link>
+                    <Link
+>>>>>>> d26b0f35f379e4fd272b1199bd63070c9e40ca70
                         to="/certificate"
                         onClick={() =>
                             handleHeaderChange("Certificate Management")

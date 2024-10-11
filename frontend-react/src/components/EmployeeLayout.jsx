@@ -138,6 +138,19 @@ function EmployeeLayout() {
                         </span>
                     </Link>
                     <Link
+<<<<<<< HEAD
+=======
+                        to="/incident-form"
+                        onClick={() =>
+                            handleHeaderChange("Incident Form")
+                        }
+                    >
+                        <span className="block h-10 pt-3 cursor-pointer text-white hover:bg-opacity-70 hover:bg-gray-600 rounded-lg transition">
+                            Incident Form
+                        </span>
+                    </Link>
+                    <Link
+>>>>>>> d26b0f35f379e4fd272b1199bd63070c9e40ca70
                         to="/employee-attendance"
                         onClick={() =>
                             handleHeaderChange("Employee Attendance")
