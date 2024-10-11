@@ -1,0 +1,50 @@
+{
+    "name": "frontend-react",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "@emotion/react": "^11.12.0",
+        "@emotion/styled": "^11.12.0",
+        "@mui/icons-material": "^5.16.4",
+        "@mui/material": "^5.16.4",
+        "@react-oauth/google": "^0.12.1",
+        "axios": "^1.7.2",
+        "axios-auth-refresh": "^3.3.6",
+        "crypto-js": "^4.2.0",
+        "date-fns": "^4.1.0",
+        "html-to-pdfmake": "^2.5.12",
+        "jspdf": "^2.5.2",
+        "jspdf-autotable": "^3.8.3",
+        "jwt-decode": "^4.0.0",
+        "pdfmake": "^0.2.10",
+        "react": "^18.3.1",
+        "react-calendar": "^5.0.0",
+        "react-dom": "^18.3.1",
+        "react-icons": "^5.3.0",
+        "react-modal": "^3.16.1",
+        "react-quill": "^2.0.0",
+        "react-router-dom": "^6.25.1",
+        "recharts": "^2.12.7"
+    },
+    "devDependencies": {
+        "@types/react": "^18.3.3",
+        "@types/react-dom": "^18.3.0",
+        "@vitejs/plugin-react": "^4.3.1",
+        "autoprefixer": "^10.4.20",
+        "eslint": "^8.57.0",
+        "eslint-plugin-react": "^7.34.3",
+        "eslint-plugin-react-hooks": "^4.6.2",
+        "eslint-plugin-react-refresh": "^0.4.7",
+        "postcss": "^8.4.45",
+        "prettier": "^3.3.3",
+        "tailwindcss": "^3.4.10",
+        "vite": "^5.3.4"
+    }
+}
