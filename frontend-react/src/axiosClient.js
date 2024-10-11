@@ -2,9 +2,8 @@ import axios from "axios";
 import createAuthRefreshInterceptor from "axios-auth-refresh";
 import useRefreshToken from "./hooks/useRefreshToken";
 
-// Create an Axios instance
 const axiosClient = axios.create({
-    baseURL: process.env.REACT_APP_API_BASE_URL,
+    baseURL: "http://localhost:8000/api", // Include 'http://' in the URL
     headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
