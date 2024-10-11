@@ -17,12 +17,23 @@ class ResumeRanking extends Model
     }
 
     protected $fillable = [
-        
+
         'filename',
-        'file_path', 
+        'file_path',
         'email',
         'position_name',
         'name',
         'percentage',
+        'mobileNumber',
+        'question1_response',
+        'question2_response',
+        'question3_response',
+        'question4_response',
+        'question5_response',
+        'question6_response',
+        'question7_response',
+        'question8_response',
+        'question9_response',
+        'question10_response',
     ];
 }

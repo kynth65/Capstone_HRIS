@@ -3,8 +3,6 @@ import os
 import nltk
 from flask import Flask, request, jsonify, send_from_directory,send_file,url_for
 from flask_cors import CORS, cross_origin
-from flask import Flask, request, jsonify, send_from_directory, url_for
-from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 import requests
@@ -14,7 +12,8 @@ import re
 from collections import Counter
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 import openai  # For AI question generation
-
+from dotenv import load_dotenv
+import os
 
 # Download WordNet data
 
@@ -25,8 +24,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@127.0.0.1:3306/ga
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# OpenAI API Key (set it securely in your environment)
-openai.api_key = "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"
+load_dotenv('pythonEnvironment/.env')
+
+# Retrieve and set the OpenAI API key
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def get_db_connection():
     connection = pymysql.connect(
@@ -231,16 +232,17 @@ def uploaded_file(filename):
 
 # Endpoint to rank resumes based on HR tags and store name and email in resume_rankings table
 @app.route('/rank', methods=['POST'])
+@cross_origin(origin='http://localhost:5173')
 def rank():
     data = request.get_json()
     
     resumes = data.get('resumes')
     filenames = data.get('filenames')
     position_id = data.get('position_id')
-    mobileNumber = data.get('mobileNumber')
+    mobileNumber = data.get('moobileNumber')
     question_responses = {
     'question1': data.get('question1_response'),
-    'question2': data.get('question2_response'),
+    'question2': data.get('question2_response'), 
     'question3': data.get('question3_response'),
     'question4': data.get('question4_response'),
     'question5': data.get('question5_response'),
@@ -250,8 +252,7 @@ def rank():
     'question9': data.get('question9_response'),
     'question10': data.get('question10_response'),
 
-} 
-
+}  
     if not all([resumes, filenames, position_id]):
         return jsonify({'error': 'Missing required fields'}), 400
 
@@ -265,12 +266,13 @@ def rank():
     for idx, (resume_idx, percentage, matched_words, comments) in enumerate(ranked_resumes):
         filename = filenames[resume_idx]
         name, email = extract_name_and_email_from_pdf(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        save_ranking(filename, percentage, position_id, name, email, matched_words, comments, question_responses, mobileNumber)
+        save_ranking(filename, percentage, position_id, name, email, matched_words, comments, mobileNumber, question_responses)
 
     return jsonify({'ranked_resumes': [
         {'filename': filenames[i], 'percentage': round(p, 2), 'matched_words': m, 'comments': c} 
         for i, p, m, c in ranked_resumes
     ]})
+
 
 
 # Function to fetch HR tags from the database
@@ -285,23 +287,20 @@ def fetch_position_name(position_id):
     return result[0] if result else None
 
 # Function to save the resume ranking along with name, email, and position name to the database
-def save_ranking(filename, percentage, position_id, name, email, matched_words, comments, mobileNumber,questions):
+def save_ranking(filename, percentage, position_id, name, email, matched_words, comments, mobileNumber, questions):
     position_name = fetch_position_name(position_id)
-    
     
     try:
         query = text("""
-            INSERT INTO resume_rankings (filename, percentage, position_id, position_name, name, email, 
-                                         matched_words, comments, mobile_number, question1_response, 
-                                         question2_response, question3_response, question4_response, 
-                                         question5_response, question6_response, question7_response, 
-                                         question8_response, question9_response, question10_response)
-            VALUES (:filename, :percentage, :position_id, :position_name, :name, :email, :matched_words, 
-                    :comments, :mobile_number, :question1_response, :question2_response, 
-                    :question3_response, :question4_response, :question5_response, :question6_response, 
-                    :question7_response, :question8_response, :question9_response, :question10_response)
+            INSERT INTO resume_rankings 
+            (filename, percentage, position_id, position_name, name, email, matched_words, comments, mobileNumber,
+            question1_response, question2_response, question3_response, question4_response, question5_response, 
+            question6_response, question7_response, question8_response, question9_response, question10_response)
+            VALUES 
+            (:filename, :percentage, :position_id, :position_name, :name, :email, :matched_words, :comments, :mobileNumber,
+            :question1_response, :question2_response, :question3_response, :question4_response, :question5_response, 
+            :question6_response, :question7_response, :question8_response, :question9_response, :question10_response)
         """)
-        
         db.session.execute(query, {
             'filename': filename,
             'percentage': percentage,
@@ -324,14 +323,13 @@ def save_ranking(filename, percentage, position_id, name, email, matched_words, 
             'question10_response': questions.get('question10')
         })
         db.session.commit()
+        print("Data successfully saved.")
     except Exception as e:
         print(f"An error occurred: {e}")
         db.session.rollback()
 
 
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error saving ranking to database: {e}")
+    
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -6,36 +6,41 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('resume_rankings', function (Blueprint $table) {
-            $table->id(); // Primary key
-            $table->string('filename'); // Filename of the resume
+            $table->id();
+            $table->string('filename');
             $table->string('file_path');
-            $table->float('percentage'); // Matching percentage
-            $table->bigInteger('position_id')->unsigned(); // Foreign key column
-            $table->float('score')->nullable(); // Score column added here
+            $table->float('percentage');
+            $table->unsignedBigInteger('position_id'); // Change this line
+            $table->float('score')->nullable();
             $table->string('name');
-            $table->string("email");
-            $table->string("position_name");
-            $table->text("matched_words");
+            $table->string('email');
+            $table->string('position_name');
+            $table->text('matched_words');
             $table->text('comments');
-            // Define the foreign key constraint
+            $table->string('mobileNumber', 15)->nullable();
+            $table->text('question1_response')->nullable();
+            $table->text('question2_response')->nullable();
+            $table->text('question3_response')->nullable();
+            $table->text('question4_response')->nullable();
+            $table->text('question5_response')->nullable();
+            $table->text('question6_response')->nullable();
+            $table->text('question7_response')->nullable();
+            $table->text('question8_response')->nullable();
+            $table->text('question9_response')->nullable();
+            $table->text('question10_response')->nullable();
+
             $table->foreign('position_id')
                 ->references('position_id')
                 ->on('open_positions')
-                ->onDelete('cascade'); // Cascade delete
+                ->onDelete('cascade');
 
-            $table->timestamps(); // Created_at and updated_at timestamps
+            $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('resume_rankings');
