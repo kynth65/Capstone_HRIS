@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 
-class SubmitLeaveRequest extends Controller
+class submitLeaveRequest extends Controller
 {
     public function submitLeaveRequest(Request $request)
     {
@@ -28,14 +28,14 @@ class SubmitLeaveRequest extends Controller
         $startDate = Carbon::parse($request->start_date);
         $endDate = Carbon::parse($request->end_date);
 
-        // Calculate the number of days
-        $daysRequested = $endDate->diffInDays($startDate);
+        // Calculate the number of days, including the start and end date
+        $daysRequested = $endDate->diffInDays($startDate) *-1;
 
-        // Check if user has enough leave days
+        // Check if the user has enough sick leave balance
         $user = User::find($userId);
-        if ($user->leave < $daysRequested) {
+        if ($user->sick_leave_balance < $daysRequested) {
             return response()->json([
-                'error' => 'Insufficient leave balance. You have ' . $user->leave . ' days available.'
+                'error' => 'Insufficient sick leave balance. You have ' . $user->sick_leave_balance . ' days available.'
             ], 400);
         }
 
@@ -56,6 +56,7 @@ class SubmitLeaveRequest extends Controller
 
         return response()->json(['message' => 'Leave request submitted successfully']);
     }
+
 
     public function getLeaveRequests(Request $request)
     {
@@ -97,22 +98,18 @@ class SubmitLeaveRequest extends Controller
             $leaveRequest = LeaveRequest::findOrFail($requestId);
             $user = User::findOrFail($leaveRequest->user_id);
 
-            // Check if the user has sufficient leave balance
-            // Use abs() to compare correctly since days_requested is negative
-            if ($user->leave < abs($leaveRequest->days_requested)) {
-                return response()->json(['error' => 'Insufficient leave balance.'], 400);
+            // Check if the user has sufficient sick leave balance
+            if ($user->sick_leave_balance < $leaveRequest->days_requested) {
+                return response()->json(['error' => 'Insufficient sick leave balance.'], 400);
             }
 
             // Update the leave request status
             $leaveRequest->statuses = 'approved';
             $leaveRequest->save();
 
-            // Update the user's leave balance using abs() to subtract the correct amount
-            $user->leave -= abs($leaveRequest->days_requested);
+            // Update the user's sick leave balance
+            $user->sick_leave_balance -= $leaveRequest->days_requested;
             $user->save();
-
-            // Add debug statements to see if the leave field is being updated
-            Log::info('Leave field after update: ' . $user->leave);
 
             return response()->json(['message' => 'Leave request approved successfully']);
         } catch (\Exception $e) {
@@ -130,45 +127,25 @@ class SubmitLeaveRequest extends Controller
             $leaveRequest->statuses = 'declined';
             $leaveRequest->save();
 
-            // Notify the employee
-            //  EmployeeNotification::create([
-            //     'message' => 'Your leave request has been declined.',
-            //    'created_at' => now(),
-            //     'updated_at' => now(),
-            // ]);
-
             return response()->json(['message' => 'Leave request declined successfully']);
         } catch (\Exception $e) {
-            Log::error('Error declining leave request: ' . $e->getMessage(), [
-                'request_id' => $requestId,
-                'exception' => $e
-            ]);
-
+            Log::error('Error declining leave request: ' . $e->getMessage());
             return response()->json(['error' => 'An error occurred while declining the leave request.'], 500);
         }
     }
+
 
     public function getLeaveRequestStatus(Request $request)
     {
         try {
             $userId = Auth::id();
-
-            // Update the selected columns to include date fields
             $leaveRequests = LeaveRequest::where('user_id', $userId)
                 ->select('file_name', 'statuses', 'file_path', 'start_date', 'end_date', 'days_requested')
                 ->get();
 
-            $approvedLeaveRequests = $leaveRequests->filter(function ($request) {
-                return $request->statuses === 'approved';
-            });
-
-            $declinedLeaveRequests = $leaveRequests->filter(function ($request) {
-                return $request->statuses === 'declined';
-            });
-
-            $pendingLeaveRequests = $leaveRequests->filter(function ($request) {
-                return $request->statuses === 'pending';
-            });
+            $approvedLeaveRequests = $leaveRequests->where('statuses', 'approved');
+            $declinedLeaveRequests = $leaveRequests->where('statuses', 'declined');
+            $pendingLeaveRequests = $leaveRequests->where('statuses', 'pending');
 
             return response()->json([
                 'approvedLeaveRequests' => $approvedLeaveRequests,
@@ -177,9 +154,7 @@ class SubmitLeaveRequest extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Error fetching leave request status: ' . $e->getMessage());
-            return response()->json([
-                'error' => 'An error occurred while fetching leave request status.',
-            ], 500);
+            return response()->json(['error' => 'An error occurred while fetching leave request status.'], 500);
         }
     }
 
