@@ -126,13 +126,7 @@ function AdminLayout() {
                     >
                         Admin Tags
                     </Link>
-                    <Link
-                        to="/hr-leave-management"
-                        onClick={() => handleHeaderChange("Leave Management")}
-                        className="h-10 cursor-pointer text-white hover:bg-opacity-70 hover:bg-gray-600 rounded-lg transition flex items-center justify-center"
-                    >
-                        Leave Management
-                    </Link>
+                  
                     <Link
                         to="/employee_management"
                         onClick={() =>
