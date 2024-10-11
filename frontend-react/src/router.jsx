@@ -27,6 +27,7 @@ import AdminDashboard from "./views/Admin_Dashboard.jsx";
 import EmployeeCertificate from "./views/EmployeeCertificates";
 import EmployeeAttendance from "./views/EmployeeAttendance.jsx";
 import IncidentReportForm from "./views/IncidentsReportForm.jsx";
+import IncidentManagement from "./views/IncidentManagement.jsx";
 
 const ErrorPage = () => (
     <div>
@@ -123,6 +124,10 @@ const router = createBrowserRouter([
             {
                 path: "profile",
                 element: <User />,
+            },
+            {
+                path: "incident-management",
+                element: <IncidentManagement />,
             },
             {
                 path: "certificate",

@@ -15,7 +15,8 @@ class IncidentController extends Controller
             'description' => 'required|string',
             'date' => 'required|date',
             'severity' => 'required|in:low,high,severe',
-            'pdf_file' => 'nullable|file|mimes:pdf|max:2048', // Ensure it's a PDF and within the size limit
+            'status' => 'required|string|in:pending,investigating,resolved', // Added status validation
+            'pdf_file' => 'nullable|file|mimes:pdf|max:2048',
         ]);
 
         $pdfFilePath = null;
@@ -28,6 +29,7 @@ class IncidentController extends Controller
             'description' => $request->description,
             'date' => $request->date,
             'severity' => $request->severity,
+            'status' => $request->status, // Store the initial status
             'pdf_file_path' => $pdfFilePath,
         ]);
 
@@ -48,16 +50,13 @@ class IncidentController extends Controller
         return response()->json($incident);
     }
 
-    // Update an existing incident
+    // Update the status of an existing incident and optionally upload a PDF
     public function update(Request $request, $id)
     {
         $incident = Incident::findOrFail($id);
 
         $request->validate([
-            'title' => 'sometimes|string|max:255',
-            'description' => 'sometimes|string',
-            'date' => 'sometimes|date',
-            'severity' => 'sometimes|in:low,high,severe',
+            'status' => 'required|string|in:pending,investigating,resolved', // Only status is required for update
             'pdf_file' => 'nullable|file|mimes:pdf|max:2048',
         ]);
 
@@ -66,7 +65,8 @@ class IncidentController extends Controller
             $incident->pdf_file_path = $pdfFilePath;
         }
 
-        $incident->update($request->only(['title', 'description', 'date', 'severity']));
+        $incident->status = $request->status;
+        $incident->save();
 
         return response()->json($incident);
     }
