@@ -105,7 +105,7 @@ function Home() {
                                         setShowNavigator(!showNavigator)
                                     }
                                 >
-                                    Aboutsssas
+                                    About
                                 </a>
                                 <a
                                     href="#contacts"
@@ -150,7 +150,7 @@ function Home() {
                 {/* Hero section */}
                 <section className="hero w-screen h-auto bg-white rounded-sm">
                     <div className=" flex flex-col items-center max-w-screen lg:flex-row lg:items-center xl:justify-around">
-                        <div className="w-full mt-96">
+                        <div className="w-full mt-14">
                             <img
                                 src={HeroImage}
                                 className="w-5/6 inline-block"
