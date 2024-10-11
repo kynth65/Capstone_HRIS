@@ -93,8 +93,6 @@ Route::post('/certificates/revoke-access/{id}', [CertificateController::class, '
 Route::middleware('auth:sanctum')->get('/employee-notifications', [EmployeeNotificationController::class, 'index']);
 Route::get('/certificates/archived', [CertificateController::class, 'getArchivedCertificates']);
 
-
-
 Route::post('/candidate', [CandidateController::class, 'store']);
 Route::post('/candidates', [CandidateController::class, 'getCandidate']);
 Route::post('/trigger-onboarding/{id}', [CandidateController::class, 'triggerOnboarding']);
@@ -149,4 +147,6 @@ Route::prefix('incidents')->group(function () {
     Route::put('/{id}', [IncidentController::class, 'update']); // To update an incident
     Route::delete('/{id}', [IncidentController::class, 'destroy']); // To delete an incident
 });
+
+
 //->middleware('auth:sanctum');

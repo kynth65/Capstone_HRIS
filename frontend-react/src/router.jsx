@@ -28,6 +28,7 @@ import EmployeeCertificate from "./views/EmployeeCertificates";
 import EmployeeAttendance from "./views/EmployeeAttendance.jsx";
 import IncidentReportForm from "./views/IncidentsReportForm.jsx";
 import IncidentManagement from "./views/IncidentManagement.jsx";
+import HR_Leave_Management from "./views/HR_Leave_Management.jsx";
 
 const ErrorPage = () => (
     <div>
@@ -121,10 +122,14 @@ const router = createBrowserRouter([
                 path: "attendance",
                 element: <Attendace />,
             },
-            {
+           {
                 path: "profile",
                 element: <User />,
-            },
+            }, 
+           {
+                path: "hr-leave-management",
+                element: <HR_Leave_Management />,
+            }, 
             {
                 path: "incident-management",
                 element: <IncidentManagement />,
