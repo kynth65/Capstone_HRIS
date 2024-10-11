@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import axiosClient from "../axiosClient";
-
+import Modal from "react-modal";
 import "../styles/applicantPortal.css";
 import "../styles/openPosition.css";
 
@@ -127,7 +127,7 @@ const Admin_Position_Edit = () => {
 
             {errorMessage && <div className="errorPopup">{errorMessage}</div>}
 
-            <div
+            <Modal
                 isOpen={isViewAllModalOpen}
                 onRequestClose={closeViewAllModal}
                 contentLabel="View Position Details"
@@ -220,9 +220,9 @@ const Admin_Position_Edit = () => {
                         </>
                     )}
                 </div>
-            </div>
+            </Modal>
 
-            <div
+            <Modal
                 isOpen={isEditModalOpen}
                 onRequestClose={closeEditModal}
                 contentLabel="Edit Position"
@@ -362,7 +362,7 @@ const Admin_Position_Edit = () => {
                         Update
                     </button>
                 </div>
-            </div>
+            </Modal>
         </div>
     );
 };

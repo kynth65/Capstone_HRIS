@@ -245,6 +245,9 @@ const ApplicantPortal = () => {
             console.error("Error uploading or ranking files:", error);
             setErrorMessage("Failed to submit your resume!");
             // setHasUploaded(false); // Set the state to true after upload
+            setTimeout(() => {
+                setErrorMessage("");
+            }, 2000);
         } finally {
             setLoading(false);
         }

@@ -7,7 +7,8 @@ import "../styles/documentGenerator.css";
 import "../styles/hrDashboard.css";
 import useRefreshToken from "../hooks/useRefreshToken";
 import useDocument from "../hooks/useDocuments";
-
+import { MdDelete, MdEdit } from "react-icons/md";
+import { jsPDF } from "jspdf";
 function Leave_Management() {
     const [activeButton, setActiveButton] = useState("documentGenerator");
     const refresh = useRefreshToken();
@@ -27,7 +28,9 @@ function Leave_Management() {
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
     const errorTimeoutRef = useRef(null);
-
+    const [pdfUrl, setPdfUrl] = useState(null); // State to hold the selected PDF URL
+    const [reason, setReason] = useState("");
+    const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
     // For Leave Form
     const handleChange = (e) => {
         const { name, value, files } = e.target;
@@ -149,6 +152,73 @@ function Leave_Management() {
         setDocumentContent(event.target.value);
     };
 
+    const generateDocumentContent = async () => {
+        try {
+            const response = await axios.post(
+                "https://api.openai.com/v1/chat/completions",
+                {
+                    model: "gpt-4", // Specify the GPT-4 model here
+                    messages: [
+                        {
+                            role: "system",
+                            content:
+                                "You are a helpful assistant that generates formal documents.",
+                        },
+                        {
+                            role: "user",
+                            content: `Create a ${documentType} for the following reason: ${reason}`,
+                        },
+                    ],
+                    max_tokens: 500,
+                    temperature: 0.7,
+                },
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${import.meta.env.VITE_APP_OPENAI_API_KEY}`,
+                    },
+                },
+            );
+
+            const generatedContent =
+                response.data.choices[0].message.content.trim();
+            setDocumentContent(generatedContent);
+        } catch (error) {
+            console.error("Error generating document:", error);
+        }
+    };
+    const handleGenerate = () => {
+        if (documentType && reason) {
+            generateDocumentContent();
+        } else {
+            alert("Please select a document type and provide a reason.");
+        }
+    };
+    const handleDownloadPdf = () => {
+        const doc = new jsPDF();
+
+        // Set font style and size
+        doc.setFont("times", "normal"); // or "bold" / "italic" etc.
+        doc.setFontSize(12);
+
+        // Define margins and content
+        const leftMargin = 8;
+        const topMargin = 10;
+        const lineHeight = 5;
+
+        // Split text into lines to handle multi-line content
+        const lines = doc.splitTextToSize(documentContent, 200); // Adjust width as needed
+        let verticalOffset = topMargin;
+
+        lines.forEach((line) => {
+            doc.text(line, leftMargin, verticalOffset);
+            verticalOffset += lineHeight;
+        });
+
+        // Save and download the PDF
+        doc.save("generated_document.pdf");
+    };
+
     return (
         <div>
             <nav>
@@ -180,39 +250,92 @@ function Leave_Management() {
 
             <div>
                 {activeButton === "documentGenerator" && (
-                    <div className="document-generator">
-                        <h2 className="titles">Document Template</h2>
-                        <p className="text-red-500 text-sm mb-3">
-                            Change the corresponding data inside the brackets []
-                        </p>
-                        <div className="selector-container">
-                            <label className="labels font-kodchasan">
-                                Select Document Type:
-                                <select
-                                    value={documentType}
-                                    onChange={(e) =>
-                                        setDocumentType(e.target.value)
-                                    }
-                                    className="select"
-                                >
-                                    <option value="leaveLetter">
-                                        Leave Letter
-                                    </option>
-                                    <option value="resignationLetter">
-                                        Resignation Letter
-                                    </option>
-                                </select>
-                            </label>
+                    <div className="bg-neutral-300 p-4">
+                        <div className="">
+                            <h2 className="titles pt-5">
+                                AI Letter Template Generator
+                            </h2>
+                            <div className="selector-container">
+                                <label className="labels">
+                                    Select Document Type:
+                                    <select
+                                        value={documentType}
+                                        onChange={(e) =>
+                                            setDocumentType(e.target.value)
+                                        }
+                                        className="select"
+                                    >
+                                        <option value="leaveLetter">
+                                            Leave Letter
+                                        </option>
+                                        <option value="resignationLetter">
+                                            Resignation Letter
+                                        </option>
+                                        <option value="appreciationLetter">
+                                            Appreciation Letter
+                                        </option>
+                                    </select>
+                                </label>
+                            </div>
                         </div>
+                        <p className="text-black text-base mt-8 mb-3">
+                            Enter a brief description of the document you want
+                            to generate:
+                        </p>
+                        <textarea
+                            value={reason}
+                            onChange={(e) => setReason(e.target.value)}
+                            rows="3"
+                            cols="50"
+                            placeholder="Enter the reason for the document..."
+                            className="h-40 w-full rounded-lg p-9 text-black border-2 border-green-800 text-base"
+                        />
+
+                        <button
+                            className="button mt-2 mb-5"
+                            onClick={handleGenerate}
+                        >
+                            Generate Document
+                        </button>
+                        <p className="text-black text-base mt-8 mb-3">
+                            Wait for the document to be generated.
+                        </p>
                         <textarea
                             value={documentContent}
-                            onChange={handleDocumentChange}
+                            onChange={(e) => setDocumentContent(e.target.value)}
                             rows="10"
                             cols="50"
                             placeholder="Edit the document content here..."
-                            className="textarea text-black"
+                            className="h-full w-full rounded-lg p-9 text-black border-2 border-green-800 text-base"
                         />
-                        <button className="button">Download PDF</button>
+                        <button className="button" onClick={handleDownloadPdf}>
+                            Download PDF
+                        </button>
+                    </div>
+                )}
+
+                {/* PDF Modal */}
+                {isPdfModalOpen && pdfUrl && (
+                    <div
+                        className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+                        onClick={() => setIsPdfModalOpen(false)}
+                    >
+                        <div className="transparent p-6 rounded-xl w-3/4 xl:w-3/4 h-full text-black overflow-hidden flex flex-col">
+                            <div className="mb-4 float-right flex justify-end">
+                                <button
+                                    className="bg-red-600 px-4 py-2 rounded-md text-white font-normal hover:bg-red-900 transition"
+                                    onClick={() => setIsPdfModalOpen(false)}
+                                >
+                                    Close
+                                </button>
+                            </div>
+                            <iframe
+                                src={pdfUrl}
+                                title="Generated Document"
+                                width="100%"
+                                height="750px"
+                            />
+                        </div>
                     </div>
                 )}
 
