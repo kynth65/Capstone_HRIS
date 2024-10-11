@@ -25,8 +25,7 @@ use App\Http\Controllers\ProbationaryController;
 use App\Http\Controllers\Api\EmployeeNotificationController;
 use App\Http\Controllers\TrackingAttendanceController;
 use App\Http\Controllers\EmployeeAttendanceController;
-
-
+use App\Http\Controllers\IncidentController;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
@@ -143,5 +142,11 @@ Route::get('/employee/attendance/{rfid}', [EmployeeAttendanceController::class, 
 Route::get('/employee/attendance/average/{rfid}', [EmployeeAttendanceController::class, 'getEmployeeDailyAverage']);
 
 
-
+Route::prefix('incidents')->group(function () {
+    Route::post('/', [IncidentController::class, 'store']); // To submit a new incident
+    Route::get('/', [IncidentController::class, 'index']);  // To get all incidents
+    Route::get('/{id}', [IncidentController::class, 'show']); // To get a specific incident
+    Route::put('/{id}', [IncidentController::class, 'update']); // To update an incident
+    Route::delete('/{id}', [IncidentController::class, 'destroy']); // To delete an incident
+});
 //->middleware('auth:sanctum');
