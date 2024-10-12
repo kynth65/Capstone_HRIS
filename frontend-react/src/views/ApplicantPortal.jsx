@@ -901,7 +901,6 @@ const ApplicantPortal = () => {
                                                 {selectedPosition.title}{" "}
                                                 Specific Questions
                                             </h3>
-
                                             {selectedPosition.title.toLowerCase() ===
                                                 "accounting" && (
                                                 <>
@@ -975,7 +974,6 @@ const ApplicantPortal = () => {
                                                     </p>
                                                 </>
                                             )}
-
                                             {selectedPosition.title.toLowerCase() ===
                                                 "maintenance" && (
                                                 <>
@@ -1005,7 +1003,6 @@ const ApplicantPortal = () => {
                                                     </p>
                                                 </>
                                             )}
-
                                             {selectedPosition.title.toLowerCase() ===
                                                 "rmt" && (
                                                 <>
@@ -1036,7 +1033,6 @@ const ApplicantPortal = () => {
                                                     </p>
                                                 </>
                                             )}
-
                                             {selectedPosition.title.toLowerCase() ===
                                                 "rider" && (
                                                 <>
@@ -1066,7 +1062,6 @@ const ApplicantPortal = () => {
                                                     </p>
                                                 </>
                                             )}
-
                                             {selectedPosition.title.toLowerCase() ===
                                                 "x-ray technician" && (
                                                 <>
@@ -1103,7 +1098,6 @@ const ApplicantPortal = () => {
                                                     </p>
                                                 </>
                                             )}
-
                                             {selectedPosition.title.toLowerCase() ===
                                                 "security" && (
                                                 <>
@@ -1133,7 +1127,6 @@ const ApplicantPortal = () => {
                                                     </p>
                                                 </>
                                             )}
-
                                             {selectedPosition.title.toLowerCase() ===
                                                 "anatomical" && (
                                                 <>
@@ -1180,7 +1173,6 @@ const ApplicantPortal = () => {
                                                     </p>
                                                 </>
                                             )}
-
                                             {selectedPosition.title.toLowerCase() ===
                                                 "ultrasound technician" && (
                                                 <>
@@ -1242,10 +1234,12 @@ const ApplicantPortal = () => {
                                                     </p>
                                                 </>
                                             )}
-                                            <label
-                                                htmlFor="terms"
-                                                className="ml-2"
-                                            >
+                                            <div className="flex items-center pt-10">
+                                                {" "}
+                                                <label
+                                                    htmlFor="terms"
+                                                    className="ml-2 pt-10"
+                                                ></label>
                                                 <input
                                                     type="checkbox"
                                                     id="terms"
@@ -1253,30 +1247,34 @@ const ApplicantPortal = () => {
                                                     onChange={
                                                         handleCheckboxChange
                                                     }
-                                                    className="mr-2"
+                                                    className="w-10 mt-4"
                                                 />
-                                                I agree to the{" "}
+                                                <p className="text-nowrap">
+                                                    I have read and agree to the
+                                                </p>
                                                 <button
                                                     onClick={openTermsModal}
-                                                    className="underline text-blue-500"
+                                                    className="underline text-blue-500 ml-1 mt-1 mr-1"
                                                 >
                                                     Terms
-                                                </button>{" "}
-                                                and{" "}
+                                                </button>
+                                                <span className="mt-1">
+                                                    and
+                                                </span>
                                                 <button
                                                     onClick={
                                                         openConditionsModal
                                                     }
-                                                    className="underline text-blue-500"
+                                                    className="underline text-blue-500 ml-1 mt-1"
                                                 >
                                                     Conditions
                                                 </button>
-                                            </label>
+                                            </div>
 
                                             {/* Terms Modal */}
                                             {isTermsOpen && (
-                                                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                                                    <div className="bg-white p-4 rounded shadow-lg max-w-lg w-full">
+                                                <div className="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                                    <div className="bg-white max-w-[1200px] max-h-[600px] overflow-auto text-base p-4 rounded w-full">
                                                         <button
                                                             onClick={
                                                                 closeTermsModal
@@ -1289,11 +1287,10 @@ const ApplicantPortal = () => {
                                                     </div>
                                                 </div>
                                             )}
-
                                             {/* Conditions Modal */}
                                             {isConditionsOpen && (
-                                                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                                                    <div className="bg-white p-4 rounded shadow-lg max-w-lg w-full">
+                                                <div className="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                                    <div className="bg-white max-w-[1200px] max-h-[600px] overflow-auto text-base p-4 rounded w-full">
                                                         <button
                                                             onClick={
                                                                 closeConditionsModal
