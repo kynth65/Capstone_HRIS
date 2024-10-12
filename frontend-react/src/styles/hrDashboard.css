@@ -1,0 +1,200 @@
+@import url("https://fonts.googleapis.com/css2?family=Kodchasan:wght@300;400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+
+:root {
+    /* fonts */
+    --font-inter: Inter;
+    --font-krona-one: "Krona One";
+    --font-kodchasan: Kodchasan;
+
+    /* font sizes */
+    --font-size-5xl: 24px;
+    --font-size-lgi: 19px;
+
+    /* Colors */
+    --color-white: #fff;
+
+    /* Paddings */
+    --padding-xl: 20px;
+    --padding-77xl: 96px;
+    --padding-43xl: 62px;
+
+    /* Effects */
+    --button-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* If sidebar is visible */
+.dashboard-container {
+    position: relative;
+    padding: 0;
+    margin: auto;
+    height: 100vh;
+    width: 100%;
+}
+
+.paper {
+    padding: 20px;
+    background-color: #f9f9f9;
+    color: #333;
+    border-radius: 10px;
+}
+h4 {
+    color: #333;
+    float: left;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.turnover,
+.notif {
+    font-size: 14px;
+    font-family: var(--font-kodchasan);
+}
+
+.align-right {
+    display: flex;
+    justify-content: flex-end;
+    margin-left: 100px;
+}
+
+.notifications-container {
+    padding: 10px 20px;
+    background-color: #f9f9f9;
+    color: #333;
+    overflow: auto; /* Enable scrolling */
+    border: 2px solid #ddd; /* Optional: add a border for a better look */ /* Optional: add rounded corners */
+    padding: 10px;
+    font-family: var(--font-kodchasan);
+}
+
+.notifications-container::-webkit-scrollbar {
+    width: 4px; /* Width of the scrollbar */
+    height: 5px; /* Height of the scrollbar (for horizontal scrollbar) */
+}
+
+.notifications-container::-webkit-scrollbar-track {
+    /* Background color of the scrollbar track */
+    border-radius: 8px;
+}
+
+.notifications-container::-webkit-scrollbar-thumb {
+    background-color: #fff;
+    border-radius: 8px;
+}
+
+.notifications-container::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+}
+
+h6 {
+    font-weight: bold;
+}
+
+.leave-requests-table {
+    padding: 20px;
+    max-height: 270px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: var(--font-kodchasan);
+}
+
+.leave-requests-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-kodchasan);
+    overflow: auto;
+}
+
+.leave-requests-table th,
+.leave-requests-table td {
+    padding: 12px 15px;
+    text-align: left;
+    color: #000;
+    border-bottom: 1px solid #ddd;
+    font-family: var(--font-kodchasan);
+}
+
+.leave-requests-table th {
+    background-color: #d1d1d1;
+    color: #000;
+    font-family: var(--font-kodchasan);
+}
+
+.leave-requests-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+.leave-requests-table a {
+    color: #000;
+    text-decoration: none;
+}
+
+.leave-requests-table a:hover {
+    text-decoration: underline;
+}
+
+.leave-requests-table .approve-btn,
+.leave-requests-table .decline-btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: bold;
+    display: inline;
+    font-family: var(--font-kodchasan);
+}
+
+.leave-requests-table .approve-btn {
+    background-color: #28a745;
+    color: white;
+    margin-right: 8px;
+}
+
+.leave-requests-table .approve-btn:hover {
+    background-color: #218838;
+}
+
+.leave-requests-table .decline-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.leave-requests-table .decline-btn:hover {
+    background-color: #c82333;
+}
+
+.leave-requests-table td[colspan="4"] {
+    text-align: center;
+    font-style: italic;
+    color: #666;
+    padding: 20px;
+}
+.approve-btn:disabled,
+.decline-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Highlight specific calendar days */
+.highlight {
+    background-color: #f0f8ff !important;
+    color: rgb(6, 100, 163) !important;
+    font-weight: 900 !important;
+}
+
+/* Specificity for calendar tile class */
+.react-calendar__tile.highlight {
+    background-color: #f0f8ff !important;
+    color: rgb(6, 100, 163) !important;
+    font-weight: 900 !important;
+}
+
+/* Additional specificity for the month view */
+.react-calendar__month-view__days__day--highlight {
+    background-color: #f0f8ff !important;
+    color: rgb(6, 100, 163) !important;
+    font-weight: 900 !important;
+}

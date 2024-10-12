@@ -1,0 +1,38 @@
+/* src/components/OnboardingProgress.css */
+.onboarding-progress {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.onboarding-progress h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #333;
+}
+
+.onboarding-progress ul {
+  list-style: none;
+  padding: 0;
+}
+
+.onboarding-progress li {
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #f0f0f0;
+  border-left: 5px solid #ccc;
+  font-size: 18px;
+  color: #666;
+  transition: background-color 0.3s ease;
+}
+
+.onboarding-progress li.completed {
+  background-color: #4caf50;
+  color: #fff;
+  border-left-color: #388e3c;
+}
+
+.onboarding-progress li:not(.completed):hover {
+  background-color: #e0e0e0;
+}

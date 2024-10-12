@@ -1,0 +1,67 @@
+@import url("https://fonts.googleapis.com/css2?family=Kodchasan:wght@300;400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+:root {
+    /* fonts */
+    --font-inter: Inter;
+    --font-krona-one: "Krona One";
+    --font-kodchasan: Kodchasan;
+
+    /* font sizes */
+    --font-size-5xl: 24px;
+    --font-size-lgi: 19px;
+
+    /* Colors */
+    --color-white: #fff;
+
+    /* Paddings */
+    --padding-xl: 20px;
+    --padding-77xl: 96px;
+    --padding-43xl: 62px;
+
+    /* Effects */
+    --button-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
+}
+.navButton {
+    background: transparent;
+    font-family: var(--font-kodchasan);
+    border: none;
+    cursor: pointer;
+    padding: 10px 15px;
+    font-size: 13px;
+    color: #fff;
+    margin-right: 10px; /* Adjust spacing between buttons */
+    margin-bottom: 10px;
+    position: relative; /* Ensure relative positioning for pseudo-element */
+}
+
+.navButton:hover {
+    color: #ccc; /* Change color on hover */
+}
+
+.navButton::after {
+    content: "";
+    display: block;
+    width: 0;
+    height: 2px;
+    background-color: #ffffff;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    transition: width 0.3s ease; /* Animation transition */
+}
+
+.navButton.active::after {
+    width: 100%; /* Expand line width when active */
+}
+
+nav ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    text-align: left; /* Align navigation to the left */
+}
+
+nav ul li {
+    display: inline-block; /* Display list items as inline-block */
+}
