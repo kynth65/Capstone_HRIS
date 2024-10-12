@@ -2,7 +2,10 @@ import React, { useState, useEffect } from "react";
 import axiosClient from "../axiosClient";
 import { jsPDF } from "jspdf";
 
+import { useStateContext } from "../contexts/ContextProvider";
+
 const HR_Leave_Management = () => {
+    const { user } = useStateContext();
     const [activeButton, setActiveButton] = useState("leaveFormList");
     const [leaveRequests, setLeaveRequests] = useState([]);
     const [successMessage, setSuccessMessage] = useState("");
@@ -222,9 +225,12 @@ const HR_Leave_Management = () => {
                                     <th className="p-2 border-b border-gray-300">
                                         File
                                     </th>
-                                    <th className="p-2 border-b border-gray-300">
-                                        Actions
-                                    </th>
+                                    {user.position ===
+                                        "Human Resource Manager" && (
+                                        <th className="p-2 border-b border-gray-300">
+                                            Actions
+                                        </th>
+                                    )}
                                 </tr>
                             </thead>
                             <tbody>
@@ -259,40 +265,47 @@ const HR_Leave_Management = () => {
                                                     View PDF
                                                 </a>
                                             </td>
-                                            <td className="p-2 border border-gray-300">
-                                                <button
-                                                    className={`px-3 py-1 rounded ${request.statuses === "approved" || request.statuses === "declined" ? "bg-gray-300 cursor-not-allowed" : "bg-green-500 hover:bg-green-600 text-white"}`}
-                                                    onClick={() =>
-                                                        handleApprove(
-                                                            request.id,
-                                                        )
-                                                    }
-                                                    disabled={
-                                                        request.statuses ===
-                                                            "approved" ||
-                                                        request.statuses ===
-                                                            "declined"
-                                                    }
-                                                >
-                                                    Approve
-                                                </button>
-                                                <button
-                                                    className={`ml-2 px-3 py-1 rounded ${request.statuses === "declined" || request.statuses === "approved" ? "bg-gray-300 cursor-not-allowed" : "bg-red-500 hover:bg-red-600 text-white"}`}
-                                                    onClick={() =>
-                                                        handleDecline(
-                                                            request.id,
-                                                        )
-                                                    }
-                                                    disabled={
-                                                        request.statuses ===
-                                                            "declined" ||
-                                                        request.statuses ===
-                                                            "approved"
-                                                    }
-                                                >
-                                                    Decline
-                                                </button>
-                                            </td>
+
+                                            {/* Only render the buttons if the user is a Human Resource Manager */}
+                                            {user.position ===
+                                                "Human Resource Manager" && (
+                                                <>
+                                                    <td className="p-2 border border-gray-300">
+                                                        <button
+                                                            className={`px-3 py-1 rounded ${request.statuses === "approved" || request.statuses === "declined" ? "bg-gray-300 cursor-not-allowed" : "bg-green-500 hover:bg-green-600 text-white"}`}
+                                                            onClick={() =>
+                                                                handleApprove(
+                                                                    request.id,
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                request.statuses ===
+                                                                    "approved" ||
+                                                                request.statuses ===
+                                                                    "declined"
+                                                            }
+                                                        >
+                                                            Approve
+                                                        </button>
+                                                        <button
+                                                            className={`ml-2 px-3 py-1 rounded ${request.statuses === "declined" || request.statuses === "approved" ? "bg-gray-300 cursor-not-allowed" : "bg-red-500 hover:bg-red-600 text-white"}`}
+                                                            onClick={() =>
+                                                                handleDecline(
+                                                                    request.id,
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                request.statuses ===
+                                                                    "declined" ||
+                                                                request.statuses ===
+                                                                    "approved"
+                                                            }
+                                                        >
+                                                            Decline
+                                                        </button>
+                                                    </td>
+                                                </>
+                                            )}
                                         </tr>
                                     ))
                                 ) : (
