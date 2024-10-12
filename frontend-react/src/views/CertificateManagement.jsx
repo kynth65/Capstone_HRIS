@@ -1832,49 +1832,63 @@ function CertificateManagement() {
             )}
             {isDetailModalOpen && detailedCertificate && (
                 <div className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                    <div className="modal-content bg-white p-6 rounded-lg w-1/2">
-                        <h2 className="text-lg font-bold mb-4">
+                    <div className="modal-content bg-white p-8 rounded-lg w-3/4 max-w-2xl">
+                        <h2 className="text-2xl font-bold mb-6 text-center">
                             Certificate Details
                         </h2>
-                        <div className="text-black mb-4">
+                        <div className="text-black space-y-4 mb-6">
                             <p>
-                                <strong>Certificate Name:</strong>{" "}
+                                <strong className="font-semibold">
+                                    Certificate Name:
+                                </strong>{" "}
                                 {detailedCertificate.certificate_name}
                             </p>
                             <p>
-                                <strong>Type:</strong>{" "}
+                                <strong className="font-semibold">Type:</strong>{" "}
                                 {detailedCertificate.type}
                             </p>
                             <p>
-                                <strong>Category:</strong>{" "}
+                                <strong className="font-semibold">
+                                    Category:
+                                </strong>{" "}
                                 {detailedCertificate.category}
                             </p>
                             <p>
-                                <strong>Date Issued:</strong>{" "}
+                                <strong className="font-semibold">
+                                    Date Issued:
+                                </strong>{" "}
                                 {new Date(
                                     detailedCertificate.issued_date,
                                 ).toLocaleDateString()}
                             </p>
                             <p>
-                                <strong>Expiring Date:</strong>{" "}
+                                <strong className="font-semibold">
+                                    Expiring Date:
+                                </strong>{" "}
                                 {detailedCertificate.expiring_date
                                     ? new Date(
                                           detailedCertificate.expiring_date,
                                       ).toLocaleDateString()
                                     : "N/A"}
                             </p>
-                            <div className="text-black mb-4">
+                            <div className="space-y-2">
                                 <p>
-                                    <strong>Created By:</strong>{" "}
+                                    <strong className="font-semibold">
+                                        Created By:
+                                    </strong>{" "}
                                     {detailedCertificate.created_by_name}
                                 </p>
                                 <p>
-                                    <strong>Updated By:</strong>{" "}
+                                    <strong className="font-semibold">
+                                        Updated By:
+                                    </strong>{" "}
                                     {detailedCertificate.updated_by_name}
                                 </p>
                             </div>
                             <p>
-                                <strong>Status:</strong>{" "}
+                                <strong className="font-semibold">
+                                    Status:
+                                </strong>{" "}
                                 {getCertificateStatus(
                                     detailedCertificate.expiring_date,
                                     detailedCertificate.type,
@@ -1883,7 +1897,7 @@ function CertificateManagement() {
                         </div>
                         <div className="flex justify-end">
                             <button
-                                className="bg-red-500 text-white p-2 rounded"
+                                className="bg-red-500 text-white px-6 py-2 rounded-md hover:bg-red-600 transition duration-200"
                                 onClick={() => setIsDetailModalOpen(false)}
                             >
                                 Close

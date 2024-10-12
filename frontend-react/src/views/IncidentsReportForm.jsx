@@ -281,7 +281,7 @@ const IncidentReportForm = () => {
                                         <td className="p-2 border border-green-900">
                                             {report.file_path ? (
                                                 <a
-                                                    href={`http://localhost:8000/storage/${report.file_path}`}
+                                                    href={`${import.meta.env.VITE_BASE_URL.replace("/api", "")}/storage/${report.file_path}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="text-blue-500 hover:underline"

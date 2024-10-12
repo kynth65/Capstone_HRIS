@@ -148,9 +148,9 @@ function Profile() {
                             user.date_of_birth
                                 ? format(
                                       parseISO(user.date_of_birth),
-                                      "MMMM d, yyyy"
+                                      "MMMM d, yyyy",
                                   )
-                                : "N/A"
+                                : "N/A",
                         )}
                         {renderField("Gender", user.gender)}
                         {renderField("Nationality", user.nationality)}
@@ -204,15 +204,15 @@ function Profile() {
                     <div className="profile-details text-base font-kodchasan">
                         {renderField(
                             "Emergency Contact",
-                            user.emergency_contact_name
+                            user.emergency_contact_name,
                         )}
                         {renderField(
                             "Emergency Contact Relationship",
-                            user.emergency_contact_relationship
+                            user.emergency_contact_relationship,
                         )}
                         {renderField(
                             "Emergency Contact Phone",
-                            user.emergency_contact_phone
+                            user.emergency_contact_phone,
                         )}
                     </div>
                 )}
@@ -237,13 +237,18 @@ function Profile() {
                     <div className="profile-details text-base font-kodchasan">
                         {renderField("Employee Type", user.employee_type)}
                         {renderField(
+                            "Sick Leave Balance",
+                            user.sick_leave_balance,
+                        )}
+
+                        {renderField(
                             "Hire Date",
-                            format(parseISO(user.hire_date), "MMMM d, yyyy")
+                            format(parseISO(user.hire_date), "MMMM d, yyyy"),
                         )}
                         {renderField("Department", user.department)}
                         {renderField(
                             "Reporting Manager",
-                            user.reporting_manager
+                            user.reporting_manager,
                         )}
                         {renderField("Work Location", user.work_location)}
                         {renderField("Current Salary", user.current_salary)}
