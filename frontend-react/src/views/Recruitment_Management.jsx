@@ -392,48 +392,6 @@ function Recruitment_Management() {
         /**Suggested Tags End Code */
     }
 
-    const generateDocumentContent = async () => {
-        try {
-            const response = await axios.post(
-                "https://api.openai.com/v1/chat/completions",
-                {
-                    model: "gpt-4", // Specify the GPT-4 model here
-                    messages: [
-                        {
-                            role: "system",
-                            content:
-                                "You are a helpful assistant that generates formal documents.",
-                        },
-                        {
-                            role: "user",
-                            content: `Create a ${documentType} for the following reason: ${reason}`,
-                        },
-                    ],
-                    max_tokens: 500,
-                    temperature: 0.7,
-                },
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${import.meta.env.VITE_APP_OPENAI_API_KEY}`,
-                    },
-                },
-            );
-
-            const generatedContent =
-                response.data.choices[0].message.content.trim();
-            setDocumentContent(generatedContent);
-        } catch (error) {
-            console.error("Error generating document:", error);
-        }
-    };
-    const handleGenerate = () => {
-        if (documentType && reason) {
-            generateDocumentContent();
-        } else {
-            alert("Please select a document type and provide a reason.");
-        }
-    };
     const handleDownloadPdf = () => {
         const doc = new jsPDF();
 
