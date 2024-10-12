@@ -12,11 +12,11 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                         type="radio"
                         name="bachelorDegree"
                         value="Yes"
-                        checked={questions.bachelorDegree === "Yes"}
+                        checked={questions.question1 === "Yes"}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
-                                bachelorDegree: e.target.value,
+                                question1: e.target.value,
                             })
                         }
                     />
@@ -25,11 +25,11 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                         type="radio"
                         name="bachelorDegree"
                         value="No"
-                        checked={questions.bachelorDegree === "No"}
+                        checked={questions.question1 === "No"}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
-                                bachelorDegree: e.target.value,
+                                question1: e.target.value,
                             })
                         }
                     />
@@ -45,11 +45,11 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                         type="radio"
                         name="backgroundCheck"
                         value="Yes"
-                        checked={questions.backgroundCheck === "Yes"}
+                        checked={questions.question2 === "Yes"}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
-                                backgroundCheck: e.target.value,
+                                question2: e.target.value,
                             })
                         }
                     />
@@ -58,11 +58,11 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                         type="radio"
                         name="backgroundCheck"
                         value="No"
-                        checked={questions.backgroundCheck === "No"}
+                        checked={questions.question2 === "No"}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
-                                backgroundCheck: e.target.value,
+                                question2: e.target.value,
                             })
                         }
                     />
@@ -77,11 +77,11 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                         type="radio"
                         name="commute"
                         value="Yes"
-                        checked={questions.commute === "Yes"}
+                        checked={questions.question3 === "Yes"}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
-                                commute: e.target.value,
+                                question3: e.target.value,
                             })
                         }
                     />
@@ -90,11 +90,11 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                         type="radio"
                         name="commute"
                         value="No"
-                        checked={questions.commute === "No"}
+                        checked={questions.question3 === "No"}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
-                                commute: e.target.value,
+                                cquestion3: e.target.value,
                             })
                         }
                     />
@@ -106,11 +106,11 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                 Willing to work Saturdays?*
                 <div>
                     <select
-                        value={questions.workSaturdays}
+                        value={questions.question4}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
-                                workSaturdays: e.target.value,
+                                question4: e.target.value,
                             })
                         }
                     >
@@ -125,11 +125,11 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                 Bachelor of Science in Accountancy graduate?*
                 <div>
                     <select
-                        value={questions.accountancyGraduate}
+                        value={questions.question5}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
-                                accountancyGraduate: e.target.value,
+                                question5: e.target.value,
                             })
                         }
                     >
@@ -144,11 +144,11 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                 What is your level of proficiency in English?*
                 <div>
                     <select
-                        value={questions.englishProficiency}
+                        value={questions.question6}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
-                                englishProficiency: e.target.value,
+                                question6: e.target.value,
                             })
                         }
                     >
@@ -169,11 +169,11 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                 <div>
                     <input
                         type="number"
-                        value={questions.accountingExperience || ""}
+                        value={questions.question7 || ""}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
-                                accountingExperience: e.target.value,
+                                question7: e.target.value,
                             })
                         }
                         min="0"
@@ -187,11 +187,11 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                 <div>
                     <input
                         type="number"
-                        value={questions.softwareExperience || ""}
+                        value={questions.question8 || ""}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
-                                softwareExperience: e.target.value,
+                                question8: e.target.value,
                             })
                         }
                         min="0"
@@ -205,11 +205,11 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                 <div>
                     <input
                         type="number"
-                        value={questions.businessProcessExperience || ""}
+                        value={questions.question9 || ""}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
-                                businessProcessExperience: e.target.value,
+                                question9: e.target.value,
                             })
                         }
                         min="0"
