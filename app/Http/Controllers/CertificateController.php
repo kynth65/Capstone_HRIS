@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 
-
 class CertificateController extends Controller
 {
     // Fetch certificates for a specific user (non-archived)
@@ -179,14 +178,31 @@ class CertificateController extends Controller
 
     // Archive a certificate by moving it to the ArchivedCertificate table
 
+    public function getArchivedCertificates()
+    {
+        try {
+            $archivedCertificates = ArchivedCertificate::all();
+
+            Log::info('Fetched archived certificates:', ['count' => $archivedCertificates->count()]);
+
+            foreach ($archivedCertificates as $cert) {
+                if ($cert->certificate_file_path) {
+                    $cert->file_url = asset('storage/' . $cert->certificate_file_path);
+                }
+            }
+
+            return response()->json($archivedCertificates, 200);
+        } catch (\Exception $e) {
+            Log::error('Error fetching archived certificates:', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Error fetching archived certificates'], 500);
+        }
+    }
 
     public function archiveCertificate($id)
     {
-        $certificate = Certificate::findOrFail($id);
         try {
-            Log::info("Starting the archiving process for Certificate ID: $id");
+            $certificate = Certificate::findOrFail($id);
 
-            // Move the certificate's data to the ArchivedCertificate table
             ArchivedCertificate::create([
                 'user_id' => $certificate->user_id,
                 'certificate_name' => $certificate->certificate_name,
@@ -198,33 +214,18 @@ class CertificateController extends Controller
                 'category' => $certificate->category,
                 'created_by' => $certificate->created_by,
                 'updated_by' => $certificate->updated_by,
-                'created_at' => $certificate->created_at,
-                'updated_at' => $certificate->updated_at,
+                'is_archived' => true,
             ]);
 
-            Log::info("Certificate ID: $id data moved to ArchivedCertificate table successfully.");
-
-            // Delete the original certificate record
             $certificate->delete();
-            Log::info("Original certificate record with ID: $id deleted successfully.");
 
-            return response()->json([
-                'message' => 'Certificate archived successfully.',
-            ], 200);
+            return response()->json(['message' => 'Certificate archived successfully.']);
         } catch (\Exception $e) {
-            Log::error("Error archiving certificate with ID: $id - " . $e->getMessage());
-            return response()->json(['error' => 'An error occurred while archiving the certificate.'], 500);
+            Log::error('Error archiving certificate:', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Error archiving certificate'], 500);
         }
     }
 
-    public function getArchivedCertificates()
-    {
-        // Retrieve all certificates where the status is 'Archived'
-        $archivedCertificates = DB::table('archived_certificates')->get();
-
-        // Return the data as a JSON response
-        return response()->json($archivedCertificates);
-    }
 
     // Delete a certificate
     public function destroy($id)

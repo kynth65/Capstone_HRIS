@@ -21,6 +21,7 @@ class ArchivedCertificate extends Model
         'category',
         'created_by',
         'updated_by',
+        'is_archived',
     ];
 
     public $timestamps = true;

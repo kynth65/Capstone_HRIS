@@ -250,7 +250,7 @@ function Leave_Management() {
 
             <div>
                 {activeButton === "documentGenerator" && (
-                    <div className="bg-neutral-300 p-4">
+                    <div className="bg-white rounded-xl p-4">
                         <div className="">
                             <h2 className="titles pt-5">
                                 AI Letter Template Generator
@@ -340,7 +340,7 @@ function Leave_Management() {
                 )}
 
                 {activeButton === "leaveRequest" && (
-                    <div className="leave-request-form bg-white p-6 rounded-xl text-black max-w-2xl mx-auto">
+                    <div className="leave-request-form bg-white p-6 rounded-xl text-black max-w-4xl mx-auto">
                         <h2 className="text-2xl font-bold mb-4 text-center">
                             Submit Leave Request
                         </h2>
@@ -425,72 +425,94 @@ function Leave_Management() {
                                 Your Leave Requests
                             </h3>
                             <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                File
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Start Date
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                End Date
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Days
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Status
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200 h-40 text-black">
-                                        {Object.entries(leaveRequests).map(
-                                            ([status, requests]) =>
-                                                requests.map(
-                                                    (request, index) => (
-                                                        <tr
-                                                            key={`${status}-${index}`}
-                                                        >
-                                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                                <a
-                                                                    href={`/${request.file_path}`}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="text-blue-600 hover:underline"
+                                {/* Limit table height and make it scrollable */}
+                                <div className="overflow-y-auto max-h-64">
+                                    <table className="min-w-full divide-y divide-gray-200">
+                                        <thead className="bg-gray-50 sticky top-0 z-10">
+                                            <tr>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    File
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Start Date
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    End Date
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Days
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Status
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200 text-black">
+                                            {Object.entries(leaveRequests).map(
+                                                ([status, requests]) =>
+                                                    requests.map(
+                                                        (request, index) => {
+                                                            // Determine background color based on status
+                                                            let rowClass = "";
+                                                            if (
+                                                                status ===
+                                                                "approved"
+                                                            ) {
+                                                                rowClass =
+                                                                    "bg-green-100"; // Green background for approved
+                                                            } else if (
+                                                                status ===
+                                                                "declined"
+                                                            ) {
+                                                                rowClass =
+                                                                    "bg-red-100"; // Red background for declined
+                                                            }
+
+                                                            return (
+                                                                <tr
+                                                                    key={`${status}-${index}`}
+                                                                    className={`${rowClass}`} // Apply the dynamic class here
                                                                 >
-                                                                    {
-                                                                        request.file_name
-                                                                    }
-                                                                </a>
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                                {new Date(
-                                                                    request.start_date,
-                                                                ).toLocaleDateString()}
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                                {new Date(
-                                                                    request.end_date,
-                                                                ).toLocaleDateString()}
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                                {
-                                                                    request.days_requested
-                                                                }
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                                {
-                                                                    request.statuses
-                                                                }
-                                                            </td>
-                                                        </tr>
+                                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                                        <a
+                                                                            href={`http://localhost:8000/storage/${request.file_path}`}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            className="text-blue-600 hover:underline"
+                                                                        >
+                                                                            {
+                                                                                request.file_name
+                                                                            }
+                                                                        </a>
+                                                                    </td>
+                                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                                        {new Date(
+                                                                            request.start_date,
+                                                                        ).toLocaleDateString()}
+                                                                    </td>
+                                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                                        {new Date(
+                                                                            request.end_date,
+                                                                        ).toLocaleDateString()}
+                                                                    </td>
+                                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                                        {
+                                                                            request.days_requested
+                                                                        }
+                                                                    </td>
+                                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                                        {
+                                                                            request.statuses
+                                                                        }
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        },
                                                     ),
-                                                ),
-                                        )}
-                                    </tbody>
-                                </table>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
