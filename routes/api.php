@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\EmployeeNotificationController;
 use App\Http\Controllers\TrackingAttendanceController;
 use App\Http\Controllers\EmployeeAttendanceController;
 use App\Http\Controllers\IncidentController;
+use App\Http\Controllers\callOpenAi; //Controller for OpenAi
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
@@ -148,6 +149,10 @@ Route::prefix('incidents')->group(function () {
     Route::put('/{id}', [IncidentController::class, 'update']);
     Route::delete('/{id}', [IncidentController::class, 'destroy']);
 });
+
+
+//Post OpenAi
+Route::post('/generate-document', [callOpenAi::class, 'generateDocument']);
 
 
 //->middleware('auth:sanctum');
