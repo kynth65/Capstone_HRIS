@@ -15,6 +15,7 @@ function AdminLayout() {
     const [headerText, setHeaderText] = useState(
         localStorage.getItem("headerText") || "Admin Dashboard",
     );
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
         if (token === null || token === undefined) return;
@@ -86,6 +87,11 @@ function AdminLayout() {
         setShowDropdown(!showDropdown);
     };
 
+    const handleViewProfile = () => {
+        navigate("/profile-admin");
+        setShowModal(false);
+    };
+    const toggleModal = () => setShowModal(!showModal);
     return (
         <div id="defaultLayout">
             <div className="bg-transparent xl:w-72 relative"></div>
@@ -104,7 +110,7 @@ function AdminLayout() {
                     GAMMACARE HRIS <br></br> {user.position}
                 </h1>
 
-                <div className="flex-col flex gap-4 w-64 px-6 h-screen ">
+                <div className="flex-col flex gap-4 w-64 px-6 h-screen font-kodchasan">
                     <Link
                         to="/admin-dashboard"
                         onClick={() => handleHeaderChange("Dashboard")}
@@ -142,29 +148,6 @@ function AdminLayout() {
                     >
                         Employee Management
                     </Link>
-
-                    <div className=" mt-24">
-                        <Link
-                            to="/profile-admin"
-                            onClick={() => handleHeaderChange("Profile")}
-                        >
-                            <div className="flex items-center px-5 bg-transparent h-16 cursor-pointer text-white hover:bg-opacity-70 hover:bg-gray-600 rounded-lg transition">
-                                <img
-                                    src={
-                                        user.profile
-                                            ? `http://127.0.0.1:8000/storage/images/${user.profile}`
-                                            : defaultAvatar
-                                    }
-                                    alt="Profile"
-                                    className="w-10 h-10 mr-4 rounded-full object-cover"
-                                />
-                                <div>
-                                    {user?.name} <br />
-                                    {user?.position}
-                                </div>
-                            </div>
-                        </Link>
-                    </div>
                 </div>
             </aside>
             <div className="content">
@@ -177,20 +160,49 @@ function AdminLayout() {
                         &#9776;
                     </button>
                     <div className="headerText">{headerText}</div>
-                    <div>
-                        <a
-                            href="/logout"
-                            onClick={onLogout}
-                            className="btn-logout hh"
-                        >
-                            Logout
-                        </a>
+                    <div
+                        className="flex items-center cursor-pointer font-kodchasan"
+                        onClick={toggleModal}
+                    >
+                        <button className="btn-profile-icon">
+                            <img
+                                src={
+                                    user.profile
+                                        ? `http://127.0.0.1:8000/storage/images/${user.profile}`
+                                        : defaultAvatar
+                                }
+                                alt="Profile"
+                                className="w-10 h-10 mr-4 rounded-full object-cover"
+                            />
+                        </button>
+                        <span>{user.position}</span>
                     </div>
                 </header>
                 <main>
                     <Outlet />
                 </main>
             </div>
+            {showModal && (
+                <div className="modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-6 rounded shadow-md text-center text-black">
+                        <h2 className="text-lg mb-4">Profile Options</h2>
+                        <div className="flex  justify-between space-x-4 rounded-xl">
+                            <button
+                                onClick={handleViewProfile}
+                                className="btn-modal px-4 bg-green-900 py-4 border-2 border-green-900 rounded-xl font-kodchasan text-white hover:bg-white hover:text-green-900 transition"
+                            >
+                                View Profile
+                            </button>
+                            <button
+                                onClick={onLogout}
+                                className="btn-modal px-4 bg-green-900 py-4 border-2 border-green-900 rounded-xl font-kodchasan text-white hover:bg-white hover:text-green-900 transition"
+                            >
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

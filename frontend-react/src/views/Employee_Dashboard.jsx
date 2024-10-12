@@ -67,7 +67,7 @@ const EmployeeDashboard = () => {
         const fetchNotifications = async () => {
             try {
                 const response = await axiosClient.get(
-                    "/employee-notifications"
+                    "/employee-notifications",
                 );
                 setNotifications(response.data);
             } catch (error) {
@@ -139,7 +139,7 @@ const EmployeeDashboard = () => {
                             <div className="">
                                 {employee.date_of_birth
                                     ? new Date(
-                                          employee.date_of_birth
+                                          employee.date_of_birth,
                                       ).toLocaleDateString()
                                     : "N/A"}
                             </div>
@@ -196,65 +196,69 @@ const EmployeeDashboard = () => {
             {/* Leave Requests Section */}
             <div className="flex flex-col bg-white text-black p-6 rounded-xl">
                 <h2 className="font-bold text-lg mb-4">Leave Requests</h2>
-                <div className="mt-8">
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        File
-                                    </th>
-                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Start Date
-                                    </th>
-                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        End Date
-                                    </th>
-                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Days
-                                    </th>
-                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200 text-black">
-                                {Object.entries(leaveRequests).map(
-                                    ([status, requests]) =>
-                                        requests.map((request, index) => (
-                                            <tr key={`${status}-${index}`}>
-                                                <td className="px-6 py-4 whitespace-nowrap">
+                <div className="mt-4 max-h-60 overflow-y-auto">
+                    {" "}
+                    {/* Set max height for scrollable table */}
+                    <table className="min-w-full border-collapse border border-gray-200">
+                        <thead className="bg-gray-100 sticky top-0 text-gray-700 text-xs uppercase tracking-wider">
+                            <tr>
+                                <th className="p-2 border border-gray-200 text-center">
+                                    File
+                                </th>
+                                <th className="p-2 border border-gray-200 text-center">
+                                    Start Date
+                                </th>
+                                <th className="p-2 border border-gray-200 text-center">
+                                    End Date
+                                </th>
+                                <th className="p-2 border border-gray-200 text-center">
+                                    Days
+                                </th>
+                                <th className="p-2 border border-gray-200 text-center">
+                                    Status
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200 text-black text-center">
+                            {Object.entries(leaveRequests).map(
+                                ([status, requests]) =>
+                                    requests.map((request, index) => (
+                                        <tr key={`${status}-${index}`}>
+                                            <td className="p-2 border border-gray-200">
+                                                {request.file_path ? (
                                                     <a
-                                                        href={`/${request.file_path}`}
+                                                        href={`http://localhost:8000/storage/${request.file_path}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="text-blue-600 hover:underline"
                                                     >
                                                         {request.file_name}
                                                     </a>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    {new Date(
-                                                        request.start_date
-                                                    ).toLocaleDateString()}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    {new Date(
-                                                        request.end_date
-                                                    ).toLocaleDateString()}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    {request.days_requested}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    {request.statuses}
-                                                </td>
-                                            </tr>
-                                        ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                                                ) : (
+                                                    "N/A"
+                                                )}
+                                            </td>
+                                            <td className="p-2 border border-gray-200">
+                                                {new Date(
+                                                    request.start_date,
+                                                ).toLocaleDateString()}
+                                            </td>
+                                            <td className="p-2 border border-gray-200">
+                                                {new Date(
+                                                    request.end_date,
+                                                ).toLocaleDateString()}
+                                            </td>
+                                            <td className="p-2 border border-gray-200">
+                                                {request.days_requested}
+                                            </td>
+                                            <td className="p-2 border border-gray-200">
+                                                {request.statuses}
+                                            </td>
+                                        </tr>
+                                    )),
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

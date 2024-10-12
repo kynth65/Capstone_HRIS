@@ -163,25 +163,19 @@ const IncidentReportForm = () => {
                 My Submitted Reports
             </h2>
             <div className="overflow-y-auto" style={{ maxHeight: "200px" }}>
-                <table className="employee-table min-w-full border-collapse border border-green-900">
-                    <thead className="bg-green-900 text-white sticky top-[-1px]">
+                <table className="employee-table min-w-full border-collapse">
+                    <thead className=" text-white sticky top-[-1px]">
                         <tr>
-                            <th className="p-2 border border-green-900">
-                                Title
-                            </th>
-                            <th className="p-2 border border-green-900 hidden md:table-cell">
+                            <th className="p-2 ">Title</th>
+                            <th className="p-2  hidden md:table-cell">
                                 Description
                             </th>
-                            <th className="p-2 border border-green-900 hidden lg:table-cell">
+                            <th className="p-2  hidden lg:table-cell">
                                 Incident Date
                             </th>
-                            <th className="p-2 border border-green-900">
-                                Severity
-                            </th>
-                            <th className="p-2 border border-green-900">
-                                Status
-                            </th>
-                            <th className="p-2 border border-green-900">PDF</th>
+                            <th className="p-2 ">Severity</th>
+                            <th className="p-2 ">Status</th>
+                            <th className="p-2 ">PDF</th>
                         </tr>
                     </thead>
                     <tbody className="text-black">
