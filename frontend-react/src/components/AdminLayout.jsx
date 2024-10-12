@@ -72,7 +72,7 @@ function AdminLayout() {
         ev.preventDefault();
         setUser({});
         setToken(null); // Ensure setToken updates the context correctly
-        window.localStorage.removeIteme("isLoggedIn");
+        window.localStorage.removeItem("isLoggedIn");
         localStorage.removeItem("headerText");
         navigate("/");
     };
