@@ -158,7 +158,7 @@ const Payroll = () => {
             </form>
 
             {netSalary !== null && !isNaN(netSalary) && (
-                <div className="payslip">
+                <div className="payslip text-black flex flex-col space-y-3">
                     <h3>Payslip</h3>
                     <p>Net Salary: ${parseFloat(netSalary).toFixed(2)}</p>
                     <button onClick={generatePDF} className="download-btn">
