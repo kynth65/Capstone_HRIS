@@ -18,8 +18,8 @@ class Certificate extends Model
         'issued_date',
         'expiring_date',
         'is_archived',
-        'created_by',   
-        'updated_by'   
+        'created_by',
+        'updated_by'
     ];
 
     protected $casts = [

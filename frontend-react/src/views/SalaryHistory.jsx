@@ -20,7 +20,7 @@ const SalaryHistory = () => {
     return (
         <div className="max-h-[400px] overflow-y-auto rounded-lg">
             <h2 className="text-2xl font-semibold mb-4">Salary History</h2>
-            <table className="bg-white text-black w-full xl:w-full">
+            <table className="employee-table bg-white text-black w-full xl:w-full">
                 <thead className="sticky top-0 bg-gray-200 border-b-2">
                     <tr className="text-base font-kodchasan">
                         <th className="px-4 py-2">Hourly Rate</th>

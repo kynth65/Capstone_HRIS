@@ -447,10 +447,18 @@ function CertificateManagement() {
     const fetchArchivedCertificates = async () => {
         try {
             const response = await axiosClient.get("/certificates/archived");
-            console.log("Archived certificates response:", response.data); // Add this line for debugging
-            setArchivedCertificates(response.data);
+            console.log("Archived certificates response:", response.data);
+            if (Array.isArray(response.data)) {
+                setArchivedCertificates(response.data);
+            } else {
+                console.error("Unexpected response format:", response.data);
+                setArchivedCertificates([]);
+            }
         } catch (error) {
-            console.error("Error fetching archived certificates:", error);
+            console.error(
+                "Error fetching archived certificates:",
+                error.response ? error.response.data : error.message,
+            );
             setArchivedCertificates([]);
         }
     };

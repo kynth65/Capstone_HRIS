@@ -59,7 +59,7 @@ function EmployeeCertificate() {
                     headers: {
                         "Content-Type": "multipart/form-data",
                     },
-                }
+                },
             );
             alert(response.data.message || "Update request sent successfully.");
 
@@ -77,7 +77,7 @@ function EmployeeCertificate() {
         } catch (error) {
             if (error.response && error.response.status === 400) {
                 alert(
-                    "You already sent an update request for this certificate."
+                    "You already sent an update request for this certificate.",
                 );
             } else {
                 console.error("Error sending update request:", error);
@@ -85,8 +85,9 @@ function EmployeeCertificate() {
         }
     };
 
-    const handleOpenPdf = (pdfUrl) => {
-        if (pdfUrl) {
+    const handleOpenPdf = (pdfPath) => {
+        if (pdfPath) {
+            const pdfUrl = `http://localhost:8000/${pdfPath}`; // Prefix with localhost:8000
             setPdfUrl(pdfUrl);
             setIsPdfModalOpen(true);
         } else {
@@ -114,10 +115,10 @@ function EmployeeCertificate() {
                                 cert.type === "non-expirable"
                                     ? "Non-Expiring"
                                     : cert.expiring_date
-                                    ? new Date(
-                                          cert.expiring_date
-                                      ).toLocaleDateString()
-                                    : "N/A";
+                                      ? new Date(
+                                            cert.expiring_date,
+                                        ).toLocaleDateString()
+                                      : "N/A";
 
                             return (
                                 <tr
@@ -129,17 +130,17 @@ function EmployeeCertificate() {
                                     </td>
                                     <td className="px-4 py-6">
                                         {new Date(
-                                            cert.issued_date
+                                            cert.issued_date,
                                         ).toLocaleDateString("en-US")}
                                     </td>
                                     <td className="px-4 py-6">
                                         {cert.type === "non-expirable"
                                             ? "N/A"
                                             : cert.expiring_date
-                                            ? new Date(
-                                                  cert.expiring_date
-                                              ).toLocaleDateString("en-US")
-                                            : ""}
+                                              ? new Date(
+                                                    cert.expiring_date,
+                                                ).toLocaleDateString("en-US")
+                                              : ""}
                                     </td>
                                     <td className="px-4 py-6">{status}</td>
                                     <td className="px-4 py-6 flex space-x-3">

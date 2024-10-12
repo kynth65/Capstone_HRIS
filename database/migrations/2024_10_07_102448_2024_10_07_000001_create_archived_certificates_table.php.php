@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('category')->nullable();
             $table->string('created_by')->nullable();
             $table->string('updated_by')->nullable();
+            $table->boolean('is_archived')->default(false); // New column
             $table->timestamps();
 
             // Foreign key constraints

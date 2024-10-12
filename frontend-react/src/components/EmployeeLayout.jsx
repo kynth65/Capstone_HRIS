@@ -112,10 +112,10 @@ function EmployeeLayout() {
 
                     <Link
                         to="/leave-management"
-                        onClick={() => handleHeaderChange("Leave Management")}
+                        onClick={() => handleHeaderChange("Leave ")}
                     >
                         <span className="block h-10 pt-3 cursor-pointer text-white hover:bg-opacity-70 hover:bg-gray-600 rounded-lg transition">
-                            Leave Management
+                            Leave
                         </span>
                     </Link>
 

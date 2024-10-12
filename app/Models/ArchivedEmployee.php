@@ -22,6 +22,7 @@ class ArchivedEmployee extends Model
         'salary',
         'employee_type',
         'birthdate',
-        'rfid'
+        'rfid',
+        'is_archived',
     ];
 }

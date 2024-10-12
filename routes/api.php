@@ -82,7 +82,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 Route::get('/certificates/{userId}/category/{category}', [CertificateController::class, 'getCertificatesByCategory']);
 Route::delete('/certificates/{id}', [CertificateController::class, 'destroy']);
-Route::post('/certificates/archive/{id}', [CertificateController::class, 'archive']);
+Route::post('/certificates/archive/{id}', [CertificateController::class, 'archiveCertificate']);
 Route::post('/certificates/grant-access/{id}', [CertificateController::class, 'grantAccessToCertificate']);
 Route::middleware('auth:sanctum')->get('/certificates', [CertificateController::class, 'getMyCertificates']);
 Route::middleware('auth:sanctum')->post('/certificate-update-requests', [CertificateController::class, 'createUpdateRequest']);
@@ -91,8 +91,9 @@ Route::post('/certificate-update-requests/{id}/approve', [CertificateController:
 Route::post('/certificate-update-requests/{id}/reject', [CertificateController::class, 'rejectUpdateRequest']);
 Route::post('/certificates/revoke-access/{id}', [CertificateController::class, 'revokeAccessToCertificate']);
 Route::middleware('auth:sanctum')->get('/employee-notifications', [EmployeeNotificationController::class, 'index']);
-Route::get('/certificates/archived', [CertificateController::class, 'getArchivedCertificates']);
-
+Route::middleware('api')->group(function () {
+    Route::get('/certificates/archived', [CertificateController::class, 'getArchivedCertificates']);
+});
 Route::post('/candidate', [CandidateController::class, 'store']);
 Route::post('/candidates', [CandidateController::class, 'getCandidate']);
 Route::post('/trigger-onboarding/{id}', [CandidateController::class, 'triggerOnboarding']);
@@ -141,11 +142,11 @@ Route::get('/employee/attendance/average/{rfid}', [EmployeeAttendanceController:
 
 
 Route::prefix('incidents')->group(function () {
-    Route::post('/', [IncidentController::class, 'store']); // To submit a new incident
-    Route::get('/', [IncidentController::class, 'index']);  // To get all incidents
-    Route::get('/{id}', [IncidentController::class, 'show']); // To get a specific incident
-    Route::put('/{id}', [IncidentController::class, 'update']); // To update an incident
-    Route::delete('/{id}', [IncidentController::class, 'destroy']); // To delete an incident
+    Route::post('/', [IncidentController::class, 'store']);
+    Route::get('/', [IncidentController::class, 'index']);
+    Route::get('/{id}', [IncidentController::class, 'show']);
+    Route::put('/{id}', [IncidentController::class, 'update']);
+    Route::delete('/{id}', [IncidentController::class, 'destroy']);
 });
 
 

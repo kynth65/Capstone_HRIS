@@ -10,12 +10,14 @@ return new class extends Migration
     {
         Schema::create('incidents', function (Blueprint $table) {
             $table->id();
+            $table->string('user_id');
+            $table->string('name')->nullable();
             $table->string('title');
             $table->text('description');
-            $table->date('date');
-            $table->string('status');
-            $table->enum('severity', ['low', 'high', 'severe']);
-            $table->string('pdf_file_path')->nullable(); // Add PDF file path here
+            $table->enum('status', ['pending', 'investigating', 'resolved'])->default('pending');
+            $table->date('incident_date');
+            $table->enum('severity', ['low', 'medium', 'high'])->default('low');
+            $table->string('file_path')->nullable(); // Optional PDF file path
             $table->timestamps();
         });
     }
