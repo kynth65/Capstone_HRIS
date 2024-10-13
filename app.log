@@ -1,0 +1,5 @@
+Error during file upload: Traceback (most recent call last):
+  File "C:\Users\Ezekiel Pilar\Desktop\Capstone-HRIS\resumeRank.py", line 73, in upload
+    os.remove(temp_filename)
+PermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\EZEKIE~1\\AppData\\Local\\Temp\\tmp9872zkd2'
+

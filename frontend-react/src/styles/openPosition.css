@@ -1,0 +1,421 @@
+@import url("https://fonts.googleapis.com/css2?family=Kodchasan:wght@300;400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+:root {
+    /* fonts */
+    --font-inter: Inter;
+    --font-krona-one: "Krona One";
+    --font-kodchasan: Kodchasan;
+
+    /* font sizes */
+    --font-size-5xl: 24px;
+    --font-size-lgi: 19px;
+
+    /* Colors */
+    --color-white: #fff;
+
+    /* Paddings */
+    --padding-xl: 20px;
+    --padding-77xl: 96px;
+    --padding-43xl: 62px;
+
+    /* Effects */
+    --button-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
+}
+.container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h2 {
+    text-align: center;
+}
+
+.suggestedTags span,
+.tagItem {
+    display: inline-block;
+    padding: 5px 10px;
+    margin: 5px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.suggestedTags span:hover {
+    background-color: #d1d1d1;
+}
+
+.tagItem {
+    background-color: #d0d0d0;
+    display: inline-flex;
+    align-items: center;
+}
+
+.removeTag {
+    margin-left: 5px;
+    color: red;
+    cursor: pointer;
+}
+
+.removeTag:hover {
+    color: darkred;
+}
+.tagContainer {
+    width: 100%;
+    height: 50px;
+    border: 1px gray solid;
+}
+
+.addButton {
+    position: absolute;
+    top: 6px; /* Distance from the top of the container */
+    right: 1px; /* Distance from the right of the container */
+    background-color: #fff;
+    color: #000;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 1; /* Ensure it stays above other elements */
+}
+
+.addButton:hover {
+    background-color: #45a049;
+}
+.saveButton {
+    background-color: #007bff;
+    border: none;
+    color: #fff;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.positionType {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+
+.fullTime {
+    background-color: #4caf50;
+    color: rgb(12, 11, 11);
+}
+
+.constant {
+    background-color: #ff9800;
+    color: white;
+}
+.threeDots {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+}
+
+.optionsModal {
+    position: absolute;
+    top: 20px;
+    right: 10px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.optionsModal button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+}
+
+.optionsModal button:hover {
+    background: #f0f0f0;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.modalContent {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    position: relative;
+    color: #000;
+  
+ 
+}
+.modalContentView {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    position: relative;
+    color: #000;
+    height: 70vh;
+
+ 
+}
+.closeIcon {
+    position: relative;
+    top: 70px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: crimson;
+    font-weight: bold;
+}
+.modalContent h3 {
+    margin-top: 0;
+}
+
+.modalContent label {
+    display: block;
+  
+}
+.titlePostion {
+    color: #000;
+    font-family: var(--font-kodchasan);
+    margin-top: 4px;
+}
+
+.modal {
+    z-index: 1000;
+}
+
+.overlay {
+    z-index: 999;
+}
+
+/* For View All modal */
+.viewAllModal {
+    z-index: 900;
+}
+
+.cancelButton {
+    display: block;
+    margin: 15px auto;
+    padding: 10px 16px;
+    background-color: #e53935;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.cancelButton:hover {
+    background-color: #e53935;
+}
+.tags {
+    color: rgb(0, 0, 0);
+    font-family: var(--font-kodchasan);
+}
+.positionResult {
+    color: #000;
+    font-family: var(--font-kodchasan);
+}
+
+/* Container Styles */
+.positions-container {
+    padding: 20px;
+
+}
+
+.positions-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+/* Position Card Styles */
+.position-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 250px;
+    position: relative;
+}
+
+.position-title {
+    font-size: 18px;
+    color: #333;
+}
+
+.position-type {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    color: #fff;
+    margin-bottom: 15px;
+}
+
+.full-time {
+    background-color: #28a745;
+}
+
+.part-time {
+    background-color: #ffc107;
+}
+strong {
+    color: black;
+}
+
+.position-base-salary,
+.position-description {
+    font-size: 14px;
+    color: #000000;
+    margin-bottom: 20px;
+}
+.position-description {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+}
+
+.view-applicants-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #0a641e;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.view-applicants-button:hover {
+    background-color: #2c913c;
+}
+
+.viewAllButton {
+    background-color: transparent;
+    border: none;
+    text-decoration: underline;
+    font-family: var(--font-kodchasan);
+    cursor: pointer;
+}
+
+/* Modal Styles */
+.applicants-modal-overlay {
+    background-color: rgba(0, 0, 0, 0.75);
+}
+
+.applicants-modal {
+    width: 600px;
+    max-width: 90%;
+    margin: auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.modal-title {
+    font-size: 24px;
+
+    color: #333;
+    text-align: center;
+}
+
+/* Table Styles */
+.applicants-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.table-header {
+    padding: 12px 15px;
+    background-color: #f4f4f4;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #555;
+    text-align: left;
+    border-bottom: 2px solid #ddd;
+}
+
+.applicant-row {
+    background-color: #fff;
+}
+
+.applicant-row:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.applicant-rank,
+.applicant-file,
+.applicant-percentage {
+    color: #000;
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+.applicant-rank {
+    text-align: center;
+    font-weight: bold;
+}
+
+.applicant-file {
+    color: #333;
+}
+.applicant-file-download {
+    background-color: transparent;
+    cursor: pointer;
+    border: none;
+    text-decoration: underline;
+}
+.applicant-file-download:hover {
+    color: crimson;
+}
+
+.applicant-percentage {
+    text-align: right;
+    color: #4caf50;
+}
+
+/* Close Button Styles */
+.close-modal-button {
+    padding: 10px 20px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.close-modal-button:hover {
+    background-color: #c82333;
+}
+
+/* Fade-in animation for modal */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

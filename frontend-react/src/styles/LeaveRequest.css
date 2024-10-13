@@ -1,0 +1,162 @@
+.leave-request-form {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 900px;
+    margin: auto;
+    text-align: center;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+}
+
+.leave-request-form h2 {
+    margin-bottom: 20px;
+}
+
+.leave-request-form input[type="file"] {
+    margin-bottom: 20px;
+}
+
+.leave-request-form button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.leave-request-form button:hover {
+    background-color: #0056b3;
+}
+
+.success-message {
+    color: green;
+    margin-top: 20px;
+}
+
+.error-message {
+    color: red;
+    margin-top: 20px;
+}
+
+.file-preview {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    position: relative;
+    color: black;
+}
+
+.file-preview img {
+    margin-right: 10px;
+}
+
+.file-preview p {
+    margin-right: 10px;
+}
+
+.remove-icon {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 24px;
+    cursor: pointer;
+    color: #dc3545;
+    transition: color 0.3s;
+}
+
+.remove-icon:hover {
+    color: #c82333;
+}
+
+.leave-requests-tables {
+    margin-top: 50px;
+    margin-left: 126px;
+    padding: 20px;
+    width: 670px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: var(--font-kodchasan);
+    overflow: auto;
+    border: 1px #000 solid;
+    position: relative;
+}
+
+.leave-requests-tables table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-kodchasan);
+}
+
+.leave-requests-tables th,
+.leave-requests-tables td {
+    padding: 12px 15px;
+    text-align: left;
+    color: #000;
+    border-bottom: 1px solid #ddd;
+    font-family: var(--font-kodchasan);
+}
+
+.leave-requests-tables th {
+    background-color: #e0e0e0;
+    font-weight: bold;
+    font-size: 13px;
+    color: #333;
+    font-family: var(--font-kodchasan);
+}
+
+.leave-requests-tables tr:hover {
+    background-color: #f1f1f1;
+}
+
+.leave-requests-tables a {
+    color: #000;
+    text-decoration: none;
+}
+
+.leave-requests-tables a:hover {
+    text-decoration: underline;
+}
+
+.leave-requests-tables .edit-btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: bold;
+    display: inline;
+    font-family: var(--font-kodchasan);
+}
+
+.successPopup {
+    position: fixed;
+    top: 20px;
+    left: 77%;
+    transform: translateX(-50%);
+    background-color: #4caf50;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+.errorPopup {
+    position: fixed;
+    top: 20px;
+    left: 77%;
+    float: left;
+    transform: translateX(-50%);
+    background-color: crimson;
+    color: white;
+    padding: 10px 30px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
