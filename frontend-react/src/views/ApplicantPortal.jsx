@@ -171,7 +171,7 @@ const ApplicantPortal = () => {
 
         try {
             const uploadResponse = await axios.post(
-                `${import.meta.env.VITE_API_BASE_URL}/upload`,
+                "https://api.gammacareservices.com:5000/upload",
                 formData,
                 {
                     headers: {
@@ -182,7 +182,7 @@ const ApplicantPortal = () => {
 
             // Now call the rank endpoint with the responses from the upload
             const rankResponse = await axios.post(
-                `${import.meta.env.VITE_API_BASE_URL}/rank`,
+                "https://api.gammacareservices.com:5000/rank",
                 {
                     position_id: selectedPosition.position_id,
                     resumes: uploadResponse.data.resume_texts,
@@ -211,7 +211,7 @@ const ApplicantPortal = () => {
 
             // Update the upload status
             await axios.post(
-                `${import.meta.env.VITE_API_BASE_URL}/update-upload-status`,
+                "https://api.gammacareservices.com:5000/update-upload-status",
                 {
                     google_id: userData?.sub,
                     google_name: userData?.name,
