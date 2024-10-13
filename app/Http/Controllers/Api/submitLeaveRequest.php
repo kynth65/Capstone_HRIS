@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 
-class submitLeaveRequest extends Controller
+class SubmitLeaveRequest extends Controller
 {
     public function submitLeaveRequest(Request $request)
     {
