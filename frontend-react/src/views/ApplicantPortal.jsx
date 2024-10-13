@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import axiosClient from "../axiosClient";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import Modal from "react-modal";
 import "../styles/applicantPortal.css";
 import "../styles/openPosition.css";
-import { jwtDecode } from "jwt-decode";
+import jwtDecode from "jwt-decode";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import countryCodes from "../hooks/useCountryCodes";
 import AccountingQuestions from "../views/questions/AccountingQuestions";
@@ -36,15 +35,10 @@ const ApplicantPortal = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isViewAllModalOpen, setIsViewAllModalOpen] = useState(false);
     const [selectedPosition, setSelectedPosition] = useState(null);
-    const [remove, setRemove] = useState([]);
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const fileInputRef = useRef(null);
     const [userData, setUserData] = useState(null);
-    //const [hasUploaded, setHasUploaded] = useState(() => {
-    //    const savedHasUploaded = localStorage.getItem("hasUploaded");
-    //   return savedHasUploaded ? JSON.parse(savedHasUploaded) : false;
-    //});
     const [attemptMessage, setAttemptMessage] = useState(false);
     const [isTermsOpen, setIsTermsOpen] = useState(false);
     const [isConditionsOpen, setIsConditionsOpen] = useState(false);
@@ -55,10 +49,6 @@ const ApplicantPortal = () => {
         phoneCountryCode: "+63",
         mobileNumber: "",
     });
-    const openTermsModal = () => setIsTermsOpen(true);
-    const closeTermsModal = () => setIsTermsOpen(false);
-    const openConditionsModal = () => setIsConditionsOpen(true);
-    const closeConditionsModal = () => setIsConditionsOpen(false);
     const [resume, setResume] = useState(null);
     const [questions, setQuestions] = useState({
         question1: "",
@@ -72,18 +62,44 @@ const ApplicantPortal = () => {
         question9: "",
         question10: "",
     });
+    const [errors, setErrors] = useState({
+        email: "",
+        mobileNumber: "",
+        file: "",
+    });
+
+    const openTermsModal = () => setIsTermsOpen(true);
+    const closeTermsModal = () => setIsTermsOpen(false);
+    const openConditionsModal = () => setIsConditionsOpen(true);
+    const closeConditionsModal = () => setIsConditionsOpen(false);
+
     const closeModal = () => {
         setIsModalOpen(false);
         setSelectedFiles([]);
-        setQuestions({});
+        setQuestions({
+            question1: "",
+            question2: "",
+            question3: "",
+            question4: "",
+            question5: "",
+            question6: "",
+            question7: "",
+            question8: "",
+            question9: "",
+            question10: "",
+        });
         setErrorMessage("");
-        setContactInfo({});
+        setContactInfo({
+            email: "",
+            phoneCountryCode: "+63",
+            mobileNumber: "",
+        });
     };
+
     const handleNextStep = () => {
         let validationErrors = {};
 
         if (step === 1) {
-            // Validate email and phone number in step 1
             if (!validateEmail(contactInfo.email)) {
                 validationErrors.email = "Please enter a valid email address.";
             }
@@ -93,7 +109,6 @@ const ApplicantPortal = () => {
         }
 
         if (step === 2) {
-            // Validate file upload in step 2
             const fileError = validateFileUpload(resume);
             if (fileError) {
                 validationErrors.file = fileError;
@@ -101,7 +116,6 @@ const ApplicantPortal = () => {
         }
 
         if (step === 3) {
-            console.log("Questions state before validation:", questions); // Add this for debugging
             const questionErrors = validateAdditionalQuestions(
                 questions,
                 selectedPosition?.title,
@@ -111,69 +125,39 @@ const ApplicantPortal = () => {
 
         setErrors(validationErrors);
 
-        // Proceed to next step only if no errors
         if (Object.keys(validationErrors).length === 0) {
             setStep(step + 1);
         }
     };
+
     const handlePrevStep = () => {
         if (step > 1) {
             setStep(step - 1);
         }
     };
-    // useEffect(() => {
-    //    if (hasUploaded) {
-    //        localStorage.setItem("hasUploaded", JSON.stringify(hasUploaded));
-    //    }
-    //}, [hasUploaded]);
-    const handleRemoveFile = (index) => {
-        setRemove((prevFiles) => prevFiles.filter((_, i) => i !== index));
-        setSelectedFiles((prevFilenames) =>
-            prevFilenames.filter((_, i) => i !== index),
-        );
-    };
 
     const handleFileChange = (event) => {
-        const files = Array.from(event.target.files); // Get the selected files
-        setSelectedFiles(files); // Update the state with the selected files
+        const files = Array.from(event.target.files);
+        setSelectedFiles(files);
         setResume(event.target.files[0]);
     };
 
     const handleUpload = async () => {
-    if (selectedFiles.length === 0) {
-        setErrorMessage("Please choose at least one file before submitting.");
-        if (!isChecked) {
-            setErrorMessage("You must agree to the Terms and Conditions before submitting.");
+        if (selectedFiles.length === 0) {
+            setErrorMessage(
+                "Please choose at least one file before submitting.",
+            );
+            setTimeout(() => setErrorMessage(""), 4000);
             return;
         }
-        setTimeout(() => setErrorMessage(""), 4000);
-        return;
-    }
+        if (!isChecked) {
+            setErrorMessage(
+                "You must agree to the Terms and Conditions before submitting.",
+            );
+            setTimeout(() => setErrorMessage(""), 4000);
+            return;
+        }
 
-    setSelectedFiles([]); // Clear the state
-    if (fileInputRef.current) {
-        fileInputRef.current.value = ""; // Reset the input field itself
-    }
-    
-    setErrorMessage("");
-    setLoading(true);
-    const formData = new FormData();
-    selectedFiles.forEach((file) => formData.append("files", file));
-    formData.append("position_id", selectedPosition.position_id);
-
-
-    try {
-        const uploadResponse = await axios.post(
-            "http://api.gammacareservices.com:8080/upload",  // Update this URL
-            formData,
-            {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-
-        //     setTimeout(() => setErrorMessage(""), 4000);
-        //    return;
-        // }
-        setErrorMessage("");
         setLoading(true);
         const formData = new FormData();
         selectedFiles.forEach((file) => formData.append("files", file));
@@ -181,60 +165,17 @@ const ApplicantPortal = () => {
 
         try {
             const uploadResponse = await axios.post(
-                `${import.meta.env.VITE_API_BASE_URL}/upload`,
+                "http://api.gammacareservices.com:5000/upload",
                 formData,
                 {
                     headers: {
                         "Content-Type": "multipart/form-data",
                     },
-
                 },
-            },
-        );
+            );
 
-
-        const rankResponse = await axios.post(
-            "http://api.gammacareservices.com:8080/rank",  // Update this URL
-            {
-                position_id: selectedPosition.position_id,
-                resumes: uploadResponse.data.resume_texts,
-                filenames: uploadResponse.data.filenames,
-                question1: questions.question1,
-                question2: questions.question2,
-                question3: questions.question3,
-                question4: questions.question4,
-                question5: questions.question5,
-                question6: questions.question6,
-                question7: questions.question7,
-                question8: questions.question8,
-                question9: questions.question9,
-                question10: questions.question10,
-                mobileNumber: contactInfo.mobileNumber,
-            },
-        );
-
-        console.log("Ranked resumes:", rankResponse.data.ranked_resumes);
-
-        setShowSuccessPopup("You successfully submitted your resume!");
-
-        setTimeout(() => {
-            setShowSuccessPopup("");
-        }, 4000);
-
-        await axios.post(
-            "http://api.gammacareservices.com:8080/update-upload-status",  // Update this URL
-            {
-                google_id: userData?.sub,
-                google_name: userData?.name,
-                google_email: userData?.email,
-                has_uploaded: true,
-            },
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin": "*",
-                    const rankResponse = await axios.post(
-                `${import.meta.env.VITE_API_BASE_URL}/rank`,
+            const rankResponse = await axios.post(
+                "http://api.gammacareservices.com:5000/rank",
                 {
                     position_id: selectedPosition.position_id,
                     resumes: uploadResponse.data.resume_texts,
@@ -250,116 +191,50 @@ const ApplicantPortal = () => {
                     question9: questions.question9,
                     question10: questions.question10,
                     mobileNumber: contactInfo.mobileNumber,
->>>>>>> a7872f1d0c361d24a0cd9a520bcc76bb561f3580
-                },
-            },
-        );
-        
-    } catch (error) {
-        console.error("Error uploading or ranking files:", error);
-        setErrorMessage("Failed to submit your resume!");
-        setTimeout(() => {
-            setErrorMessage("");
-        }, 2000);
-    } finally {
-        setLoading(false);
-    }
-};
-
-            console.log("Ranked resumes:", rankResponse.data.ranked_resumes);
-
-            // Set `hasUploaded` to true immediately after successful upload
-            //setHasUploaded(true); // Set the state to true after upload
-
-            setShowSuccessPopup("You successfully submitted your resume!");
-
-            setTimeout(() => {
-                setShowSuccessPopup("");
-                //setIsTakeTestModalOpen(true);
-            }, 4000);
-
-            await axios.post(
-                `${import.meta.env.VITE_API_BASE_URL}/update-upload-status`,
-                {
-                    google_id: userData?.sub, // Make sure `userData?.sub` contains the correct ID
-                    google_name: userData?.name, // Ensure this field is correct
-                    google_email: userData?.email, // Ensure this field is correct
-                    has_uploaded: true,
-                },
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Access-Control-Allow-Origin": "*",
-                    },
                 },
             );
-            //setHasUploaded((prevState) => ({
-            //   ...prevState,
-            //   [selectedPosition.position_id]: true,
-            // }));
+
+            setShowSuccessPopup("You successfully submitted your resume!");
+            setTimeout(() => setShowSuccessPopup(""), 4000);
         } catch (error) {
             console.error("Error uploading or ranking files:", error);
             setErrorMessage("Failed to submit your resume!");
-            // setHasUploaded(false); // Set the state to true after upload
-            setTimeout(() => {
-                setErrorMessage("");
-            }, 2000);
+            setTimeout(() => setErrorMessage(""), 2000);
         } finally {
             setLoading(false);
         }
     };
 
-    const checkUploadStatus = async (userId) => {
-        try {
-            const response = await axiosClient.get(
-                `/check-upload-status/${userId}`,
-            );
-            //setHasUploaded(response.data.has_uploaded); // Ensure the backend returns the correct field
-        } catch (error) {
-            console.error("Error checking upload status:", error);
-        }
-    };
     const handleLoginSuccess = (response) => {
         const token = response.credential;
-        console.log("Login Success:", token);
-
         const decodedData = jwtDecode(token);
-        console.log("Decoded Data:", decodedData);
-
-        // Store Google token and user data in localStorage
         localStorage.setItem("googleToken", token);
         localStorage.setItem("googleUserData", JSON.stringify(decodedData));
 
         setLoggedIn(true);
         setUserData(decodedData);
     };
+
     const handleCheckboxChange = () => {
         setIsChecked(!isChecked);
     };
+
     const handleLogout = () => {
-        // Remove Google token and user data from localStorage
         localStorage.removeItem("googleToken");
         localStorage.removeItem("googleUserData");
-
         setLoggedIn(false);
         setUserData(null);
     };
 
     useEffect(() => {
-        // Check if there's a stored token in localStorage
         const storedToken = localStorage.getItem("googleToken");
         const storedUserData = localStorage.getItem("googleUserData");
 
         if (storedToken && storedUserData) {
-            // Set user as logged in based on stored session
             setLoggedIn(true);
             setUserData(JSON.parse(storedUserData));
         }
     }, []);
-
-    const handleLoginError = (error) => {
-        console.error("Google login failed", error);
-    };
 
     const openModal = async (position) => {
         setSelectedPosition(position);
@@ -368,18 +243,9 @@ const ApplicantPortal = () => {
         setIsModalOpen(true);
     };
 
-    const openViewAllModal = (position) => {
-        setSelectedPosition(position);
-        setIsViewAllModalOpen(true);
-    };
-
-    const closeViewAllModal = () => {
-        setIsViewAllModalOpen(false);
-    };
-
     const fetchPositions = async () => {
         try {
-            const response = await axiosClient.get("/open-positions");
+            const response = await axios.get("/open-positions");
             setPositions(response.data);
         } catch (error) {
             console.error("Error fetching positions:", error);
@@ -388,7 +254,7 @@ const ApplicantPortal = () => {
 
     const fetchHrTags = async (positionId) => {
         try {
-            const response = await axiosClient.get(`/hr-tags/${positionId}`);
+            const response = await axios.get(`/hr-tags/${positionId}`);
             return response.data.hr_tags;
         } catch (error) {
             console.error("Error fetching HR tags:", error);
@@ -401,31 +267,6 @@ const ApplicantPortal = () => {
             fetchPositions();
         }
     }, [loggedIn]);
-
-    useEffect(() => {
-        const script = document.createElement("script");
-        script.src = "https://apis.google.com/js/platform.js";
-        script.async = true;
-        document.body.appendChild(script);
-
-        script.onload = () => {
-            window.gapi.load("auth2", () => {
-                window.gapi.auth2.init({
-                    client_id:
-                        "912434838916-ps2f2pjs1q5k31lkbecjvd8sc4gi93ss.apps.googleusercontent.com",
-                });
-            });
-        };
-    }, []);
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setContactInfo({ ...contactInfo, [name]: value });
-    };
-    const [errors, setErrors] = useState({
-        email: "",
-        mobileNumber: "",
-    });
 
     //Position Container
     const PositionsList = ({ positions, openModal, openViewAllModal }) => {
