@@ -24,6 +24,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@127.0.0.1:3306/ga
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+os.environ["OPENBLAS_NUM_THREADS"] = "2"
+os.environ["OMP_NUM_THREADS"] = "2"
+os.environ["MKL_NUM_THREADS"] = "2"
+os.environ["NUMEXPR_NUM_THREADS"] = "2"
 load_dotenv('pythonEnvironment/.env')
 
 # Retrieve and set the OpenAI API key
@@ -332,4 +336,4 @@ def save_ranking(filename, percentage, position_id, name, email, matched_words, 
     
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
