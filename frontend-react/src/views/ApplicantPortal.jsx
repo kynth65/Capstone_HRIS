@@ -140,75 +140,92 @@ const ApplicantPortal = () => {
     };
 
     const handleUpload = async () => {
-        if (selectedFiles.length === 0) {
-            setErrorMessage(
-                "Please choose at least one file before submitting.",
-            );
-            if (!isChecked) {
-                setErrorMessage(
-                    "You must agree to the Terms and Conditions before submitting.",
-                );
-                return;
-            }
-            setTimeout(() => setErrorMessage(""), 4000);
+    if (selectedFiles.length === 0) {
+        setErrorMessage("Please choose at least one file before submitting.");
+        if (!isChecked) {
+            setErrorMessage("You must agree to the Terms and Conditions before submitting.");
             return;
         }
-        setSelectedFiles([]); // Clear the state
-        if (fileInputRef.current) {
-            fileInputRef.current.value = ""; // Reset the input field itself
-        }
-        //  if (hasUploaded) {
-        //    setErrorMessage(
-        //       "You have already submitted your resume. You can only upload once.",
-        //   );
+        setTimeout(() => setErrorMessage(""), 4000);
+        return;
+    }
 
-        //    setTimeout(() => setErrorMessage(""), 4000);
-        //    return;
-        // }
-        //if (hasUploaded[selectedPosition.position_id]) {
-        //   setErrorMessage(
-        //       "You have already submitted your resume. You can only upload once.",
-        //   );
+    setSelectedFiles([]); // Clear the state
+    if (fileInputRef.current) {
+        fileInputRef.current.value = ""; // Reset the input field itself
+    }
+    
+    setErrorMessage("");
+    setLoading(true);
+    const formData = new FormData();
+    selectedFiles.forEach((file) => formData.append("files", file));
+    formData.append("position_id", selectedPosition.position_id);
 
-        //     setTimeout(() => setErrorMessage(""), 4000);
-        //    return;
-        // }
-        setErrorMessage("");
-        setLoading(true);
-        const formData = new FormData();
-        selectedFiles.forEach((file) => formData.append("files", file));
-        formData.append("position_id", selectedPosition.position_id);
-
-        try {
-            const uploadResponse = await axios.post(
-                "http://127.0.0.1:5000/upload",
-                formData,
-                {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                    },
+    try {
+        const uploadResponse = await axios.post(
+            "http://api.gammacareservices.com:8080/upload",  // Update this URL
+            formData,
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",
                 },
-            );
+            },
+        );
 
-            const rankResponse = await axios.post(
-                "http://127.0.0.1:5000/rank",
-                {
-                    position_id: selectedPosition.position_id,
-                    resumes: uploadResponse.data.resume_texts,
-                    filenames: uploadResponse.data.filenames,
-                    question1: questions.question1,
-                    question2: questions.question2,
-                    question3: questions.question3,
-                    question4: questions.question4,
-                    question5: questions.question5,
-                    question6: questions.question6,
-                    question7: questions.question7,
-                    question8: questions.question8,
-                    question9: questions.question9,
-                    question10: questions.question10,
-                    mobileNumber: contactInfo.mobileNumber,
+        const rankResponse = await axios.post(
+            "http://api.gammacareservices.com:8080/rank",  // Update this URL
+            {
+                position_id: selectedPosition.position_id,
+                resumes: uploadResponse.data.resume_texts,
+                filenames: uploadResponse.data.filenames,
+                question1: questions.question1,
+                question2: questions.question2,
+                question3: questions.question3,
+                question4: questions.question4,
+                question5: questions.question5,
+                question6: questions.question6,
+                question7: questions.question7,
+                question8: questions.question8,
+                question9: questions.question9,
+                question10: questions.question10,
+                mobileNumber: contactInfo.mobileNumber,
+            },
+        );
+
+        console.log("Ranked resumes:", rankResponse.data.ranked_resumes);
+
+        setShowSuccessPopup("You successfully submitted your resume!");
+
+        setTimeout(() => {
+            setShowSuccessPopup("");
+        }, 4000);
+
+        await axios.post(
+            "http://api.gammacareservices.com:8080/update-upload-status",  // Update this URL
+            {
+                google_id: userData?.sub,
+                google_name: userData?.name,
+                google_email: userData?.email,
+                has_uploaded: true,
+            },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*",
                 },
-            );
+            },
+        );
+        
+    } catch (error) {
+        console.error("Error uploading or ranking files:", error);
+        setErrorMessage("Failed to submit your resume!");
+        setTimeout(() => {
+            setErrorMessage("");
+        }, 2000);
+    } finally {
+        setLoading(false);
+    }
+};
 
             console.log("Ranked resumes:", rankResponse.data.ranked_resumes);
 
@@ -769,7 +786,7 @@ const ApplicantPortal = () => {
                                             <AccountingQuestions
                                                 questions={questions}
                                                 setQuestions={setQuestions}
-                                                errors={errors}
+                                                // errors={errors}
                                             />
                                         )}
                                     {selectedPosition &&
