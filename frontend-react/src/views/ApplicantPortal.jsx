@@ -147,25 +147,31 @@ const ApplicantPortal = () => {
             setErrorMessage(
                 "Please choose at least one file before submitting.",
             );
-            setTimeout(() => setErrorMessage(""), 4000);
-            return;
-        }
-        if (!isChecked) {
-            setErrorMessage(
-                "You must agree to the Terms and Conditions before submitting.",
-            );
+            if (!isChecked) {
+                setErrorMessage(
+                    "You must agree to the Terms and Conditions before submitting.",
+                );
+                return;
+            }
             setTimeout(() => setErrorMessage(""), 4000);
             return;
         }
 
+        // Clear previous files and error messages
+        setSelectedFiles([]);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+        setErrorMessage("");
         setLoading(true);
+
         const formData = new FormData();
         selectedFiles.forEach((file) => formData.append("files", file));
         formData.append("position_id", selectedPosition.position_id);
 
         try {
             const uploadResponse = await axios.post(
-                "http://api.gammacareservices.com:5000/upload",
+                `${import.meta.env.VITE_API_BASE_URL}/upload`,
                 formData,
                 {
                     headers: {
@@ -174,8 +180,9 @@ const ApplicantPortal = () => {
                 },
             );
 
+            // Now call the rank endpoint with the responses from the upload
             const rankResponse = await axios.post(
-                "http://api.gammacareservices.com:5000/rank",
+                `${import.meta.env.VITE_API_BASE_URL}/rank`,
                 {
                     position_id: selectedPosition.position_id,
                     resumes: uploadResponse.data.resume_texts,
@@ -194,12 +201,36 @@ const ApplicantPortal = () => {
                 },
             );
 
+            console.log("Ranked resumes:", rankResponse.data.ranked_resumes);
             setShowSuccessPopup("You successfully submitted your resume!");
-            setTimeout(() => setShowSuccessPopup(""), 4000);
+
+            // Clear success message after a timeout
+            setTimeout(() => {
+                setShowSuccessPopup("");
+            }, 4000);
+
+            // Update the upload status
+            await axios.post(
+                `${import.meta.env.VITE_API_BASE_URL}/update-upload-status`,
+                {
+                    google_id: userData?.sub,
+                    google_name: userData?.name,
+                    google_email: userData?.email,
+                    has_uploaded: true,
+                },
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Access-Control-Allow-Origin": "*",
+                    },
+                },
+            );
         } catch (error) {
             console.error("Error uploading or ranking files:", error);
             setErrorMessage("Failed to submit your resume!");
-            setTimeout(() => setErrorMessage(""), 2000);
+            setTimeout(() => {
+                setErrorMessage("");
+            }, 2000);
         } finally {
             setLoading(false);
         }
