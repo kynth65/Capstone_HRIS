@@ -146,7 +146,7 @@ def rank_resumes_with_openai(hr_tags, resumes):
             messages=[
                 {"role": "system", "content": "You are an assistant that matches resumes with job requirements."},
                 {"role": "user", "content": f"Job Requirements: {hr_tags_text}"},
-                {"role": "user", "content": f"Resume Content: {resume}. Compare the resume against the job requirements. List the matching keywords in a 'Matching Keywords' section, and provide an 'Explanation' for the match percentage separately."}
+                {"role": "user", "content": f"Resume Content: {resume}. Compare the resume against the job requirements. List the matching keywords in a 'Matching Keywords' section, and provide an 'Explanation' for the match percentage separately. also provide percentage and how many matched tags"}
             ]
         )
 
@@ -265,8 +265,9 @@ def rank():
 
     for idx, (resume_idx, percentage, matched_words, comments) in enumerate(ranked_resumes):
         filename = filenames[resume_idx]
-        name, email = extract_name_and_email_from_pdf(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        save_ranking(filename, percentage, position_id, name, email, matched_words, comments, mobileNumber, question_responses)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)  # Construct the file path
+        name, email = extract_name_and_email_from_pdf(file_path)  # Use the actual file path here
+        save_ranking(filename, file_path, percentage, position_id, name, email, matched_words, comments, mobileNumber, question_responses)
 
     return jsonify({'ranked_resumes': [
         {'filename': filenames[i], 'percentage': round(p, 2), 'matched_words': m, 'comments': c} 
@@ -287,22 +288,23 @@ def fetch_position_name(position_id):
     return result[0] if result else None
 
 # Function to save the resume ranking along with name, email, and position name to the database
-def save_ranking(filename, percentage, position_id, name, email, matched_words, comments, mobileNumber, questions):
+def save_ranking(filename, file_path, percentage, position_id, name, email, matched_words, comments, mobileNumber, questions):
     position_name = fetch_position_name(position_id)
     
     try:
         query = text("""
             INSERT INTO resume_rankings 
-            (filename, percentage, position_id, position_name, name, email, matched_words, comments, mobileNumber,
+            (filename, file_path, percentage, position_id, position_name, name, email, matched_words, comments, mobileNumber,
             question1_response, question2_response, question3_response, question4_response, question5_response, 
             question6_response, question7_response, question8_response, question9_response, question10_response)
             VALUES 
-            (:filename, :percentage, :position_id, :position_name, :name, :email, :matched_words, :comments, :mobileNumber,
+            (:filename, :file_path, :percentage, :position_id, :position_name, :name, :email, :matched_words, :comments, :mobileNumber,
             :question1_response, :question2_response, :question3_response, :question4_response, :question5_response, 
             :question6_response, :question7_response, :question8_response, :question9_response, :question10_response)
         """)
         db.session.execute(query, {
             'filename': filename,
+            'file_path': file_path, 
             'percentage': percentage,
             'position_id': position_id,
             'position_name': position_name,

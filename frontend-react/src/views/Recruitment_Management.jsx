@@ -71,9 +71,10 @@ function Recruitment_Management() {
         setDocumentContent(event.target.value);
     };
 
-    const handleOpenPdf = (pdfUrl) => {
-        if (pdfUrl) {
-            setPdfUrl(pdfUrl);
+    const handleOpenPdf = (filename) => {
+        const fileUrl = `http://127.0.0.1:5000/uploads/${encodeURIComponent(filename)}`;
+        if (fileUrl) {
+            setPdfUrl(fileUrl);
             setIsPdfModalOpen(true); // Open the PDF modal
         } else {
             alert("No PDF available for this file.");
@@ -137,14 +138,14 @@ function Recruitment_Management() {
                 console.error("Error fetching positions:", error);
             });
     }, []);
-
+    
     const handleUploadAndRank = async () => {
         setLoading(true);
         const formData = new FormData();
         for (let i = 0; i < files.length; i++) {
             formData.append("files", files[i]);
         }
-
+    
         try {
             const uploadResponse = await axios.post(
                 "http://127.0.0.1:5000/upload",
@@ -155,29 +156,31 @@ function Recruitment_Management() {
                     },
                 },
             );
-
-            const { resume_texts, filenames } = uploadResponse.data;
-
+    
+            const { resume_texts, filenames, file_urls } = uploadResponse.data;
+    
             const tagsArray = hr_tags
                 .split(",")
                 .map((tag) => tag.trim())
                 .join(" ");
-
+    
             console.log("Sending data to rank endpoint:", {
                 hr_tags: tagsArray,
                 resumes: resume_texts,
                 filenames: filenames,
+                file_urls: file_urls, // Add this line
             });
-
+    
             const rankResponse = await axios.post(
                 "http://127.0.0.1:5000/rank",
                 {
                     hr_tags: tagsArray,
                     resumes: resume_texts,
                     filenames: filenames,
+                    file_urls: file_urls, // Add this line to include file paths
                 },
             );
-
+    
             const rankedData = rankResponse.data.ranked_resumes.map(
                 (resume, index) => ({
                     number: index + 1,
@@ -185,7 +188,7 @@ function Recruitment_Management() {
                     percentage: (resume[1] * 100).toFixed(2),
                 }),
             );
-
+    
             setRankedResumes(rankedData);
             setLoading(false);
         } catch (error) {
@@ -193,6 +196,7 @@ function Recruitment_Management() {
             setLoading(false);
         }
     };
+    
     const handleViewApplicants = async (position) => {
         try {
             const response = await axiosClient.get(
@@ -586,8 +590,8 @@ function Recruitment_Management() {
                                             information about each applicant.
                                         </p>
 
-                                        <table className="min-h-32 w-full border-collapse text-center">
-                                            <thead>
+                                        <table className="min-h-32 w-full border-collapse text-center max-h-96">
+                                            <thead className="sticky top-[-24px] bg-gray-300">
                                                 <tr>
                                                     <th className="text-center px-4 py-2 border-b">
                                                         Rank

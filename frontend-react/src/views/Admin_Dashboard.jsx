@@ -28,7 +28,7 @@ const Dashboard = () => {
         present: 0,
         late: 0,
         leave: 0,
-        turnoverRate: [],
+        attendanceRecords: [],
         employmentStatus: [],
         notifications: [],
     });
@@ -127,23 +127,53 @@ const Dashboard = () => {
                 </div>
                 <div className="lg:grid lg:grid-cols-2">
                     <div className="mr-2">
-                        <div className="flex flex-col justify-center items-center w-auto xl:h-80 bg-white text-black rounded-lg mb-4">
+                    <div className="flex flex-col justify-center items-center w-auto xl:h-80 bg-white text-black rounded-lg mb-4 overflow-auto">
                             <h1 className="py-2 font-bold text-lg">
-                                Turn Over Rate
+                                Attendance Records
                             </h1>
-                            <BarChart
-                                width={400}
-                                height={250}
-                                data={data.turnoverRate}
-                            >
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="name" />
-                                <YAxis />
-                                <Tooltip />
-                                <Legend verticalAlign="bottom" align="center" />
-                                <Bar dataKey="Involuntary" fill="#8884d8" />
-                                <Bar dataKey="Voluntary" fill="#82ca9d" />
-                            </BarChart>
+                            <div className="employee-list-container w-full h-60">
+                                <table className="employee-table bg-white text-black rounded-xl overflow-hidden w-full">
+                                    <thead>
+                                        <tr>
+                                            <th>User ID</th>
+                                            <th>Name</th>
+                                            <th>Date</th>
+                                            <th>Time In</th>
+                                            <th>Time Out</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {data.attendanceRecords.length > 0 ? (
+                                            data.attendanceRecords.map(
+                                                (record) => (
+                                                    <tr key={record.id}>
+                                                        <td>
+                                                            {record.user_id}
+                                                        </td>
+                                                        <td>{record.name}</td>
+                                                        <td>{record.date}</td>
+                                                        <td>
+                                                            {record.time_in}
+                                                        </td>
+                                                        <td>
+                                                            {record.time_out}
+                                                        </td>
+                                                    </tr>
+                                                ),
+                                            )
+                                        ) : (
+                                            <tr>
+                                                <td
+                                                    colSpan="5"
+                                                    className="text-center"
+                                                >
+                                                    No attendance records found
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                         <div className="flex flex-col justify-center items-center w-auto xl:h-80 bg-white text-black rounded-lg mb-4 ">
                             <h1 className="py-2 font-bold text-lg">

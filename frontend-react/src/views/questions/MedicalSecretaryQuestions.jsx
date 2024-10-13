@@ -70,7 +70,7 @@ const MedicalSecretaryQuestions = ({ questions, setQuestions, errors }) => (
             How comfortable are you with patient interaction?*
             <div>
                 <select
-                    value={questions.patientInteraction}
+                    value={questions.questions3}
                     onChange={(e) =>
                         setQuestions({
                             ...questions,

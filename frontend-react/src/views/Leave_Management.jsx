@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axiosClient from "../axiosClient"; // Import axiosClient
+import axios from "axios";
 import "../styles/registration.css";
 import "../styles/global.css";
 import "../styles/LeaveRequest.css";

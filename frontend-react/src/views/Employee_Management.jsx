@@ -285,9 +285,9 @@ function EmployeeManagement() {
                 return (
                     <select {...commonProps}>
                         <option value="">Select RFID</option>
-                        <option value="RFID1">RFID1</option>
-                        <option value="RFID2">RFID2</option>
-                        <option value="RFID3">RFID3</option>
+                        <option value="EF4CAA1E">EF4CAA1E</option>
+                        <option value="A804A6889">A804A6889</option>
+                        <option value="B47B96B0">B47B96B0</option>
                         <option value="RFID4">RFID4</option>
                         <option value="RFID5">RFID5</option>
                         <option value="RFID6">RFID6</option>

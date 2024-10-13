@@ -927,40 +927,33 @@ const ApplicantPortal = () => {
                                                                 "Not answered"}
                                                         </strong>
                                                     </p>
+
                                                     <p>
-                                                        Comfortable working
-                                                        onsite:{" "}
+                                                        Willing to work
+                                                        Saturdays:{" "}
                                                         <strong>
                                                             {questions.question4 ||
                                                                 "Not answered"}
                                                         </strong>
                                                     </p>
                                                     <p>
-                                                        Willing to work
-                                                        Saturdays:{" "}
+                                                        Accountancy Graduate:{" "}
                                                         <strong>
                                                             {questions.question5 ||
                                                                 "Not answered"}
                                                         </strong>
                                                     </p>
                                                     <p>
-                                                        Accountancy Graduate:{" "}
+                                                        English Proficiency:{" "}
                                                         <strong>
                                                             {questions.question6 ||
                                                                 "Not answered"}
                                                         </strong>
                                                     </p>
                                                     <p>
-                                                        English Proficiency:{" "}
-                                                        <strong>
-                                                            {questions.question7 ||
-                                                                "Not answered"}
-                                                        </strong>
-                                                    </p>
-                                                    <p>
                                                         Accounting Experience:{" "}
                                                         <strong>
-                                                            {questions.question8 ||
+                                                            {questions.question7 ||
                                                                 "Not answered"}
                                                         </strong>
                                                     </p>
@@ -968,7 +961,7 @@ const ApplicantPortal = () => {
                                                         Experience with
                                                         Accounting Software:{" "}
                                                         <strong>
-                                                            {questions.question9 ||
+                                                            {questions.question8 ||
                                                                 "Not answered"}
                                                         </strong>
                                                     </p>
@@ -976,7 +969,7 @@ const ApplicantPortal = () => {
                                                         Experience with Business
                                                         Process:{" "}
                                                         <strong>
-                                                            {questions.question10 ||
+                                                            {questions.question9 ||
                                                                 "Not answered"}
                                                         </strong>
                                                     </p>

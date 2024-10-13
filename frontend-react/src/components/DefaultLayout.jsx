@@ -106,7 +106,7 @@ function DefaultLayout() {
                     GAMMACARE HRIS <br></br> {user.position}
                 </h1>
 
-                <div className="flex-col flex gap-4 w-64 px-6 h-screen font-kodchasan">
+                <div className="flex-col flex  gap-4 w-64 px-6 h-screen font-kodchasan">
                     <Link
                         to="/dashboard"
                         onClick={() => handleHeaderChange("Dashboard")}
@@ -221,7 +221,7 @@ function DefaultLayout() {
                 </main>
             </div>
             {showModal && (
-                <div className="modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                <div className="modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50" onClick={()=> setShowModal(false)}>
                     <div className="bg-white p-6 rounded shadow-md text-center text-black">
                         <h2 className="text-lg mb-4">Profile Options</h2>
                         <div className="flex  justify-between space-x-4 rounded-xl">
