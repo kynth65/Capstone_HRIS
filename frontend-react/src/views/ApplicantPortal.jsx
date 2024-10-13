@@ -161,6 +161,7 @@ const ApplicantPortal = () => {
     selectedFiles.forEach((file) => formData.append("files", file));
     formData.append("position_id", selectedPosition.position_id);
 
+
     try {
         const uploadResponse = await axios.post(
             "http://api.gammacareservices.com:8080/upload",  // Update this URL
@@ -168,9 +169,29 @@ const ApplicantPortal = () => {
             {
                 headers: {
                     "Content-Type": "multipart/form-data",
+
+        //     setTimeout(() => setErrorMessage(""), 4000);
+        //    return;
+        // }
+        setErrorMessage("");
+        setLoading(true);
+        const formData = new FormData();
+        selectedFiles.forEach((file) => formData.append("files", file));
+        formData.append("position_id", selectedPosition.position_id);
+
+        try {
+            const uploadResponse = await axios.post(
+                `${import.meta.env.VITE_API_BASE_URL}/upload`,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+
                 },
             },
         );
+
 
         const rankResponse = await axios.post(
             "http://api.gammacareservices.com:8080/rank",  // Update this URL
@@ -212,6 +233,24 @@ const ApplicantPortal = () => {
                 headers: {
                     "Content-Type": "application/json",
                     "Access-Control-Allow-Origin": "*",
+                    const rankResponse = await axios.post(
+                `${import.meta.env.VITE_API_BASE_URL}/rank`,
+                {
+                    position_id: selectedPosition.position_id,
+                    resumes: uploadResponse.data.resume_texts,
+                    filenames: uploadResponse.data.filenames,
+                    question1: questions.question1,
+                    question2: questions.question2,
+                    question3: questions.question3,
+                    question4: questions.question4,
+                    question5: questions.question5,
+                    question6: questions.question6,
+                    question7: questions.question7,
+                    question8: questions.question8,
+                    question9: questions.question9,
+                    question10: questions.question10,
+                    mobileNumber: contactInfo.mobileNumber,
+>>>>>>> a7872f1d0c361d24a0cd9a520bcc76bb561f3580
                 },
             },
         );
@@ -240,7 +279,7 @@ const ApplicantPortal = () => {
             }, 4000);
 
             await axios.post(
-                "http://127.0.0.1:5000/update-upload-status",
+                `${import.meta.env.VITE_API_BASE_URL}/update-upload-status`,
                 {
                     google_id: userData?.sub, // Make sure `userData?.sub` contains the correct ID
                     google_name: userData?.name, // Ensure this field is correct
