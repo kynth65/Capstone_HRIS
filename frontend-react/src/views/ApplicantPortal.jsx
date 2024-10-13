@@ -181,7 +181,7 @@ const ApplicantPortal = () => {
 
         try {
             const uploadResponse = await axios.post(
-                "http://127.0.0.1:5000/upload",
+                `${import.meta.env.VITE_API_BASE_URL}/upload`,
                 formData,
                 {
                     headers: {
@@ -191,7 +191,7 @@ const ApplicantPortal = () => {
             );
 
             const rankResponse = await axios.post(
-                "http://127.0.0.1:5000/rank",
+                `${import.meta.env.VITE_API_BASE_URL}/rank`,
                 {
                     position_id: selectedPosition.position_id,
                     resumes: uploadResponse.data.resume_texts,
@@ -223,7 +223,7 @@ const ApplicantPortal = () => {
             }, 4000);
 
             await axios.post(
-                "http://127.0.0.1:5000/update-upload-status",
+                `${import.meta.env.VITE_API_BASE_URL}/update-upload-status`,
                 {
                     google_id: userData?.sub, // Make sure `userData?.sub` contains the correct ID
                     google_name: userData?.name, // Ensure this field is correct
