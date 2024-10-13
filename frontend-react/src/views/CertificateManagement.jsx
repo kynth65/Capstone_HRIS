@@ -716,7 +716,7 @@ function CertificateManagement() {
 
                         {/* Button to open certificate update request modal */}
                         <button
-                            className="px-3 lg:py-[10px] bg-blue-500 text-white h-fit rounded text-sm font-normal hover:bg-blue-600 "
+                            className="px-3 lg:py-[10px] bg-green-700 text-white h-fit rounded text-sm font-normal hover:bg-green-900"
                             onClick={handleOpenUpdateRequestModal}
                         >
                             View Certificate Update Requests
