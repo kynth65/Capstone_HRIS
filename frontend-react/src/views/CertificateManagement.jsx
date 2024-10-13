@@ -88,6 +88,7 @@ function CertificateManagement() {
                 console.error("Error fetching employees:", error);
             });
     }, []);
+
     useEffect(() => {
         if (activeButton === "employeeCertificate") {
             fetchAllCertificates();
