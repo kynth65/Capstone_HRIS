@@ -8,6 +8,7 @@ const HR_Leave_Management = () => {
     const { user } = useStateContext();
     const [activeButton, setActiveButton] = useState("leaveFormList");
     const [leaveRequests, setLeaveRequests] = useState([]);
+    const [loading, setLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const [documentType, setDocumentType] = useState("leaveLetter");
@@ -99,11 +100,14 @@ const HR_Leave_Management = () => {
             setErrorMessage(
                 "Failed to generate document. Please try again later.",
             );
+        } finally {
+            setLoading(false);
         }
     };
 
     const handleGenerate = () => {
         if (documentType && reason) {
+            setLoading(true);
             generateDocumentContent();
         } else {
             alert("Please select a document type and provide a reason.");
