@@ -5,7 +5,6 @@ import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import Modal from "react-modal";
 import "../styles/applicantPortal.css";
 import "../styles/openPosition.css";
-import jwtDecode from "jwt-decode";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import countryCodes from "../hooks/useCountryCodes";
 import AccountingQuestions from "../views/questions/AccountingQuestions";
