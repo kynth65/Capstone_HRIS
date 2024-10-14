@@ -180,10 +180,20 @@ function Leave_Management() {
         }
     };
 
-    const handleGenerate = () => {
+    const handleGenerate = async () => {
         if (documentType && reason) {
             setLoading(true);
-            generateDocumentContent();
+            setError(null);
+            setDocumentContent(""); // Clear previous content
+
+            try {
+                await generateDocumentContent();
+            } catch (error) {
+                console.error("Error in handleGenerate:", error);
+                setError("An error occurred while generating the document.");
+            } finally {
+                setLoading(false); // Ensures loading is turned off after try/catch
+            }
         } else {
             alert("Please select a document type and provide a reason.");
         }
