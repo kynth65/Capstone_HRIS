@@ -129,37 +129,15 @@ function Leave_Management() {
     // for Document Generator
     const generateDocumentContent = async () => {
         try {
-            const apiKey = import.meta.env.VITE_APP_OPENAI_API_KEY;
-            const baseUrl = import.meta.env.VITE_OPENAI_BASE_URL;
+            const response = await axiosClient.post("/generate-document", {
+                documentType,
+                reason,
+            });
 
-            const response = await axiosClient.post(
-                `${baseUrl}/v1/chat/completions`,
-                {
-                    model: "gpt-4",
-                    messages: [
-                        {
-                            role: "system",
-                            content:
-                                "You are a helpful assistant that generates formal documents.",
-                        },
-                        {
-                            role: "user",
-                            content: `Create a ${documentType} for the following reason: ${reason}`,
-                        },
-                    ],
-                    max_tokens: 500,
-                    temperature: 0.7,
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${apiKey}`,
-                        "Content-Type": "application/json",
-                    },
-                },
-            );
-
+            // Debug: Log the entire response to understand the structure
             console.log("Document generation response:", response.data);
 
+            // Check if the response data has the expected structure
             if (
                 response.data.choices &&
                 response.data.choices[0] &&
@@ -180,20 +158,10 @@ function Leave_Management() {
         }
     };
 
-    const handleGenerate = async () => {
+    const handleGenerate = () => {
         if (documentType && reason) {
             setLoading(true);
-            setError(null);
-            setDocumentContent(""); // Clear previous content
-
-            try {
-                await generateDocumentContent();
-            } catch (error) {
-                console.error("Error in handleGenerate:", error);
-                setError("An error occurred while generating the document.");
-            } finally {
-                setLoading(false); // Ensures loading is turned off after try/catch
-            }
+            generateDocumentContent();
         } else {
             alert("Please select a document type and provide a reason.");
         }
