@@ -15,6 +15,7 @@ import openai  # For AI question generation
 from dotenv import load_dotenv
 import os
 
+
 # Download WordNet data
 
 # Setup Flask app and logging
@@ -42,6 +43,10 @@ def get_db_connection():
         cursorclass=pymysql.cursors.DictCursor
     )
     return connection
+
+@app.route('/')
+def home():
+    return "Hello, World!"
 
 @app.route('/update-upload-status', methods=['POST'])
 def update_upload_status():
@@ -336,4 +341,4 @@ def save_ranking(filename, percentage, position_id, name, email, matched_words, 
     
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run()

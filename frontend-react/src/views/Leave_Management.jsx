@@ -12,6 +12,7 @@ import { jsPDF } from "jspdf";
 function Leave_Management() {
     const [activeButton, setActiveButton] = useState("documentGenerator");
     const refresh = useRefreshToken();
+    const [loading, setLoading] = useState(false);
     const [documentType, setDocumentType] = useState("leaveLetter");
     const [documentContent, setDocumentContent] = useState("");
     const [formData, setFormData] = useState({
@@ -159,6 +160,7 @@ function Leave_Management() {
 
     const handleGenerate = () => {
         if (documentType && reason) {
+            setLoading(true);
             generateDocumentContent();
         } else {
             alert("Please select a document type and provide a reason.");
