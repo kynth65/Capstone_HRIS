@@ -26,7 +26,7 @@ use App\Http\Controllers\Api\EmployeeNotificationController;
 use App\Http\Controllers\TrackingAttendanceController;
 use App\Http\Controllers\EmployeeAttendanceController;
 use App\Http\Controllers\IncidentController;
-use App\Http\Controllers\callOpenAi; //Controller for OpenAi
+use App\Http\Controllers\callOpenAi;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
@@ -154,5 +154,18 @@ Route::prefix('incidents')->group(function () {
 //Post OpenAi
 Route::post('/generate-document', [callOpenAi::class, 'generateDocument']);
 
+Route::post('/applicants/rank-resumes', [ApplicantController::class, 'rankResumes']);
+
+Route::prefix('applicants')->group(function () {
+    Route::get('/', [ApplicantController::class, 'index']);
+    Route::get('/{id}', [ApplicantController::class, 'show']);
+    Route::post('/upload', [ApplicantController::class, 'store']);
+    Route::put('/{id}', [ApplicantController::class, 'update']);
+    Route::delete('/{id}', [ApplicantController::class, 'destroy']);
+
+    // Routes for upload status
+    Route::get('/check-upload-status/{google_id}', [ApplicantController::class, 'checkUploadStatus']);
+    Route::post('/update-upload-status', [ApplicantController::class, 'updateUploadStatus']);
+});
 
 //->middleware('auth:sanctum');

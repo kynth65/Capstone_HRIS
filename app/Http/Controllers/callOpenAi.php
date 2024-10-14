@@ -47,4 +47,50 @@ class callOpenAi extends Controller
             return response()->json(['error' => 'An error occurred while generating the document. Please try again later.'], 500);
         }
     }
+    public function rankResumes(Request $request)
+    {
+        try {
+            $apiKey = env('OPENAI_API_KEY');
+            $hrTags = $request->input('hrTags');
+            $resumes = $request->input('resumes');
+
+            $rankedResumes = [];
+            foreach ($resumes as $resume) {
+                $response = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . $apiKey,
+                    'Content-Type' => 'application/json',
+                ])->post('https://api.openai.com/v1/chat/completions', [
+                    'model' => 'gpt-4',
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => 'You are an assistant that matches resumes with job requirements.'
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => "Job Requirements: {$hrTags}"
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => "Resume Content: {$resume}"
+                        ]
+                    ],
+                    'max_tokens' => 500,
+                    'temperature' => 0.7
+                ]);
+
+                if ($response->failed()) {
+                    Log::error('OpenAI API request failed for resume ranking', ['response' => $response->body()]);
+                    continue;
+                }
+
+                $rankedResumes[] = $response->json();
+            }
+
+            return response()->json(['ranked_resumes' => $rankedResumes]);
+        } catch (\Exception $e) {
+            Log::error('Error ranking resumes: ' . $e->getMessage());
+            return response()->json(['error' => 'An error occurred while ranking the resumes. Please try again later.'], 500);
+        }
+    }
 }

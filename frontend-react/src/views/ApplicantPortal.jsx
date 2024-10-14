@@ -1,28 +1,29 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import Modal from "react-modal";
-import "../styles/applicantPortal.css";
-import "../styles/openPosition.css";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import countryCodes from "../hooks/useCountryCodes";
-import AccountingQuestions from "../views/questions/AccountingQuestions";
-import MaintenanceQuestions from "../views/questions/MaintenanceQuestions";
-import RMTQuestions from "../views/questions/RMTQuestions";
-import RiderQuestions from "../views/questions/RiderQuestions";
-import XrayTechQuestions from "../views/questions/XrayTechQuestions";
-import SecurityQuestions from "../views/questions/SecurityQuestions";
-import AnatomicalQuestions from "../views/questions/AnatomicalQuestions";
-import MedicalSecretaryQuestions from "../views/questions/MedicalSecretaryQuestions";
 import Terms from "../views/Terms";
 import Conditions from "../views/Conditions";
+import { PDFDocument } from "pdf-lib";
 import {
     validateEmail,
     validatePhoneNumber,
     validateFileUpload,
     validateAdditionalQuestions,
 } from "../hooks/useValidationUtil";
+import axiosClient from "../axiosClient";
+import MedicalSecretaryQuestions from "../views/questions/MedicalSecretaryQuestions";
+import AccountingQuestions from "../views/questions/AccountingQuestions";
+import AnatomicalQuestions from "../views/questions/AnatomicalQuestions";
+import MaintenanceQuestions from "../views/questions/MaintenanceQuestions";
+import RiderQuestions from "../views/questions/RiderQuestions";
+import RMTQuestions from "../views/questions/RMTQuestions";
+import SecurityQuestions from "../views/questions/SecurityQuestions";
+
 Modal.setAppElement("#root");
 
 const ApplicantPortal = () => {
@@ -32,7 +33,6 @@ const ApplicantPortal = () => {
     const [loading, setLoading] = useState(false);
     const [loggedIn, setLoggedIn] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isViewAllModalOpen, setIsViewAllModalOpen] = useState(false);
     const [selectedPosition, setSelectedPosition] = useState(null);
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
@@ -71,7 +71,11 @@ const ApplicantPortal = () => {
     const closeTermsModal = () => setIsTermsOpen(false);
     const openConditionsModal = () => setIsConditionsOpen(true);
     const closeConditionsModal = () => setIsConditionsOpen(false);
+    const [isViewAllModalOpen, setIsViewAllModalOpen] = useState(false);
 
+    const closeViewAllModal = () => {
+        setIsViewAllModalOpen(false);
+    };
     const closeModal = () => {
         setIsModalOpen(false);
         setSelectedFiles([]);
@@ -141,96 +145,99 @@ const ApplicantPortal = () => {
         setResume(event.target.files[0]);
     };
 
+    // Function to extract text from PDF (basic example)
+    const extractTextFromPdf = async (file) => {
+        const pdfDoc = await PDFDocument.load(await file.arrayBuffer());
+        const pages = pdfDoc.getPages();
+        let text = "";
+        for (const page of pages) {
+            text += page.getTextContent();
+        }
+        return text;
+    };
+
+    // Function to extract email and name using regex
+    const extractNameAndEmail = (text) => {
+        const emailPattern = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+        const namePattern = /([A-Z][a-z]+ [A-Z][a-z]+)/; // Simplified name pattern
+
+        const emailMatch = text.match(emailPattern);
+        const nameMatch = text.match(namePattern);
+
+        const email = emailMatch ? emailMatch[0] : null;
+        const name = nameMatch ? nameMatch[0] : null;
+
+        return { name, email };
+    };
+
     const handleUpload = async () => {
-        if (selectedFiles.length === 0) {
+        if (selectedFiles.length === 0 || !isChecked) {
             setErrorMessage(
-                "Please choose at least one file before submitting.",
+                "Please select a file and agree to the terms before submitting.",
             );
-            if (!isChecked) {
-                setErrorMessage(
-                    "You must agree to the Terms and Conditions before submitting.",
-                );
-                return;
-            }
-            setTimeout(() => setErrorMessage(""), 4000);
             return;
         }
 
-        // Clear previous files and error messages
         setSelectedFiles([]);
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-        }
+        if (fileInputRef.current) fileInputRef.current.value = "";
         setErrorMessage("");
         setLoading(true);
 
         const formData = new FormData();
-        selectedFiles.forEach((file) => formData.append("files", file));
+        const file = selectedFiles[0]; // Assuming single file upload
+        formData.append("files", file);
         formData.append("position_id", selectedPosition.position_id);
 
         try {
-            const uploadResponse = await axios.post(
-                "https://api.gammacareservices.com:5000/upload",
+            // Extract text, name, and email from PDF
+            const text = await extractTextFromPdf(file);
+            const { name, email } = extractNameAndEmail(text);
+            formData.append("name", name);
+            formData.append("email", email);
+
+            // Send file and additional data to the server
+            const uploadResponse = await axiosClient.post(
+                "/applicants/upload",
                 formData,
                 {
                     headers: {
                         "Content-Type": "multipart/form-data",
                     },
-                    timeout: 15000,
                 },
             );
 
-            // Now call the rank endpoint with the responses from the upload
-            const rankResponse = await axios.post(
-                "https://api.gammacareservices.com:5000/rank",
-                {
-                    position_id: selectedPosition.position_id,
-                    resumes: uploadResponse.data.resume_texts,
-                    filenames: uploadResponse.data.filenames,
-                    question1: questions.question1,
-                    question2: questions.question2,
-                    question3: questions.question3,
-                    question4: questions.question4,
-                    question5: questions.question5,
-                    question6: questions.question6,
-                    question7: questions.question7,
-                    question8: questions.question8,
-                    question9: questions.question9,
-                    question10: questions.question10,
-                    mobileNumber: contactInfo.mobileNumber,
-                },
-            );
+            // Call the ranking function
+            const rankResponse = await axiosClient.post("/rank-resumes", {
+                hrTags: hrTags,
+                resumes: uploadResponse.data.resume_texts,
+                filenames: uploadResponse.data.filenames,
+                mobileNumber: contactInfo.mobileNumber,
+                question1: questions.question1,
+                question2: questions.question2,
+                question3: questions.question3,
+                question4: questions.question4,
+                question5: questions.question5,
+                question6: questions.question6,
+                question7: questions.question7,
+                question8: questions.question8,
+                question9: questions.question9,
+                question10: questions.question10,
+            });
 
-            console.log("Ranked resumes:", rankResponse.data.ranked_resumes);
             setShowSuccessPopup("You successfully submitted your resume!");
+            setTimeout(() => setShowSuccessPopup(""), 4000);
 
-            // Clear success message after a timeout
-            setTimeout(() => {
-                setShowSuccessPopup("");
-            }, 4000);
-
-            // Update the upload status
-            await axios.post(
-                "https://api.gammacareservices.com:5000/update-upload-status",
-                {
-                    google_id: userData?.sub,
-                    google_name: userData?.name,
-                    google_email: userData?.email,
-                    has_uploaded: true,
-                },
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Access-Control-Allow-Origin": "*",
-                    },
-                },
-            );
+            // Update upload status on the server
+            await axiosClient.post("/applicants/update-upload-status", {
+                google_id: userData?.sub,
+                google_name: userData?.name,
+                google_email: userData?.email,
+                has_uploaded: true,
+            });
         } catch (error) {
-            console.error("Error uploading or ranking files:", error);
+            console.error("Error:", error);
             setErrorMessage("Failed to submit your resume!");
-            setTimeout(() => {
-                setErrorMessage("");
-            }, 2000);
+            setTimeout(() => setErrorMessage(""), 2000);
         } finally {
             setLoading(false);
         }
@@ -269,27 +276,22 @@ const ApplicantPortal = () => {
 
     const openModal = async (position) => {
         setSelectedPosition(position);
-        const tags = await fetchHrTags(position.position_id);
-        setHrTags(tags);
         setIsModalOpen(true);
+    };
+    const openViewAllModal = (position) => {
+        setSelectedPosition(position);
+        setIsViewAllModalOpen(true);
     };
 
     const fetchPositions = async () => {
         try {
-            const response = await axios.get("/open-positions");
-            setPositions(response.data);
+            const response = await axiosClient.get("/open-positions");
+            const data = response.data;
+            // Check if data is an array; if not, default to an empty array
+            setPositions(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error("Error fetching positions:", error);
-        }
-    };
-
-    const fetchHrTags = async (positionId) => {
-        try {
-            const response = await axios.get(`/hr-tags/${positionId}`);
-            return response.data.hr_tags;
-        } catch (error) {
-            console.error("Error fetching HR tags:", error);
-            return "";
+            setPositions([]); // Set to an empty array on error
         }
     };
 
@@ -299,26 +301,46 @@ const ApplicantPortal = () => {
         }
     }, [loggedIn]);
 
-    //Position Container
-    const PositionsList = ({ positions, openModal, openViewAllModal }) => {
-        return (
-            <div className="position-container px-2 py-2 flex flex-col gap-4 items-center md:grid md:grid-cols-2 md:place-items-center  ">
-                {positions.length > 0 ? (
-                    positions.map((position) => (
-                        <PositionCard
-                            key={position.position_id}
-                            position={position}
-                            openModal={openModal}
-                            openViewAllModal={openViewAllModal}
-                        />
-                    ))
-                ) : (
-                    <p>No open positions available.</p>
-                )}
-            </div>
-        );
+    const handleLoginError = (error) => {
+        console.error("Google login error:", error);
+        setErrorMessage("Failed to log in with Google. Please try again.");
+        setTimeout(() => setErrorMessage(""), 4000); // Optional: Clear the message after a few seconds
     };
 
+    const handleInputChange = (event) => {
+        const { name, value } = event.target;
+
+        // If the name exists in contactInfo, update that part of the state
+        if (contactInfo.hasOwnProperty(name)) {
+            setContactInfo((prevState) => ({
+                ...prevState,
+                [name]: value,
+            }));
+        } else {
+            // Otherwise, it updates the questions state
+            setQuestions((prevState) => ({
+                ...prevState,
+                [name]: value,
+            }));
+        }
+    };
+
+    const PositionsList = ({ positions, openModal, openViewAllModal }) => (
+        <div className="position-container px-2 py-2 flex flex-col gap-4 items-center md:grid md:grid-cols-2 md:place-items-center">
+            {positions.length > 0 ? (
+                positions.map((position) => (
+                    <PositionCard
+                        key={position.position_id}
+                        position={position}
+                        openModal={openModal}
+                        openViewAllModal={openViewAllModal}
+                    />
+                ))
+            ) : (
+                <p>No open positions available.</p>
+            )}
+        </div>
+    );
     //Position Card
     const PositionCard = ({ position, openModal, openViewAllModal }) => {
         return (
