@@ -132,7 +132,7 @@ function Leave_Management() {
             const apiKey = import.meta.env.VITE_APP_OPENAI_API_KEY;
             const baseUrl = import.meta.env.VITE_OPENAI_BASE_URL;
 
-            const response = await axios.post(
+            const response = await axiosClient.post(
                 `${baseUrl}/v1/chat/completions`,
                 {
                     model: "gpt-4",
