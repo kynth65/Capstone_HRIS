@@ -129,15 +129,37 @@ function Leave_Management() {
     // for Document Generator
     const generateDocumentContent = async () => {
         try {
-            const response = await axiosClient.post("/generate-document", {
-                documentType,
-                reason,
-            });
+            const apiKey = import.meta.env.VITE_APP_OPENAI_API_KEY;
+            const baseUrl = import.meta.env.VITE_OPENAI_BASE_URL;
 
-            // Debug: Log the entire response to understand the structure
+            const response = await axios.post(
+                `${baseUrl}/v1/chat/completions`,
+                {
+                    model: "gpt-4",
+                    messages: [
+                        {
+                            role: "system",
+                            content:
+                                "You are a helpful assistant that generates formal documents.",
+                        },
+                        {
+                            role: "user",
+                            content: `Create a ${documentType} for the following reason: ${reason}`,
+                        },
+                    ],
+                    max_tokens: 500,
+                    temperature: 0.7,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`,
+                        "Content-Type": "application/json",
+                    },
+                },
+            );
+
             console.log("Document generation response:", response.data);
 
-            // Check if the response data has the expected structure
             if (
                 response.data.choices &&
                 response.data.choices[0] &&
