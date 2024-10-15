@@ -97,7 +97,8 @@ class HRDashboardController extends Controller
                 'leave_requests.statuses', // Match the frontend field name
                 'leave_requests.start_date', // Include start date
                 'leave_requests.end_date',   // Include end date
-                'leave_requests.days_requested' // Include days requested
+                'leave_requests.days_requested', // Include days requested
+                'leave_requests.created_at'
             )
             ->get();
 

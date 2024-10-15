@@ -1,11 +1,6 @@
 const useDocument = {
     leaveLetter: `
-[Your Name]
-[Your Position]
-[Company Name]
-[Company Address]
-[City, State, ZIP Code]
-    
+
 [Date]
     
 [Recipient's Name]

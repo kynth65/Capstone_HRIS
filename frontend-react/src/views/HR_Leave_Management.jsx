@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axiosClient from "../axiosClient";
 import { jsPDF } from "jspdf";
-
+import { MdVisibility } from "react-icons/md";
 import { useStateContext } from "../contexts/ContextProvider";
+import Spinner from "./SpinnerLoading";
 
 const HR_Leave_Management = () => {
     const { user } = useStateContext();
@@ -13,7 +14,11 @@ const HR_Leave_Management = () => {
     const [errorMessage, setErrorMessage] = useState("");
     const [documentType, setDocumentType] = useState("leaveLetter");
     const [documentContent, setDocumentContent] = useState("");
+    const [tone, setTone] = useState("formal");
     const [reason, setReason] = useState("");
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [selectedRequest, setSelectedRequest] = useState(null);
     const [formData, setFormData] = useState({
         start_date: "",
         end_date: "",
@@ -26,7 +31,10 @@ const HR_Leave_Management = () => {
             axiosClient
                 .get("/leave-request")
                 .then((response) => {
-                    setLeaveRequests(response.data.leaveRequests || []);
+                    const sortedRequests = sortLeaveRequests(
+                        response.data.leaveRequests || [],
+                    );
+                    setLeaveRequests(sortedRequests);
                 })
                 .catch((error) => {
                     console.error("Error fetching leave requests:", error);
@@ -34,6 +42,16 @@ const HR_Leave_Management = () => {
                 });
         }
     }, [activeButton]);
+
+    const sortLeaveRequests = (requests) => {
+        return requests.sort((a, b) => {
+            // Define the order of statuses
+            const statusOrder = { pending: 0, approved: 1, declined: 2 };
+
+            // Compare based on status order
+            return statusOrder[a.statuses] - statusOrder[b.statuses];
+        });
+    };
 
     const handleApprove = async (requestId) => {
         try {
@@ -80,6 +98,7 @@ const HR_Leave_Management = () => {
             const response = await axiosClient.post("/generate-document", {
                 documentType,
                 reason,
+                tone,
             });
             if (
                 response.data.choices &&
@@ -101,13 +120,15 @@ const HR_Leave_Management = () => {
                 "Failed to generate document. Please try again later.",
             );
         } finally {
+            setIsGenerating(false);
             setLoading(false);
         }
     };
 
     const handleGenerate = () => {
         if (documentType && reason) {
-            setLoading(true);
+            setIsGenerating(true);
+            setDocumentContent(""); // Clear any previous content
             generateDocumentContent();
         } else {
             alert("Please select a document type and provide a reason.");
@@ -172,6 +193,20 @@ const HR_Leave_Management = () => {
         }
     };
 
+    const formatDate = (dateString) => {
+        const options = { year: "numeric", month: "long", day: "numeric" };
+        return new Date(dateString).toLocaleDateString(undefined, options);
+    };
+
+    const openModal = (request) => {
+        setSelectedRequest(request);
+        setShowModal(true);
+    };
+    const closeModal = () => {
+        setShowModal(false);
+        setSelectedRequest(null);
+    };
+
     return (
         <>
             <div className="text-start">
@@ -214,27 +249,27 @@ const HR_Leave_Management = () => {
                                     <th className="p-2 border-b border-gray-300">
                                         Employee Name
                                     </th>
-                                    <th className="p-2 border-b border-gray-300">
+                                    <th className="p-2 border-b border-gray-300 hidden sm:table-cell">
+                                        Date Requested
+                                    </th>
+                                    <th className="p-2 border-b border-gray-300 hidden sm:table-cell">
                                         Start Date
                                     </th>
-                                    <th className="p-2 border-b border-gray-300">
+                                    <th className="p-2 border-b border-gray-300 hidden sm:table-cell">
                                         End Date
                                     </th>
-                                    <th className="p-2 border-b border-gray-300">
+                                    <th className="p-2 border-b border-gray-300 hidden lg:table-cell">
                                         Days Requested
                                     </th>
-                                    <th className="p-2 border-b border-gray-300">
+                                    <th className="p-2 border-b border-gray-300 hidden lg:table-cell">
                                         Status
                                     </th>
-                                    <th className="p-2 border-b border-gray-300">
+                                    <th className="p-2 border-b border-gray-300 hidden sm:table-cell">
                                         File
                                     </th>
-                                    {user.position ===
-                                        "Human Resource Manager" && (
-                                        <th className="p-2 border-b border-gray-300">
-                                            Actions
-                                        </th>
-                                    )}
+                                    <th className="p-2 border-b border-gray-300">
+                                        Actions
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -242,24 +277,31 @@ const HR_Leave_Management = () => {
                                     leaveRequests.map((request) => (
                                         <tr
                                             key={request.id}
-                                            className="hover:bg-gray-50 text-black"
+                                            className={`hover:bg-white text-black ${
+                                                request.statuses === "pending"
+                                                    ? "bg-green-100"
+                                                    : "bg-red-100"
+                                            }`}
                                         >
-                                            <td className="p-2 border border-gray-300">
+                                            <td className="p-2 border sm:text-base border-gray-300">
                                                 {request.user_name}
                                             </td>
-                                            <td className="p-2 border border-gray-300">
-                                                {request.start_date}
+                                            <td className="p-2 border border-gray-300 hidden sm:table-cell">
+                                                {formatDate(request.created_at)}
                                             </td>
-                                            <td className="p-2 border border-gray-300">
-                                                {request.end_date}
+                                            <td className="p-2 border border-gray-300 hidden sm:table-cell">
+                                                {formatDate(request.start_date)}
                                             </td>
-                                            <td className="p-2 border border-gray-300">
+                                            <td className="p-2 border border-gray-300 hidden sm:table-cell">
+                                                {formatDate(request.end_date)}
+                                            </td>
+                                            <td className="p-2 border border-gray-300 hidden lg:table-cell">
                                                 {request.days_requested}
                                             </td>
-                                            <td className="p-2 border border-gray-300">
+                                            <td className="p-2 border border-gray-300 hidden lg:table-cell">
                                                 {request.statuses}
                                             </td>
-                                            <td className="p-2 border border-gray-300">
+                                            <td className="p-2 border border-gray-300 hidden sm:table-cell">
                                                 <a
                                                     href={`/${request.file_path}`}
                                                     target="_blank"
@@ -269,53 +311,75 @@ const HR_Leave_Management = () => {
                                                     View PDF
                                                 </a>
                                             </td>
-
-                                            {/* Only render the buttons if the user is a Human Resource Manager */}
-                                            {user.position ===
-                                                "Human Resource Manager" && (
-                                                <>
-                                                    <td className="p-2 border border-gray-300">
-                                                        <button
-                                                            className={`px-3 py-1 rounded ${request.statuses === "approved" || request.statuses === "declined" ? "bg-gray-300 cursor-not-allowed" : "bg-green-500 hover:bg-green-600 text-white"}`}
-                                                            onClick={() =>
-                                                                handleApprove(
-                                                                    request.id,
-                                                                )
-                                                            }
-                                                            disabled={
-                                                                request.statuses ===
-                                                                    "approved" ||
-                                                                request.statuses ===
-                                                                    "declined"
-                                                            }
-                                                        >
-                                                            Approve
-                                                        </button>
-                                                        <button
-                                                            className={`ml-2 px-3 py-1 rounded ${request.statuses === "declined" || request.statuses === "approved" ? "bg-gray-300 cursor-not-allowed" : "bg-red-500 hover:bg-red-600 text-white"}`}
-                                                            onClick={() =>
-                                                                handleDecline(
-                                                                    request.id,
-                                                                )
-                                                            }
-                                                            disabled={
-                                                                request.statuses ===
-                                                                    "declined" ||
-                                                                request.statuses ===
-                                                                    "approved"
-                                                            }
-                                                        >
-                                                            Decline
-                                                        </button>
-                                                    </td>
-                                                </>
-                                            )}
+                                            <td className="p-2 border border-gray-300">
+                                                <div className="flex flex-col items-center space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                                                    <button
+                                                        className="sm:hidden w-full bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
+                                                        onClick={() =>
+                                                            openModal(request)
+                                                        }
+                                                    >
+                                                        View
+                                                    </button>
+                                                    {user.position ===
+                                                        "Human Resource Manager" && (
+                                                        <>
+                                                            <button
+                                                                className={`px-3 w-full py-1 rounded ${
+                                                                    request.statuses ===
+                                                                        "approved" ||
+                                                                    request.statuses ===
+                                                                        "declined"
+                                                                        ? "bg-gray-300 cursor-not-allowed"
+                                                                        : "bg-green-500 hover:bg-green-600 text-white"
+                                                                }`}
+                                                                onClick={() =>
+                                                                    handleApprove(
+                                                                        request.id,
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    request.statuses ===
+                                                                        "approved" ||
+                                                                    request.statuses ===
+                                                                        "declined"
+                                                                }
+                                                            >
+                                                                Approve
+                                                            </button>
+                                                            <button
+                                                                className={`w-full px-3 py-1 rounded ${
+                                                                    request.statuses ===
+                                                                        "declined" ||
+                                                                    request.statuses ===
+                                                                        "approved"
+                                                                        ? "bg-gray-300 cursor-not-allowed"
+                                                                        : "bg-red-500 hover:bg-red-600 text-white"
+                                                                }`}
+                                                                onClick={() =>
+                                                                    handleDecline(
+                                                                        request.id,
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    request.statuses ===
+                                                                        "declined" ||
+                                                                    request.statuses ===
+                                                                        "approved"
+                                                                }
+                                                            >
+                                                                Decline
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
                                         <td
-                                            colSpan="7"
+                                            colSpan="8"
                                             className="text-center p-4"
                                         >
                                             No leave requests found
@@ -327,20 +391,128 @@ const HR_Leave_Management = () => {
                     </div>
                 )}
 
+                {showModal && selectedRequest && (
+                    <div
+                        className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+                        onClick={() => setShowModal(false)}
+                    >
+                        <div className="relative top-20 mx-auto p-5 border w-11/12 sm:w-96 shadow-lg rounded-md bg-white">
+                            <div className="mt-3 text-center">
+                                <h3 className="text-lg leading-6 font-semibold text-gray-900">
+                                    Leave Request Details
+                                </h3>
+                                <div className="mt-2 px-7 py-3">
+                                    <p className="text-lg text-gray-500">
+                                        <strong>Employee:</strong>{" "}
+                                        {selectedRequest.user_name}
+                                    </p>
+                                    <p className="text-lg text-gray-500">
+                                        <strong>Date Requested:</strong>{" "}
+                                        {formatDate(selectedRequest.created_at)}
+                                    </p>
+                                    <p className="text-lg text-gray-500">
+                                        <strong>Start Date:</strong>{" "}
+                                        {formatDate(selectedRequest.start_date)}
+                                    </p>
+                                    <p className="text-lg text-gray-500">
+                                        <strong>End Date:</strong>{" "}
+                                        {formatDate(selectedRequest.end_date)}
+                                    </p>
+                                    <p className="text-lg text-gray-500">
+                                        <strong>Days Requested:</strong>{" "}
+                                        {selectedRequest.days_requested}
+                                    </p>
+                                    <p className="text-lg text-gray-500">
+                                        <strong>Status:</strong>{" "}
+                                        {selectedRequest.statuses}
+                                    </p>
+                                    <a
+                                        href={`/${selectedRequest.file_path}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 hover:underline text-lg"
+                                    >
+                                        View PDF
+                                    </a>
+                                </div>
+                                {user.position === "Human Resource Manager" && (
+                                    <div className="flex justify-center space-x-4 mt-4">
+                                        <button
+                                            className={`px-4 py-2 rounded ${
+                                                selectedRequest.statuses ===
+                                                    "approved" ||
+                                                selectedRequest.statuses ===
+                                                    "declined"
+                                                    ? "bg-gray-300 cursor-not-allowed"
+                                                    : "bg-green-500 hover:bg-green-600 text-white"
+                                            }`}
+                                            onClick={() => {
+                                                handleApprove(
+                                                    selectedRequest.id,
+                                                );
+                                                closeModal();
+                                            }}
+                                            disabled={
+                                                selectedRequest.statuses ===
+                                                    "approved" ||
+                                                selectedRequest.statuses ===
+                                                    "declined"
+                                            }
+                                        >
+                                            Approve
+                                        </button>
+                                        <button
+                                            className={`px-4 py-2 rounded ${
+                                                selectedRequest.statuses ===
+                                                    "declined" ||
+                                                selectedRequest.statuses ===
+                                                    "approved"
+                                                    ? "bg-gray-300 cursor-not-allowed"
+                                                    : "bg-red-500 hover:bg-red-600 text-white"
+                                            }`}
+                                            onClick={() => {
+                                                handleDecline(
+                                                    selectedRequest.id,
+                                                );
+                                                closeModal();
+                                            }}
+                                            disabled={
+                                                selectedRequest.statuses ===
+                                                    "declined" ||
+                                                selectedRequest.statuses ===
+                                                    "approved"
+                                            }
+                                        >
+                                            Decline
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="items-center px-4 py-3">
+                                <button
+                                    id="ok-btn"
+                                    className="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                    onClick={closeModal}
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {activeButton === "templateProviderAI" && (
-                    <div className="bg-white rounded-xl p-4">
-                        <h2 className="titles pt-5">
-                            AI Letter Template Generator
-                        </h2>
+                    <div className="bg-white rounded-xl p-4 flex flex-col items-center">
+                        <h2 className="titles">AI Letter Template Generator</h2>
                         <div className="selector-container">
-                            <label className="labels">
+                            <label className="labels font-kodchasan">
                                 Select Document Type:
                                 <select
                                     value={documentType}
                                     onChange={(e) =>
                                         setDocumentType(e.target.value)
                                     }
-                                    className="select"
+                                    className="select text-black"
                                 >
                                     <option value="leaveLetter">
                                         Leave Letter
@@ -351,6 +523,27 @@ const HR_Leave_Management = () => {
                                     <option value="appreciationLetter">
                                         Appreciation Letter
                                     </option>
+                                    <option value="ThankyouLetter">
+                                        Thankyou Letter
+                                    </option>
+                                    <option value="complaintLetter">
+                                        Complaint Letter
+                                    </option>
+                                </select>
+                            </label>
+                        </div>
+                        <div className="selector-container">
+                            <label className="labels font-kodchasan">
+                                Select Tone:
+                                <select
+                                    value={tone}
+                                    onChange={(e) => setTone(e.target.value)}
+                                    className="select text-black"
+                                >
+                                    <option value="formal">Formal</option>
+                                    <option value="neutral">Neutral</option>
+                                    <option value="natural">Natural</option>
+                                    <option value="friendly">Friendly</option>
                                 </select>
                             </label>
                         </div>
@@ -367,22 +560,36 @@ const HR_Leave_Management = () => {
                             className="h-40 w-full rounded-lg p-9 text-black border-2 border-green-800 text-base"
                         />
                         <button
-                            className="button mt-2 mb-5"
+                            className="button mt-2 mb-5 font-kodchasan"
                             onClick={handleGenerate}
                         >
                             Generate Document
                         </button>
-                        <textarea
-                            value={documentContent}
-                            onChange={(e) => setDocumentContent(e.target.value)}
-                            rows="10"
-                            cols="50"
-                            placeholder="Wait for the document..."
-                            className="h-full w-full rounded-lg p-9 text-black border-2 border-green-800 text-base"
-                        />
-                        <button className="button" onClick={handleDownloadPdf}>
-                            Download PDF
-                        </button>
+
+                        {isGenerating ? (
+                            <div>
+                                <Spinner size="30" />
+                            </div>
+                        ) : (
+                            <>
+                                <textarea
+                                    value={documentContent}
+                                    onChange={(e) =>
+                                        setDocumentContent(e.target.value)
+                                    }
+                                    rows="10"
+                                    cols="50"
+                                    placeholder="Wait for the document..."
+                                    className="h-full w-full mb-4 rounded-lg p-9 text-black border-2 border-green-800 text-base"
+                                />
+                                <button
+                                    className="button font-kodchasan"
+                                    onClick={handleDownloadPdf}
+                                >
+                                    Download PDF
+                                </button>
+                            </>
+                        )}
                     </div>
                 )}
 

@@ -8,12 +8,15 @@ use Illuminate\Support\Facades\Log;
 
 class callOpenAi extends Controller
 {
+
+
     public function generateDocument(Request $request)
     {
         try {
             $apiKey = env('OPENAI_API_KEY');
             $documentType = $request->input('documentType');
             $reason = $request->input('reason');
+            $tone = $request->input('tone', 'formal'); // Default to formal if not provided
 
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $apiKey,
@@ -23,11 +26,11 @@ class callOpenAi extends Controller
                 'messages' => [
                     [
                         'role' => 'system',
-                        'content' => 'You are a helpful assistant that generates formal documents.'
+                        'content' => "You are a helpful assistant that generates {$tone} documents for employees in the company of gammacare medical services incorporation."
                     ],
                     [
                         'role' => 'user',
-                        'content' => "Create a {$documentType} for the following reason: {$reason}"
+                        'content' => "Create a {$documentType} in a {$tone} tone for the following reason: {$reason}."
                     ]
                 ],
                 'max_tokens' => 500,
@@ -47,6 +50,7 @@ class callOpenAi extends Controller
             return response()->json(['error' => 'An error occurred while generating the document. Please try again later.'], 500);
         }
     }
+
     public function rankResumes(Request $request)
     {
         try {

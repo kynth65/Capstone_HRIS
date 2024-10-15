@@ -8,7 +8,7 @@ import "../styles/documentGenerator.css";
 import "../styles/openPosition.css";
 import "../styles/tagMatching.css";
 import useDocument from "../hooks/useDocuments";
-import { MdDelete, MdEdit } from "react-icons/md";
+import { MdDelete, MdEdit, MdExpandMore, MdExpandLess } from "react-icons/md";
 import { jsPDF } from "jspdf";
 import HRTagSuggestion from "./HRTagSuggestion";
 // Register the fonts
@@ -49,6 +49,8 @@ function Recruitment_Management() {
     const [isPdfModalOpen, setIsPdfModalOpen] = useState(false); // State for PDF modal
     const [pdfUrl, setPdfUrl] = useState(null); // State to hold the selected PDF URL
     const [reason, setReason] = useState("");
+    const [expandedDescriptions, setExpandedDescriptions] = useState({});
+
     useEffect(() => {
         setDocumentContent(useDocument[documentType]);
 
@@ -423,32 +425,38 @@ function Recruitment_Management() {
         setShowApplicantDetailModal(true);
     };
 
+    const toggleDescription = (positionId) => {
+        setExpandedDescriptions((prev) => ({
+            ...prev,
+            [positionId]: !prev[positionId],
+        }));
+    };
+
+    const truncateDescription = (text, maxLength = 100) => {
+        if (text.length <= maxLength) return text;
+        return text.substr(0, maxLength) + "...";
+    };
+
     return (
         <div>
-            <nav>
-                <ul className="flex space-x-4 mb-4">
-                    <li>
-                        <button
-                            className={`navButton ${
-                                activeButton === "openPosition" ? "active" : ""
-                            }`}
-                            onClick={() => toggleButton("openPosition")}
-                        >
-                            Open Positions
-                        </button>
-                    </li>
+            <nav className="grid grid-cols-2 space-x-4 mb-4">
+                <button
+                    className={`navButton ${
+                        activeButton === "openPosition" ? "active" : ""
+                    }`}
+                    onClick={() => toggleButton("openPosition")}
+                >
+                    Open Positions
+                </button>
 
-                    <li>
-                        <button
-                            className={`navButton ${
-                                activeButton === "suggestTags" ? "active" : ""
-                            }`}
-                            onClick={() => toggleButton("suggestTags")}
-                        >
-                            Suggest Tags
-                        </button>
-                    </li>
-                </ul>
+                <button
+                    className={`navButton ${
+                        activeButton === "suggestTags" ? "active" : ""
+                    }`}
+                    onClick={() => toggleButton("suggestTags")}
+                >
+                    Suggest Tags
+                </button>
             </nav>
             <div>
                 {activeButton === "openPosition" && (
@@ -471,7 +479,7 @@ function Recruitment_Management() {
                                 {positions.map((position, index) => (
                                     <div
                                         key={index}
-                                        className="bg-white w-full h-full p-6 rounded-lg shadow-md flex flex-col items-center gap-4 transition-transform transform hover:scale-105"
+                                        className="bg-white w-full h-full mt-6 p-6 rounded-lg shadow-md flex flex-col items-center gap-4 transition-transform transform hover:scale-105 font-kodchasan"
                                     >
                                         {" "}
                                         <button
@@ -482,7 +490,10 @@ function Recruitment_Management() {
                                             }
                                             className="w-fit fixed right-0 top-0 text-black px-5 py-3 bg-white rounded-lg"
                                         >
-                                            <MdDelete size={20} />
+                                            <MdDelete
+                                                size={23}
+                                                className="text-red-700"
+                                            />
                                         </button>
                                         <h3 className="position-title text-xl font-semibold">
                                             Position: {position.title}
@@ -500,9 +511,37 @@ function Recruitment_Management() {
                                             <strong className="text-base">
                                                 Job Description:
                                             </strong>{" "}
-                                            <p className="position-description border-2 border-green-700 rounded-lg p-4">
-                                                {position.description}
+                                            <p className="text-black border-2 text-wrap text-sm  border-green-700 rounded-lg p-4">
+                                                {expandedDescriptions[
+                                                    position.position_id
+                                                ]
+                                                    ? position.description
+                                                    : truncateDescription(
+                                                          position.description,
+                                                      )}
                                             </p>
+                                            <button
+                                                onClick={() =>
+                                                    toggleDescription(
+                                                        position.position_id,
+                                                    )
+                                                }
+                                                className="text-green-700 hover:underline mt-2 flex items-center"
+                                            >
+                                                {expandedDescriptions[
+                                                    position.position_id
+                                                ] ? (
+                                                    <>
+                                                        <MdExpandLess className="mr-1" />{" "}
+                                                        Read Less
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <MdExpandMore className="mr-1" />{" "}
+                                                        Read More
+                                                    </>
+                                                )}
+                                            </button>
                                         </div>
                                         <p className="position-base-salary">
                                             <strong>Base Salary: </strong>{" "}
