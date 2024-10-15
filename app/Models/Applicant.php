@@ -12,11 +12,15 @@ class Applicant extends Model
     protected $fillable = [
         'first_name',
         'last_name',
+        'email',
         'job_title',
         'department',
         'location',
         'classification',
         'dob',
         'hire_date',
+        'resume_path',
     ];
+
+    protected $dates = ['dob', 'hire_date', 'created_at', 'updated_at'];
 }

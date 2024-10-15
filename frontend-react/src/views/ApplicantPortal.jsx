@@ -8,7 +8,12 @@ import { IoIosArrowRoundBack } from "react-icons/io";
 import countryCodes from "../hooks/useCountryCodes";
 import Terms from "../views/Terms";
 import Conditions from "../views/Conditions";
-import { PDFDocument } from "pdf-lib";
+
+import * as pdfjsLib from "pdfjs-dist";
+import "pdfjs-dist/build/pdf.worker.mjs";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+
 import {
     validateEmail,
     validatePhoneNumber,
@@ -145,29 +150,28 @@ const ApplicantPortal = () => {
         setResume(event.target.files[0]);
     };
 
-    // Function to extract text from PDF (basic example)
     const extractTextFromPdf = async (file) => {
-        const pdfDoc = await PDFDocument.load(await file.arrayBuffer());
-        const pages = pdfDoc.getPages();
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
         let text = "";
-        for (const page of pages) {
-            text += page.getTextContent();
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            text += content.items.map((item) => item.str).join(" ");
         }
         return text;
     };
 
-    // Function to extract email and name using regex
-    const extractNameAndEmail = (text) => {
+    const extractEmail = (text) => {
         const emailPattern = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
-        const namePattern = /([A-Z][a-z]+ [A-Z][a-z]+)/; // Simplified name pattern
+        const match = text.match(emailPattern);
+        return match ? match[0] : null;
+    };
 
-        const emailMatch = text.match(emailPattern);
-        const nameMatch = text.match(namePattern);
-
-        const email = emailMatch ? emailMatch[0] : null;
-        const name = nameMatch ? nameMatch[0] : null;
-
-        return { name, email };
+    const extractName = (text) => {
+        const namePattern = /([A-Z][a-z]+ [A-Z][a-z]+)/;
+        const match = text.match(namePattern);
+        return match ? match[0] : null;
     };
 
     const handleUpload = async () => {
@@ -189,15 +193,37 @@ const ApplicantPortal = () => {
         formData.append("position_id", selectedPosition.position_id);
 
         try {
-            // Extract text, name, and email from PDF
+            // Extract text from PDF
             const text = await extractTextFromPdf(file);
-            const { name, email } = extractNameAndEmail(text);
-            formData.append("name", name);
-            formData.append("email", email);
+
+            // Extract name and email from the text
+            const fullName = extractName(text);
+            const [firstName, lastName] = fullName
+                ? fullName.split(" ")
+                : ["", ""];
+            const email = extractEmail(text);
+
+            formData.append("filename", file.name);
+            formData.append("email", email || contactInfo.email);
+            formData.append("position_name", selectedPosition.title);
+            formData.append("name", `${firstName} ${lastName}`.trim());
+            formData.append("mobileNumber", contactInfo.mobileNumber);
+            formData.append("question1_response", questions.question1 || "");
+            formData.append("question2_response", questions.question2 || "");
+            formData.append("question3_response", questions.question3 || "");
+            formData.append("question4_response", questions.question4 || "");
+            formData.append("question5_response", questions.question5 || "");
+            formData.append("question6_response", questions.question6 || "");
+            formData.append("question7_response", questions.question7 || "");
+            formData.append("question8_response", questions.question8 || "");
+            formData.append("question9_response", questions.question9 || "");
+            formData.append("question10_response", questions.question10 || "");
+            formData.append("resume_text", text);
+            formData.append("hr_tags", selectedPosition.hr_tags);
 
             // Send file and additional data to the server
             const uploadResponse = await axiosClient.post(
-                "/applicants/upload",
+                "/applicants/upload-and-rank",
                 formData,
                 {
                     headers: {
@@ -205,24 +231,6 @@ const ApplicantPortal = () => {
                     },
                 },
             );
-
-            // Call the ranking function
-            const rankResponse = await axiosClient.post("/rank-resumes", {
-                hrTags: hrTags,
-                resumes: uploadResponse.data.resume_texts,
-                filenames: uploadResponse.data.filenames,
-                mobileNumber: contactInfo.mobileNumber,
-                question1: questions.question1,
-                question2: questions.question2,
-                question3: questions.question3,
-                question4: questions.question4,
-                question5: questions.question5,
-                question6: questions.question6,
-                question7: questions.question7,
-                question8: questions.question8,
-                question9: questions.question9,
-                question10: questions.question10,
-            });
 
             setShowSuccessPopup("You successfully submitted your resume!");
             setTimeout(() => setShowSuccessPopup(""), 4000);
@@ -236,13 +244,15 @@ const ApplicantPortal = () => {
             });
         } catch (error) {
             console.error("Error:", error);
-            setErrorMessage("Failed to submit your resume!");
-            setTimeout(() => setErrorMessage(""), 2000);
+            setErrorMessage(
+                "Failed to submit your resume: " +
+                    (error.response?.data?.error || error.message),
+            );
+            setTimeout(() => setErrorMessage(""), 5000);
         } finally {
             setLoading(false);
         }
     };
-
     const handleLoginSuccess = (response) => {
         const token = response.credential;
         const decodedData = jwtDecode(token);

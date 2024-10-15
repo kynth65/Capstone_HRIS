@@ -154,7 +154,10 @@ Route::prefix('incidents')->group(function () {
 //Post OpenAi
 Route::post('/generate-document', [callOpenAi::class, 'generateDocument']);
 
-Route::post('/applicants/rank-resumes', [ApplicantController::class, 'rankResumes']);
+Route::post('/applicants/upload', [ApplicantController::class, 'upload']);
+Route::post('/rank-resume', [ApplicantController::class, 'rankResume']);
+Route::post('/applicants/upload-and-rank', [ApplicantController::class, 'uploadAndRank']);
+Route::post('/applicants/update-upload-status', [ApplicantController::class, 'updateUploadStatus']);
 
 Route::prefix('applicants')->group(function () {
     Route::get('/', [ApplicantController::class, 'index']);
