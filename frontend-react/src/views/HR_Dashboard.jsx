@@ -219,7 +219,7 @@ const Dashboard = () => {
                 <div className="lg:grid lg:grid-cols-2 lg:space-x-3">
                     <div className="">
                         <div className="flex flex-col mb-4 mr-2 sm:mr-0 justify-center items-center w-auto lg:h-[313px] xl:h-[334px] bg-white text-black rounded-lg  overflow-auto">
-                            <h1 className="font-bold text-lg">
+                            <h1 className="font-bold text-lg py-2">
                                 Attendance Records
                             </h1>
                             <div className="employee-list-container w-full h-72">
@@ -268,41 +268,56 @@ const Dashboard = () => {
                                 </table>
                             </div>
                         </div>
-                        <div className="flex flex-col mb-4 mr-2 sm:mr-0 justify-center items-center  xl:h-80 bg-white text-black rounded-lg">
-                            <h1 className="py-2 font-bold text-lg">
-                                Employee Status
-                            </h1>
-                            <BarChart
-                                width={280}
-                                height={250}
-                                data={[
-                                    {
-                                        name: "Employment Status",
-                                        ...data.employmentStatus,
-                                    },
-                                ]}
-                            >
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="name" />
-                                <YAxis />
-                                <Tooltip />
-                                <Legend verticalAlign="bottom" align="center" />
-                                <Bar
-                                    dataKey="FullTime"
-                                    name="Full Time"
-                                    fill="#079dde"
-                                />{" "}
-                                <Bar
-                                    dataKey="PartTime"
-                                    name="Part Time"
-                                    fill="#82ca9d"
-                                />{" "}
-                                <Bar
-                                    dataKey="Student"
-                                    name="Student"
-                                    fill="#FFA500"
-                                />{" "}
-                            </BarChart>
+                        <div className="flex sm:hidden justify-center text-black  mr-2 sm:mr-0  pl-0 py-4 bg-white rounded-lg mb-4 lg:py-3 xl:py-6">
+                            <div className="w-[290px] p-2">
+                                <Calendar tileClassName={tileClassName} />
+                            </div>
+                        </div>
+                        <div className="flex space-x-8 mb-4 mr-2 sm:mr-0 justify-center items-center  xl:h-80 bg-white text-black rounded-lg">
+                            <div>
+                                <h1 className="py-2 font-bold text-lg">
+                                    Employee Status
+                                </h1>
+                                <BarChart
+                                    width={280}
+                                    height={250}
+                                    data={[
+                                        {
+                                            name: "Employment Status",
+                                            ...data.employmentStatus,
+                                        },
+                                    ]}
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="name" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Legend
+                                        verticalAlign="bottom"
+                                        align="center"
+                                    />
+                                    <Bar
+                                        dataKey="FullTime"
+                                        name="Full Time"
+                                        fill="#079dde"
+                                    />{" "}
+                                    <Bar
+                                        dataKey="PartTime"
+                                        name="Part Time"
+                                        fill="#82ca9d"
+                                    />{" "}
+                                    <Bar
+                                        dataKey="Student"
+                                        name="Student"
+                                        fill="#FFA500"
+                                    />{" "}
+                                </BarChart>
+                            </div>
+                            <div className="hidden sm:block lg:hidden justify-center text-black  mr-2 sm:mr-0  pl-0 py-4 bg-white rounded-lg mb-4 lg:py-3 xl:py-6">
+                                <div className="w-[290px] p-2">
+                                    <Calendar tileClassName={tileClassName} />
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div>
@@ -347,7 +362,7 @@ const Dashboard = () => {
                                 )}
                             </div>
                         </div>
-                        <div className="flex justify-center text-black  mr-2 sm:mr-0  pl-0 py-4 bg-white rounded-lg mb-4 lg:py-3 xl:py-6">
+                        <div className="hidden lg:flex justify-center text-black  mr-2 sm:mr-0  pl-0 py-4 bg-white rounded-lg mb-4 lg:py-3 xl:py-6">
                             <div className="w-[290px] p-2">
                                 <Calendar tileClassName={tileClassName} />
                             </div>
