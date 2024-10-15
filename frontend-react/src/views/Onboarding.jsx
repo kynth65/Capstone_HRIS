@@ -12,6 +12,8 @@ const Onboarding = () => {
     const [showOrientationSchedule, setShowOrientationSchedule] = useState();
     const [showSendEmail, setShowSendEmail] = useState();
     const [showProceedSchedule, setShowProceedSchedule] = useState();
+    const [showCandidateModal, setShowCandidateModal] = useState(false);
+    const [selectedCandidate, setSelectedCandidate] = useState(null);
     const [showCreateCandidateModal, setShowCreateCandidateModal] =
         useState(false);
     const [newCandidate, setNewCandidate] = useState({
@@ -270,69 +272,53 @@ const Onboarding = () => {
     const handleStepClick = (selectedStep) => {
         setStep(selectedStep); // Set the clicked step as the current step
     };
+
+    const handleViewCandidate = (candidate) => {
+        setSelectedCandidate(candidate);
+        setShowCandidateModal(true);
+    };
+
     return (
         <>
-            <div className="flex  w-full transition-all mb-8">
-                <span
-                    onClick={() => handleStepClick(1)} // Set step to 1 on click
-                    className={`flex-grow px-2 py-4 cursor-pointer rounded-l-xl ${
-                        step === 1
-                            ? "bg-green-800 text-white px-8"
-                            : "bg-neutral-300 text-gray-600"
-                    }`}
-                >
-                    Application
-                </span>
-                <span
-                    onClick={() => handleStepClick(2)} // Set step to 2 on click
-                    className={`flex-grow px-2 py-4 cursor-pointer ${
-                        step === 2
-                            ? "bg-green-800 text-white px-8"
-                            : "bg-neutral-300 text-gray-600"
-                    }`}
-                >
-                    Interview
-                </span>
-                <span
-                    onClick={() => handleStepClick(3)} // Set step to 3 on click
-                    className={`flex-grow px-2 py-4 cursor-pointer ${
-                        step === 3
-                            ? "bg-green-800 text-white px-8"
-                            : "bg-neutral-300 text-gray-600"
-                    }`}
-                >
-                    Exam
-                </span>
-                <span
-                    onClick={() => handleStepClick(4)} // Set step to 4 on click
-                    className={`flex-grow px-2 py-4 cursor-pointer ${
-                        step === 4
-                            ? "bg-green-800 text-white px-8"
-                            : "bg-neutral-300 text-gray-600"
-                    }`}
-                >
-                    Orientation
-                </span>
-                <span
-                    onClick={() => handleStepClick(5)} // Set step to 5 on click
-                    className={`flex-grow px-2 py-4 cursor-pointer ${
-                        step === 5
-                            ? "bg-green-800 text-white px-8"
-                            : "bg-neutral-300 text-gray-600"
-                    }`}
-                >
-                    Probationary
-                </span>
-                <span
-                    onClick={() => handleStepClick(6)} // Set step to 6 on click
-                    className={`flex-grow px-2 py-4 cursor-pointer rounded-r-xl ${
-                        step === 6
-                            ? "bg-green-800 text-white px-8"
-                            : "bg-neutral-300 text-gray-600"
-                    }`}
-                >
-                    Finish
-                </span>
+            <div className="text-start">
+                <nav className="mb-6 grid grid-cols-2 md:grid-cols-2 xl:grid-cols-6 gap-2">
+                    <button
+                        className={`navButton ${step === 1 ? "active" : ""}`}
+                        onClick={() => handleStepClick(1)}
+                    >
+                        Application
+                    </button>
+                    <button
+                        className={`navButton ${step === 2 ? "active" : ""}`}
+                        onClick={() => handleStepClick(2)}
+                    >
+                        Interview
+                    </button>
+                    <button
+                        className={`navButton ${step === 3 ? "active" : ""}`}
+                        onClick={() => handleStepClick(3)}
+                    >
+                        Exam
+                    </button>
+                    <button
+                        className={`navButton ${step === 4 ? "active" : ""}`}
+                        onClick={() => handleStepClick(4)}
+                    >
+                        Orientation
+                    </button>
+                    <button
+                        className={`navButton ${step === 5 ? "active" : ""}`}
+                        onClick={() => handleStepClick(5)}
+                    >
+                        Probationary
+                    </button>
+                    <button
+                        className={`navButton ${step === 6 ? "active" : ""}`}
+                        onClick={() => handleStepClick(6)}
+                    >
+                        Regular
+                    </button>
+                </nav>
             </div>
             <div className="h-[600px] bg-white rounded-2xl">
                 <div>
@@ -345,84 +331,153 @@ const Onboarding = () => {
                     {step === 1 && (
                         <div className="bg-white rounded-lg p-6 mb-2">
                             <div className="flex justify-between items-center ">
-                                <h2 className="flex-1 pl-10 text-2xl font-bold text-gray-800">
+                                <h2 className="flex-1 text-2xl font-bold text-gray-800">
                                     Candidates
                                 </h2>
                             </div>
 
-                            <table className="w-full h-[380px] table-auto text-black bg-white shadow-md rounded-lg overflow-hidden">
-                                <thead>
-                                    <tr className="bg-gray-200 text-gray-700 text-left">
-                                        <th className="px-6 py-3 border-b-2 border-gray-300 text-center">
-                                            Candidate
-                                        </th>
-                                        <th className="px-6 py-3 border-b-2 border-gray-300 text-center">
-                                            Email
-                                        </th>
-                                        <th className="px-6 py-3 border-b-2 border-gray-300 text-center">
-                                            Job Position
-                                        </th>
-
-                                        <th className="px-6 py-3 border-b-2 border-gray-300 text-center">
-                                            Actions
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white">
-                                    {Array.isArray(candidates) &&
-                                    candidates.length > 0 ? (
-                                        candidates
-                                            .filter(
-                                                (candidate) =>
-                                                    candidate.recruitment_stage ===
-                                                    "Application",
-                                            )
-                                            .map((candidate) => (
-                                                <tr
-                                                    key={candidate.id}
-                                                    className="hover:bg-gray-50 transition-colors"
-                                                >
-                                                    <td className="px-6 py-4 border-b border-gray-200 text-sm">
-                                                        {candidate.name}
-                                                    </td>
-                                                    <td className="px-6 py-4 border-b border-gray-200 text-sm">
-                                                        {candidate.email}
-                                                    </td>
-                                                    <td className="px-6 py-4 border-b border-gray-200 text-sm">
-                                                        {candidate.job_position}
-                                                    </td>
-
-                                                    <td className="px-6 py-4 border-b border-gray-200 text-sm">
-                                                        <button
-                                                            className="bg-green-600 px-5 py-2 rounded-md text-white font-medium hover:bg-green-700 transition-all"
-                                                            onClick={() =>
-                                                                handleSendEmail(
-                                                                    candidate.id,
-                                                                )
-                                                            }
-                                                        >
-                                                            Send Email
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                    ) : (
+                            <div className="overflow-x-auto">
+                                <table className="employee-table w-full table-auto text-black bg-white rounded-lg">
+                                    <thead className="bg-gray-200 text-gray-700 text-left">
                                         <tr>
-                                            <td
-                                                colSpan="4"
-                                                className="text-center"
-                                            >
-                                                No candidates available.
-                                            </td>
+                                            <th className="px-6 py-3 border-b-2 border-gray-300 text-center">
+                                                Candidate
+                                            </th>
+                                            <th className="px-6 py-3 border-b-2 border-gray-300 text-center hidden md:table-cell">
+                                                Email
+                                            </th>
+                                            <th className="px-6 py-3 border-b-2 border-gray-300 text-center hidden md:table-cell">
+                                                Job Position
+                                            </th>
+                                            <th className="px-6 py-3 border-b-2 border-gray-300 text-center">
+                                                Actions
+                                            </th>
                                         </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="bg-white">
+                                        {Array.isArray(candidates) &&
+                                        candidates.length > 0 ? (
+                                            candidates
+                                                .filter(
+                                                    (candidate) =>
+                                                        candidate.recruitment_stage ===
+                                                        "Application",
+                                                )
+                                                .map((candidate) => (
+                                                    <tr
+                                                        key={candidate.id}
+                                                        className="hover:bg-gray-50 transition-colors"
+                                                    >
+                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm">
+                                                            {candidate.name}
+                                                        </td>
+                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
+                                                            {candidate.email}
+                                                        </td>
+                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
+                                                            {
+                                                                candidate.job_position
+                                                            }
+                                                        </td>
+                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm">
+                                                            <div className="flex justify-center  space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                                                                <button
+                                                                    className="md:hidden bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                                                                    onClick={() =>
+                                                                        handleViewCandidate(
+                                                                            candidate,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    View
+                                                                </button>
+                                                                <button
+                                                                    className="hidden md:block bg-green-600 px-4 py-2 rounded text-white font-medium hover:bg-green-700 transition-all"
+                                                                    onClick={() =>
+                                                                        handleSendEmail(
+                                                                            candidate.id,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    Send Email
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                        ) : (
+                                            <tr>
+                                                <td
+                                                    colSpan="4"
+                                                    className="text-center py-4"
+                                                >
+                                                    No candidates available.
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+
+                    {showCandidateModal && selectedCandidate && (
+                        <div
+                            className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+                            onClick={() => setShowCandidateModal(false)}
+                        >
+                            <div
+                                className="relative top-20 mx-auto p-5 border w-11/12 sm:w-96 shadow-lg rounded-md bg-white"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="mt-3 text-center">
+                                    <h3 className="text-lg leading-6 font-semibold text-gray-900 mb-2">
+                                        Candidate Details
+                                    </h3>
+                                    <div className="mt-2 px-7 py-3 text-left">
+                                        <p className="text-gray-700">
+                                            <strong>Name:</strong>{" "}
+                                            {selectedCandidate.name}
+                                        </p>
+                                        <p className="text-gray-700">
+                                            <strong>Email:</strong>{" "}
+                                            {selectedCandidate.email}
+                                        </p>
+                                        <p className="text-gray-700">
+                                            <strong>Job Position:</strong>{" "}
+                                            {selectedCandidate.job_position}
+                                        </p>
+                                    </div>
+                                    <div className="flex justify-center space-x-4 mt-4">
+                                        <button
+                                            className="bg-green-600 px-4 py-2 rounded text-white font-medium hover:bg-green-700 transition-all"
+                                            onClick={() =>
+                                                handleSendEmail(
+                                                    selectedCandidate.id,
+                                                )
+                                            }
+                                        >
+                                            Send Email
+                                        </button>
+                                        <button
+                                            className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+                                            onClick={() =>
+                                                setShowCandidateModal(false)
+                                            }
+                                        >
+                                            Close
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     )}
 
                     {showSendEmail && (
-                        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+                        <div
+                            className="modal fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
+                            onClick={() => setShowSendEmail(false)}
+                        >
                             <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md text-black relative">
                                 <form
                                     onSubmit={(event) =>
@@ -436,14 +491,6 @@ const Onboarding = () => {
                                     <h3 className="text-2xl font-semibold mb-4 text-center">
                                         Set Schedule for Invitation
                                     </h3>
-
-                                    {/* Close Icon */}
-                                    <span
-                                        className="absolute top-2 right-2 cursor-pointer text-xl font-bold text-gray-600 hover:text-gray-900"
-                                        onClick={() => setShowSendEmail(false)}
-                                    >
-                                        &times;
-                                    </span>
 
                                     {/* Date Input */}
                                     <div className="mb-4">
@@ -520,12 +567,20 @@ const Onboarding = () => {
                                     </div>
 
                                     {/* Save/Send Button */}
-                                    <div className="flex justify-center">
+                                    <div className="flex justify-center space-x-4">
                                         <button
                                             type="submit"
                                             className="bg-green-900 hover:bg-white text-white py-2 px-4 rounded border-2 border-green-900 transition hover:text-green-900"
                                         >
                                             Save / Send email
+                                        </button>
+                                        <button
+                                            className="bg-red-700 hover:bg-white text-white py-2 px-4 rounded border-2 border-red-700 transition hover:text-red-700"
+                                            onClick={() =>
+                                                setShowSendEmail(false)
+                                            }
+                                        >
+                                            Close
                                         </button>
                                     </div>
                                 </form>
@@ -540,7 +595,7 @@ const Onboarding = () => {
                                 Candidates for Interview
                             </h2>
 
-                            <table className="w-full h-[380px] table-auto text-black bg-white shadow-md rounded-lg overflow-hidden">
+                            <table className="employee-table w-full max-h-[380px] table-auto text-black bg-white overflow-hidden">
                                 <thead className="">
                                     <tr className="bg-gray-200 text-gray-700 text-left">
                                         <th className="px-6 py-3 border-b-2 border-gray-300 text-center">
