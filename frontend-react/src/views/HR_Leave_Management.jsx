@@ -175,7 +175,7 @@ const HR_Leave_Management = () => {
     return (
         <>
             <div className="text-start">
-                <nav className="mb-6">
+                <nav className="mb-6 grid grid-cols-3">
                     <button
                         className={`navButton ${activeButton === "leaveFormList" ? "active" : ""}`}
                         onClick={() => toggleView("leaveFormList")}
@@ -387,8 +387,8 @@ const HR_Leave_Management = () => {
                 )}
 
                 {activeButton === "leaveForm" && (
-                    <div className="bg-white rounded-xl p-4 max-w-md mx-auto">
-                        <h2 className="text-2xl font-semibold mb-4">
+                    <div className="bg-white rounded-xl max-w-md mx-auto">
+                        <h2 className="text-2xl font-semibold mb-10 text-black">
                             Submit Leave Form
                         </h2>
                         <form onSubmit={handleFormSubmit}>
@@ -423,7 +423,7 @@ const HR_Leave_Management = () => {
                             </label>
                             <button
                                 type="submit"
-                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
+                                className="bg-green-800 text-white px-4 py-2 rounded hover:bg-green-950 w-full"
                             >
                                 Submit Leave Request
                             </button>

@@ -102,9 +102,7 @@ function DefaultLayout() {
                 >
                     &#9776;
                 </button>
-                <h1 className="title text-xl">
-                    GAMMACARE HRIS <br></br> {user.position}
-                </h1>
+                <h1 className="title text-base">GAMMACARE HRIS</h1>
 
                 <div className="flex-col flex gap-4 w-64 px-6 h-screen font-kodchasan">
                     <Link
@@ -197,7 +195,9 @@ function DefaultLayout() {
                     >
                         &#9776;
                     </button>
-                    <div className="headerText">{headerText}</div>
+                    <div className="text-base md:text-2xl md:ml-16 xl:ml-0">
+                        {headerText}
+                    </div>
                     <div
                         className="flex items-center cursor-pointer font-kodchasan"
                         onClick={toggleModal}
@@ -213,7 +213,7 @@ function DefaultLayout() {
                                 className="w-10 h-10 md:mr-4 rounded-full object-cover"
                             />
                         </button>
-                        <span className="hidden md:block">{user.position}</span>
+                        <span className="hidden xl:block">{user.position}</span>
                     </div>
                 </header>
                 <main>

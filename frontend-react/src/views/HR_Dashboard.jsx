@@ -202,7 +202,7 @@ const Dashboard = () => {
     return (
         <>
             <div className="animated fadeInDown">
-                <div className="grid grid-cols-3 mb-3 mr-2 md:mr-0 bg-white sm:bg-transparent sm:gap-4 rounded-2xl">
+                <div className="grid grid-cols-3 mb-3 mr-2 md:mr-0 place-items-center bg-white sm:bg-transparent sm:gap-4 rounded-2xl">
                     <div className="flex w-24 sm:w-full p-6 md:p-4 flex-col items-center md:text-xl text-black sm:bg-white rounded-xl font-kodchasan text-center">
                         Employee:
                         <span className="font-bold">{data.total}</span>
