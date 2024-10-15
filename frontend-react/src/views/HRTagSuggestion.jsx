@@ -127,38 +127,14 @@ const HRTagSuggestion = () => {
                 </div>
             )}
 
-            {selectedPosition && (
-                <div className="existing-tags mt-8 flex flex-col items-center gap-4">
-                    <h3 className="text-xl font-bold mb-2">
-                        Existing Tags for {selectedPosition}
-                    </h3>
-                    <div className="border-2 w-full lg:w-[650px] min-h-32 max-h-56 rounded-lg overflow-auto text-black font-kodchasan font-semibold p-2">
-                        {existingTags.length > 0 ? (
-                            existingTags.map((tag, index) => (
-                                <span
-                                    key={index}
-                                    className="tagItem mr-2 mb-2 inline-block bg-gray-200 rounded-full px-3 py-1"
-                                >
-                                    {tag}
-                                </span>
-                            ))
-                        ) : (
-                            <span className="text-gray-500">
-                                No tags available for this position.
-                            </span>
-                        )}
-                    </div>
-                </div>
-            )}
-
             {selectedPosition && suggestedTags.length > 0 && (
                 <div className="mt-8">
                     <h3 className="text-xl font-bold mb-2">
                         Pending Suggested Tags for {selectedPosition}
                     </h3>
                     <table className="w-full border-collapse">
-                        <thead>
-                            <tr className="bg-gray-200">
+                        <thead className="bg-gray-200">
+                            <tr>
                                 <th className="border p-2">Suggested Tag</th>
                                 <th className="border p-2">Status</th>
                             </tr>

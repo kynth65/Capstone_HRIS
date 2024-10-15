@@ -218,52 +218,68 @@ const AdminTags = () => {
                     Suggested Tags
                 </h3>
                 {suggestedTags.length > 0 ? (
-                    <div className="space-y-4 text-black">
-                        {suggestedTags.map((suggestedTag) => (
-                            <div
-                                key={suggestedTag.id}
-                                className="flex items-center justify-between bg-gray-100 p-4 rounded"
-                            >
-                                <div>
-                                    <p className="flex">
-                                        <strong className="mr-6">
-                                            Position:
-                                        </strong>{" "}
-                                        {suggestedTag.position}
-                                    </p>
-                                    <p>
-                                        <strong>Tag:</strong> {suggestedTag.tag}
-                                    </p>
-                                </div>
-                                <div className="flex ml-6">
-                                    <button
-                                        onClick={() =>
-                                            reviewSuggestedTag(
-                                                suggestedTag.id,
-                                                "approve",
-                                            )
-                                        }
-                                        className="bg-green-500 text-white px-4 py-2 rounded mr-2 hover:bg-green-600"
-                                    >
-                                        Approve
-                                    </button>
-                                    <button
-                                        onClick={() =>
-                                            reviewSuggestedTag(
-                                                suggestedTag.id,
-                                                "decline",
-                                            )
-                                        }
-                                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                                    >
-                                        Decline
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                    <div className="border rounded-lg overflow-hidden">
+                        <div className="max-h-96 overflow-y-auto">
+                            <table className="w-full text-black">
+                                <thead className="bg-gray-200 sticky top-0">
+                                    <tr>
+                                        <th className="px-4 py-2 text-left">
+                                            Position
+                                        </th>
+                                        <th className="px-4 py-2 text-left">
+                                            Tag
+                                        </th>
+                                        <th className="px-4 py-2 text-center">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {suggestedTags.map((suggestedTag) => (
+                                        <tr
+                                            key={suggestedTag.id}
+                                            className="border-t"
+                                        >
+                                            <td className="px-4 py-2">
+                                                {suggestedTag.position}
+                                            </td>
+                                            <td className="px-4 py-2">
+                                                {suggestedTag.tag}
+                                            </td>
+                                            <td className="px-4 py-2 text-center">
+                                                <button
+                                                    onClick={() =>
+                                                        reviewSuggestedTag(
+                                                            suggestedTag.id,
+                                                            "approve",
+                                                        )
+                                                    }
+                                                    className="bg-green-500 text-white px-3 py-1 rounded mr-2 hover:bg-green-600 text-sm"
+                                                >
+                                                    Approve
+                                                </button>
+                                                <button
+                                                    onClick={() =>
+                                                        reviewSuggestedTag(
+                                                            suggestedTag.id,
+                                                            "decline",
+                                                        )
+                                                    }
+                                                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
+                                                >
+                                                    Decline
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 ) : (
-                    <p>No suggested tags to review.</p>
+                    <p className="text-gray-500">
+                        No suggested tags to review.
+                    </p>
                 )}
             </div>
         </div>

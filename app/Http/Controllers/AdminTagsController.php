@@ -17,13 +17,12 @@ class AdminTagsController extends Controller
         Log::info('Storing tag for position: ' . $position, ['tag' => $tag]);
 
         try {
-            $tagRecord = Tag::firstOrCreate(['position' => $position]);
-
+            $tagRecord = Tag::firstOrCreate(['position' => $position], ['tag' => '']);
             $existingTags = explode(',', $tagRecord->tag);
             if (!in_array($tag, $existingTags)) {
                 $existingTags[] = $tag;
                 $tagRecord->update([
-                    'tag' => implode(',', $existingTags)
+                    'tag' => implode(',', array_filter($existingTags))
                 ]);
                 Log::info('Tag added successfully for position: ' . $position);
                 return response()->json(['message' => 'Tag added successfully', 'tags' => $existingTags]);
@@ -41,50 +40,38 @@ class AdminTagsController extends Controller
         $tagRecord = Tag::where('position', $position)->first();
         if ($tagRecord) {
             $tags = explode(',', $tagRecord->tag);
-            return response()->json(['tags' => $tags]);
+            return response()->json(['tags' => array_filter($tags)]);
         } else {
             return response()->json(['tags' => []]);
         }
     }
 
-    public function deleteTag(Request $request)
+    public function removeTag(Request $request)
     {
         $position = $request->input('position');
-        $tagToDelete = $request->input('tag');
+        $tagToRemove = $request->input('tag');
 
-        Log::info('Deleting tag for position: ' . $position, ['tag' => $tagToDelete]);
+        Log::info('Removing tag for position: ' . $position, ['tag' => $tagToRemove]);
 
         try {
             $tagRecord = Tag::where('position', $position)->first();
-
             if ($tagRecord) {
                 $existingTags = explode(',', $tagRecord->tag);
-                $updatedTags = array_diff($existingTags, [$tagToDelete]);
-
+                $updatedTags = array_diff($existingTags, [$tagToRemove]);
                 $tagRecord->update([
-                    'tag' => implode(',', $updatedTags)
+                    'tag' => implode(',', array_filter($updatedTags))
                 ]);
-
-                Log::info('Tag deleted successfully for position: ' . $position);
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Tag deleted successfully',
-                    'tags' => array_values($updatedTags)
-                ]);
+                Log::info('Tag removed successfully for position: ' . $position);
+                return response()->json(['message' => 'Tag removed successfully', 'tags' => array_values($updatedTags)]);
             } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No tags found for this position'
-                ], 404);
+                return response()->json(['message' => 'No tags found for this position'], 404);
             }
         } catch (\Exception $e) {
-            Log::error('Error deleting tag for position: ' . $position, ['error' => $e->getMessage()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Error deleting tag'
-            ], 500);
+            Log::error('Error removing tag for position: ' . $position, ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Error removing tag'], 500);
         }
     }
+
     public function suggestTag(Request $request)
     {
         $position = $request->input('position');
@@ -121,14 +108,19 @@ class AdminTagsController extends Controller
             $suggestedTag = SuggestedTag::findOrFail($id);
 
             if ($action === 'approve') {
-                $tagRecord = Tag::firstOrCreate(['position' => $suggestedTag->position]);
+                $tagRecord = Tag::firstOrCreate(
+                    ['position' => $suggestedTag->position],
+                    ['tag' => '']
+                );
+
                 $existingTags = explode(',', $tagRecord->tag);
                 if (!in_array($suggestedTag->tag, $existingTags)) {
                     $existingTags[] = $suggestedTag->tag;
                     $tagRecord->update([
-                        'tag' => implode(',', $existingTags)
+                        'tag' => implode(',', array_filter($existingTags))
                     ]);
                 }
+
                 $suggestedTag->delete();
                 return response()->json(['message' => 'Tag approved and added successfully']);
             } elseif ($action === 'decline') {

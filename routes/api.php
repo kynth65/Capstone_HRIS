@@ -74,7 +74,6 @@ Route::post('/forgot-password', [PasswordResetController::class, 'forgotPassword
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
 Route::post('/saveTags', [AdminTagsController::class, 'storeTags']);
 Route::get('/tags/{position}', [AdminTagsController::class, 'getTagsByPosition']);
-
 Route::get('/allCertificates', [CertificateController::class, 'allCertificates']);
 Route::get('/certificates/{userId}', [CertificateController::class, 'index']);
 Route::get('/certificates/download/{id}', [CertificateController::class, 'download']);
