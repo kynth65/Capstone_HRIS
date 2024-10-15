@@ -202,31 +202,33 @@ const Dashboard = () => {
     return (
         <>
             <div className="animated fadeInDown">
-                <div className="grid grid-cols-3 gap-2 mb-3">
-                    <div className="flex w-auto flex-col p-6 lg:text-xl text-black bg-white rounded-xl font-kodchasan text-center">
-                        Total Employee:
-                        <span className="font-bold ">{data.total}</span>
+                <div className="grid grid-cols-3 mb-3 mr-2 md:mr-0 bg-white sm:bg-transparent sm:gap-4 rounded-2xl">
+                    <div className="flex w-24 sm:w-full p-6 md:p-4 flex-col items-center md:text-xl text-black sm:bg-white rounded-xl font-kodchasan text-center">
+                        Employee:
+                        <span className="font-bold">{data.total}</span>
                     </div>
-                    <div className="flex w-auto flex-col p-6 lg:text-xl text-black bg-white rounded-xl font-kodchasan text-center">
+                    <div className="flex w-24 sm:w-full p-6 md:p-4 flex-col items-center md:text-xl text-black sm:bg-white rounded-xl font-kodchasan text-center">
                         Present:
-                        <span className="font-bold ">{data.present}</span>
+                        <span className="font-bold">{data.present}</span>
                     </div>
-                    <div className="flex w-auto flex-col p-6 lg:text-xl text-black bg-white rounded-xl font-kodchasan text-center">
+                    <div className="flex w-24 sm:w-full p-6 md:p-4 flex-col items-center md:text-xl text-black sm:bg-white rounded-xl font-kodchasan text-center">
                         Leave:
-                        <span className="font-bold "> {data.leave}</span>
+                        <span className="font-bold"> {data.leave}</span>
                     </div>
                 </div>
-                <div className="lg:grid lg:grid-cols-2">
-                    <div className="mr-2">
-                        <div className="flex flex-col justify-center items-center w-auto xl:h-80 bg-white text-black rounded-lg mb-4 overflow-auto">
-                            <h1 className="py-2 font-bold text-lg">
+                <div className="lg:grid lg:grid-cols-2 lg:space-x-3">
+                    <div className="">
+                        <div className="flex flex-col mb-4 mr-2 sm:mr-0 justify-center items-center w-auto lg:h-[313px] xl:h-[334px] bg-white text-black rounded-lg  overflow-auto">
+                            <h1 className="font-bold text-lg">
                                 Attendance Records
                             </h1>
-                            <div className="employee-list-container w-full h-60">
+                            <div className="employee-list-container w-full h-72">
                                 <table className="employee-table bg-white text-black rounded-xl overflow-hidden w-full">
                                     <thead>
                                         <tr>
-                                            <th>User ID</th>
+                                            <th className="hidden md:table-cell">
+                                                User ID
+                                            </th>
                                             <th>Name</th>
                                             <th>Date</th>
                                             <th>Time In</th>
@@ -238,7 +240,7 @@ const Dashboard = () => {
                                             data.attendanceRecords.map(
                                                 (record) => (
                                                     <tr key={record.id}>
-                                                        <td>
+                                                        <td className="hidden md:table-cell">
                                                             {record.user_id}
                                                         </td>
                                                         <td>{record.name}</td>
@@ -266,68 +268,59 @@ const Dashboard = () => {
                                 </table>
                             </div>
                         </div>
-                        <div className="flex flex-col justify-center items-center w-auto xl:h-80 bg-white text-black rounded-lg mb-4 ">
+                        <div className="flex flex-col mb-4 mr-2 sm:mr-0 justify-center items-center  xl:h-80 bg-white text-black rounded-lg">
                             <h1 className="py-2 font-bold text-lg">
                                 Employee Status
                             </h1>
                             <BarChart
-                                width={400}
+                                width={280}
                                 height={250}
                                 data={[
                                     {
                                         name: "Employment Status",
                                         ...data.employmentStatus,
                                     },
-                                ]} // Wrap data to create a single object for BarChart
+                                ]}
                             >
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="name" />
                                 <YAxis />
                                 <Tooltip />
                                 <Legend verticalAlign="bottom" align="center" />
-                                {/* Separate bars for each employment type */}
                                 <Bar
                                     dataKey="FullTime"
                                     name="Full Time"
                                     fill="#079dde"
                                 />{" "}
-                                {/* Green */}
                                 <Bar
                                     dataKey="PartTime"
                                     name="Part Time"
                                     fill="#82ca9d"
                                 />{" "}
-                                {/* Blue */}
                                 <Bar
                                     dataKey="Student"
                                     name="Student"
                                     fill="#FFA500"
                                 />{" "}
-                                {/* Orange */}
                             </BarChart>
                         </div>
                     </div>
                     <div>
-                        <div className="flex justify-center text-black w-auto pl-0 py-4 bg-white rounded-lg mb-4 lg:py-5 xl:py-8">
-                            <Calendar
-                                tileClassName={tileClassName} // Apply the custom class for highlighted dates
-                            />
-                        </div>
-                        <div className="flex flex-col items-center notifications-container w-full max-h-96 h-auto lg:h-[290px] xl:h-80 bg-white rounded-lg mb-4 p-4">
-                            <span className="font-bold text-black text-lg mb-2">
+                        <div className="flex flex-col items-center max-h-96 mr-2 sm:mr-0 h-auto lg:h-[313px] xl:h-[333px] bg-white rounded-lg mb-4">
+                            <span className="font-bold text-black text-lg mb-2 pt-3">
                                 Notification
                             </span>
-                            <div className="flex-grow overflow-auto">
+                            <div className="flex-grow overflow-auto md:w-fit">
                                 {Array.isArray(data.notifications) &&
                                 data.notifications.length > 0 ? (
                                     data.notifications
                                         .filter(
                                             (notification) =>
                                                 notification.message,
-                                        ) // Filter out any notifications without a message
+                                        )
                                         .map((notification, index) => (
                                             <div
-                                                className={`border-2 rounded-lg mb-2 w-full ${
+                                                className={`border-2 rounded-lg mb-2 w-auto mx-2   ${
                                                     notification.type ===
                                                     "expired"
                                                         ? "bg-red-100 text-red-900 border-red-500"
@@ -354,120 +347,11 @@ const Dashboard = () => {
                                 )}
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <div>
-                    <div className="max-h-[400px] overflow-y-auto rounded-lg">
-                        <table className="table-auto w-full bg-white text-black border-collapse">
-                            <thead className="sticky top-0 bg-white">
-                                <tr>
-                                    <th
-                                        className="font-bold text-black text-lg px-20 py-2 text-left bg-white"
-                                        colSpan="4"
-                                    >
-                                        Leave Requests
-                                    </th>
-                                </tr>
-                                <tr className="bg-neutral-300">
-                                    <th className="px-16 py-2">
-                                        Employee Name
-                                    </th>
-                                    <th className="px-16 py-2">File</th>
-                                    <th className="hidden sm:table-cell px-16 py-2">
-                                        Status
-                                    </th>
-                                    <th className="px-16 py-2">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {Array.isArray(data.leaveRequests) &&
-                                data.leaveRequests.length > 0 ? (
-                                    data.leaveRequests.map((request) => (
-                                        <tr
-                                            key={request.id}
-                                            className="border-b hover:bg-gray-50"
-                                        >
-                                            <td className="px-16 py-2">
-                                                {request.user_name}
-                                            </td>
-                                            <td className="px-16 py-2">
-                                                <a
-                                                    href={`/${request.file_path}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-blue-600 hover:underline"
-                                                >
-                                                    {request.file_name}
-                                                </a>
-                                            </td>
-                                            <td className="hidden sm:table-cell px-16 py-2">
-                                                {request.statuses}
-                                            </td>
-                                            <td className="px-16 py-2">
-                                                <div className="flex space-x-2">
-                                                    <button
-                                                        className={`px-3 py-1 rounded ${
-                                                            request.statuses ===
-                                                                "declined" ||
-                                                            request.statuses ===
-                                                                "approved"
-                                                                ? "bg-gray-300 cursor-not-allowed"
-                                                                : "bg-green-500 hover:bg-green-600 text-white"
-                                                        }`}
-                                                        onClick={() =>
-                                                            handleApprove(
-                                                                request.id,
-                                                            )
-                                                        }
-                                                        disabled={
-                                                            request.statuses ===
-                                                                "declined" ||
-                                                            request.statuses ===
-                                                                "approved"
-                                                        }
-                                                    >
-                                                        Approve
-                                                    </button>
-                                                    <button
-                                                        className={`px-3 py-1 rounded ${
-                                                            request.statuses ===
-                                                                "approved" ||
-                                                            request.statuses ===
-                                                                "declined"
-                                                                ? "bg-gray-300 cursor-not-allowed"
-                                                                : "bg-red-500 hover:bg-red-600 text-white"
-                                                        }`}
-                                                        onClick={() =>
-                                                            handleDecline(
-                                                                request.id,
-                                                            )
-                                                        }
-                                                        disabled={
-                                                            request.statuses ===
-                                                                "approved" ||
-                                                            request.statuses ===
-                                                                "declined"
-                                                        }
-                                                    >
-                                                        Decline
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td
-                                            colSpan="4"
-                                            className="px-16 py-2 text-center"
-                                        >
-                                            No leave requests found
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
+                        <div className="flex justify-center text-black  mr-2 sm:mr-0  pl-0 py-4 bg-white rounded-lg mb-4 lg:py-3 xl:py-6">
+                            <div className="w-[290px] p-2">
+                                <Calendar tileClassName={tileClassName} />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
