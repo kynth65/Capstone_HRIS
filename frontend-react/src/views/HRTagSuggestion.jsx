@@ -12,10 +12,10 @@ const HRTagSuggestion = () => {
     useEffect(() => {
         if (selectedPosition) {
             fetchExistingTags();
-            fetchSuggestedTags();
         } else {
             setExistingTags([]);
         }
+        fetchSuggestedTags();
     }, [selectedPosition]);
 
     const fetchExistingTags = async () => {
@@ -35,10 +35,7 @@ const HRTagSuggestion = () => {
     const fetchSuggestedTags = async () => {
         try {
             const response = await axiosClient.get("/getSuggestedTags");
-            const filteredTags = response.data.suggestedTags.filter(
-                (tag) => tag.position === selectedPosition,
-            );
-            setSuggestedTags(filteredTags);
+            setSuggestedTags(response.data.suggestedTags);
         } catch (error) {
             console.error("Error fetching suggested tags", error);
             setErrorMessage("Error fetching suggested tags");
@@ -48,7 +45,7 @@ const HRTagSuggestion = () => {
     const handlePositionChange = (e) => {
         setSelectedPosition(e.target.value);
         setNewTag("");
-        setErrorMessage(""); // Clear any previous error messages
+        setErrorMessage("");
     };
 
     const handleTagInput = (e) => {
@@ -64,7 +61,7 @@ const HRTagSuggestion = () => {
                 });
                 setSuccessMessage("Tag suggestion submitted successfully");
                 setNewTag("");
-                fetchSuggestedTags(); // Refresh the suggested tags list
+                fetchSuggestedTags();
                 setTimeout(() => setSuccessMessage(""), 3000);
             } catch (error) {
                 console.error("Error suggesting tag", error);
@@ -127,29 +124,67 @@ const HRTagSuggestion = () => {
                 </div>
             )}
 
-            {selectedPosition && suggestedTags.length > 0 && (
-                <div className="mt-8">
+            {selectedPosition && (
+                <div className="existing-tags mt-8 flex flex-col items-center gap-4">
                     <h3 className="text-xl font-bold mb-2">
-                        Pending Suggested Tags for {selectedPosition}
+                        Existing Tags for {selectedPosition}
                     </h3>
-                    <table className="w-full border-collapse">
-                        <thead className="bg-gray-200">
-                            <tr>
-                                <th className="border p-2">Suggested Tag</th>
-                                <th className="border p-2">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {suggestedTags.map((tag, index) => (
-                                <tr key={index} className="odd:bg-gray-100">
-                                    <td className="border p-2">{tag.tag}</td>
-                                    <td className="border p-2">{tag.status}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    <div className="border-2 w-full lg:w-[650px] min-h-32 max-h-56 rounded-lg overflow-auto text-black font-kodchasan font-semibold p-2">
+                        {existingTags.length > 0 ? (
+                            existingTags.map((tag, index) => (
+                                <span
+                                    key={index}
+                                    className="tagItem mr-2 mb-2 inline-block bg-gray-200 rounded-full px-3 py-1"
+                                >
+                                    {tag}
+                                </span>
+                            ))
+                        ) : (
+                            <span className="text-gray-500">
+                                No tags available for this position.
+                            </span>
+                        )}
+                    </div>
                 </div>
             )}
+
+            <div className="mt-8">
+                <h3 className="text-xl font-bold mb-2">
+                    All Pending Suggested Tags
+                </h3>
+                {suggestedTags.length > 0 ? (
+                    <div className="overflow-x-auto max-h-60 overflow-auto ">
+                        <table className="w-full border-collapse">
+                            <thead className="sticky top-[-1px]">
+                                <tr className="bg-gray-200">
+                                    <th className="border p-2">Position</th>
+                                    <th className="border p-2">
+                                        Suggested Tag
+                                    </th>
+                                    <th className="border p-2">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {suggestedTags.map((tag, index) => (
+                                    <tr key={index} className="odd:bg-gray-100">
+                                        <td className="border p-2">
+                                            {tag.position}
+                                        </td>
+                                        <td className="border p-2">
+                                            {tag.tag}
+                                        </td>
+                                        <td className="border p-2">
+                                            {tag.status}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <p className="text-gray-500">No pending suggested tags.</p>
+                )}
+            </div>
         </div>
     );
 };
