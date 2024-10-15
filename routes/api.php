@@ -53,6 +53,8 @@ Route::get('/data', [AuthController::class, 'getData']);
 Route::post('/positions', [OpenPositionController::class, 'store']);
 Route::get('/open-positions', [OpenPositionController::class, 'index']);
 Route::get('/hr-tags/{id}', [OpenPositionController::class, 'getHrTags']);
+Route::post('/storeTag', [AdminTagsController::class, 'storeTag']);
+Route::post('/deleteTag', [AdminTagsController::class, 'deleteTag']);
 Route::get('/applicants/{positionId}', [OpenPositionController::class, 'getApplicants']);
 Route::get('/open-files/{filename}', [OpenFileController::class, 'openFile']);
 Route::get('/record-attendance', [AttendanceController::class, 'recordAttendance']);
@@ -171,4 +173,8 @@ Route::prefix('applicants')->group(function () {
     Route::post('/update-upload-status', [ApplicantController::class, 'updateUploadStatus']);
 });
 
+
+Route::post('/suggestTag', [AdminTagsController::class, 'suggestTag']);
+Route::get('/getSuggestedTags', [AdminTagsController::class, 'getSuggestedTags']);
+Route::post('/reviewSuggestedTag', [AdminTagsController::class, 'reviewSuggestedTag']);
 //->middleware('auth:sanctum');

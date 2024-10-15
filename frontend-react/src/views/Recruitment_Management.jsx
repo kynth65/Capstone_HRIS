@@ -10,6 +10,7 @@ import "../styles/tagMatching.css";
 import useDocument from "../hooks/useDocuments";
 import { MdDelete, MdEdit } from "react-icons/md";
 import { jsPDF } from "jspdf";
+import HRTagSuggestion from "./HRTagSuggestion";
 // Register the fonts
 function Recruitment_Management() {
     const [activeButton, setActiveButton] = useState("openPosition");
@@ -424,6 +425,31 @@ function Recruitment_Management() {
 
     return (
         <div>
+            <nav>
+                <ul className="flex space-x-4 mb-4">
+                    <li>
+                        <button
+                            className={`navButton ${
+                                activeButton === "openPosition" ? "active" : ""
+                            }`}
+                            onClick={() => toggleButton("openPosition")}
+                        >
+                            Open Positions
+                        </button>
+                    </li>
+
+                    <li>
+                        <button
+                            className={`navButton ${
+                                activeButton === "suggestTags" ? "active" : ""
+                            }`}
+                            onClick={() => toggleButton("suggestTags")}
+                        >
+                            Suggest Tags
+                        </button>
+                    </li>
+                </ul>
+            </nav>
             <div>
                 {activeButton === "openPosition" && (
                     <div className="flex flex-col font-semibold">
@@ -778,7 +804,6 @@ function Recruitment_Management() {
                                                     </div>
                                                 </div>
 
-                                                {/* Removed Tags/Suggested */}
                                                 <div className="suggestedTags flex flex-col items-center">
                                                     <label
                                                         htmlFor="tags"
@@ -934,6 +959,11 @@ function Recruitment_Management() {
                                 {currentApplicant?.comments}
                             </p>
                         </div>
+                    </div>
+                )}
+                {activeButton === "suggestTags" && (
+                    <div className="bg-white p-4 rounded-lg shadow-md">
+                        <HRTagSuggestion />
                     </div>
                 )}
             </div>

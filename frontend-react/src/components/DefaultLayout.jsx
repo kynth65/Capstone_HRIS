@@ -70,7 +70,7 @@ function DefaultLayout() {
         setToken(null);
         navigate("/");
         localStorage.removeItem("headerText");
-        window.localStorage.removeIteme("isLoggedIn");
+        window.localStorage.removeItem("isLoggedIn");
     };
 
     const handleHeaderChange = (text) => {
