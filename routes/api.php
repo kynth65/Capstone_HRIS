@@ -28,6 +28,7 @@ use App\Http\Controllers\EmployeeAttendanceController;
 use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\callOpenAi;
 use App\Http\Controllers\RegularEmployeeController;
+use Illuminate\Support\Facades\DB;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
@@ -93,6 +94,8 @@ Route::get('/certificate-update-requests', [CertificateController::class, 'getCe
 Route::post('/certificate-update-requests/{id}/approve', [CertificateController::class, 'approveUpdateRequest']);
 Route::post('/certificate-update-requests/{id}/reject', [CertificateController::class, 'rejectUpdateRequest']);
 Route::post('/certificates/revoke-access/{id}', [CertificateController::class, 'revokeAccessToCertificate']);
+Route::post('/certificates/{id}/recover', [CertificateController::class, 'recover']);
+Route::delete('/certificates/{id}/permanent', [CertificateController::class, 'permanentDelete']);
 Route::middleware('auth:sanctum')->get('/employee-notifications', [EmployeeNotificationController::class, 'index']);
 Route::middleware('api')->group(function () {
     Route::get('/certificates/archived', [CertificateController::class, 'getArchivedCertificates']);
@@ -180,3 +183,11 @@ Route::post('/reviewSuggestedTag', [AdminTagsController::class, 'reviewSuggested
 
 Route::post('/candidates/{candidateId}/notify-regular', [RegularEmployeeController::class, 'notifyRegularEmployee']);
 //->middleware('auth:sanctum');
+
+Route::get('/archived-certificates', function () {
+    $certificates = DB::table('archived_certificates')->get();
+    return response()->json([
+        'count' => $certificates->count(),
+        'data' => $certificates
+    ]);
+});

@@ -120,9 +120,6 @@ const IncidentManagement = () => {
                 <p className="text-green-600 ">{successMessage}</p>
             )}
             {errorMessage && <p className="text-red-600 ">{errorMessage}</p>}
-            <h2 className="text-lg lg:text-2xl font-semibold mb-4 text-black">
-                Incident Management
-            </h2>
             <div className="overflow-y-auto max-h-[600px]">
                 <table className="employee-table min-w-full border-collapse w-full">
                     <thead className="bg-gray-100 text-black sticky top-0 z-10">

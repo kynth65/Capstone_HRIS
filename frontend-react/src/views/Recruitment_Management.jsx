@@ -78,9 +78,14 @@ function Recruitment_Management() {
     };
 
     const handleOpenPdf = (pdfUrl) => {
-        if (pdfUrl) {
-            setPdfUrl(pdfUrl);
-            setIsPdfModalOpen(true); // Open the PDF modal
+        // Check if the URL already has the backend URL prefix
+        const backendBaseUrl = import.meta.env.VITE_BASE_URL;
+        const fullUrl = pdfUrl.startsWith("http")
+            ? pdfUrl
+            : `${backendBaseUrl}/storage/${pdfUrl}`;
+
+        if (fullUrl) {
+            window.open(fullUrl, "_blank"); // Open the PDF in a new tab
         } else {
             alert("No PDF available for this file.");
         }
@@ -611,7 +616,7 @@ function Recruitment_Management() {
                                                                     className="text-blue-500 hover:underline"
                                                                     onClick={() =>
                                                                         handleOpenPdf(
-                                                                            applicant.filename,
+                                                                            applicant.file_path,
                                                                         )
                                                                     }
                                                                 >
@@ -946,31 +951,6 @@ function Recruitment_Management() {
                         <button className="button" onClick={handleDownloadPdf}>
                             Download PDF
                         </button>
-                    </div>
-                )}
-
-                {/* PDF Modal */}
-                {isPdfModalOpen && pdfUrl && (
-                    <div
-                        className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
-                        onClick={() => setIsPdfModalOpen(false)}
-                    >
-                        <div className="transparent p-6 rounded-xl w-3/4 xl:w-3/4 h-full text-black overflow-hidden flex flex-col">
-                            <div className="mb-4 float-right flex justify-end">
-                                <button
-                                    className="bg-red-600 px-4 py-2 rounded-md text-white font-normal hover:bg-red-900 transition"
-                                    onClick={() => setIsPdfModalOpen(false)}
-                                >
-                                    Close
-                                </button>
-                            </div>
-                            <iframe
-                                src={pdfUrl}
-                                title="Generated Document"
-                                width="100%"
-                                height="750px"
-                            />
-                        </div>
                     </div>
                 )}
 

@@ -77,7 +77,7 @@ class CertificateController extends Controller
             'certificate_name' => 'required|string|max:255',
             'type' => 'required|string',
             'category' => 'required|string|max:255',
-            'certificate_file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'certificate_file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         if ($request->hasFile('certificate_file')) {
@@ -419,6 +419,49 @@ class CertificateController extends Controller
             return response()->json($certificate);
         } else {
             return response()->json(['error' => 'Certificate not found'], 404);
+        }
+    }
+    public function recover($id)
+    {
+        try {
+            $archivedCertificate = ArchivedCertificate::findOrFail($id);
+
+            // Create a new Certificate from the ArchivedCertificate data
+            $certificate = new Certificate();
+            $certificate->fill($archivedCertificate->toArray());
+            $certificate->is_archived = false;
+            $certificate->save();
+
+            // Delete the ArchivedCertificate
+            $archivedCertificate->delete();
+
+            return response()->json(['message' => 'Certificate recovered successfully.']);
+        } catch (\Exception $e) {
+            Log::error('Error recovering certificate:', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Error recovering certificate'], 500);
+        }
+    }
+
+    public function permanentDelete($id)
+    {
+        try {
+            $archivedCertificate = ArchivedCertificate::findOrFail($id);
+
+            // Delete the associated file if it exists
+            if ($archivedCertificate->certificate_file_path) {
+                Storage::disk('public')->delete($archivedCertificate->certificate_file_path);
+            }
+
+            // Delete the ArchivedCertificate
+            $archivedCertificate->delete();
+
+            return response()->json(['message' => 'Certificate permanently deleted.']);
+        } catch (\Exception $e) {
+            Log::error(
+                'Error permanently deleting certificate:',
+                ['error' => $e->getMessage()]
+            );
+            return response()->json(['message' => 'Error permanently deleting certificate'], 500);
         }
     }
 }

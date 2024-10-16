@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axiosClient from "../axiosClient";
-import { MdDelete, MdEdit } from "react-icons/md";
+import { MdDelete, MdEdit, MdRestore } from "react-icons/md";
 import { RiFileDownloadFill } from "react-icons/ri";
 
 function CertificateManagement() {
@@ -54,6 +54,15 @@ function CertificateManagement() {
     const [newFile, setNewFile] = useState(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [detailedCertificate, setDetailedCertificate] = useState(null);
+    const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] =
+        useState(false);
+    const [certificateToDelete, setCertificateToDelete] = useState(null);
+    const [isArchivedDetailModalOpen, setIsArchivedDetailModalOpen] =
+        useState(false);
+    const [selectedArchivedCertificate, setSelectedArchivedCertificate] =
+        useState(null);
+
+    const [archivedSuccessMessage, setArchivedSuccessMessage] = useState("");
 
     // Define departments
     const departments = ["Admin", "Diagnostics", "Clinic", "Utility", "HR"];
@@ -300,8 +309,7 @@ function CertificateManagement() {
     const handleOpenPdf = (pdfUrl) => {
         if (pdfUrl) {
             console.log(pdfUrl); // Log the pdfUrl to ensure it's being passed correctly
-            setPdfUrl(pdfUrl);
-            setIsPdfModalOpen(true); // Open the PDF modal
+            window.open(pdfUrl, "_blank"); // Open the PDF in a new browser tab
         } else {
             alert("No PDF available for this certificate.");
         }
@@ -469,6 +477,7 @@ function CertificateManagement() {
     const handleOpenArchiveModal = () => {
         fetchArchivedCertificates();
         setIsArchivedModalOpen(true);
+        setArchivedSuccessMessage(""); // Clear any existing messages
     };
 
     const handleGrantUpdateAccess = (certificateId) => {
@@ -650,6 +659,48 @@ function CertificateManagement() {
         }
     };
 
+    const handleViewArchivedDetails = (certificate) => {
+        setSelectedArchivedCertificate(certificate);
+        setIsArchivedDetailModalOpen(true);
+    };
+
+    const handleRecoverCertificate = async (certificateId) => {
+        try {
+            await axiosClient.post(`/certificates/${certificateId}/recover`);
+            setArchivedSuccessMessage("Certificate recovered successfully!");
+            await fetchArchivedCertificates(); // Fetch updated list
+            await fetchAllCertificates(); // Fetch all certificates to update the main list
+        } catch (error) {
+            console.error("Error recovering certificate:", error);
+            setArchivedSuccessMessage(
+                "Failed to recover certificate. Please try again.",
+            );
+        }
+    };
+
+    const openDeleteConfirmModal = (certificate) => {
+        setCertificateToDelete(certificate);
+        setIsDeleteConfirmModalOpen(true);
+    };
+
+    const handlePermanentDelete = async () => {
+        if (!certificateToDelete) return;
+
+        try {
+            await axiosClient.delete(
+                `/certificates/${certificateToDelete.id}/permanent`,
+            );
+            setArchivedSuccessMessage("Certificate permanently deleted!");
+            await fetchArchivedCertificates(); // Fetch updated list
+            setIsDeleteConfirmModalOpen(false);
+        } catch (error) {
+            console.error("Error deleting certificate permanently:", error);
+            setArchivedSuccessMessage(
+                "Failed to delete certificate permanently. Please try again.",
+            );
+        }
+    };
+
     const today = new Date();
     const maxDate = new Date(today);
     const minDate = new Date(today);
@@ -692,7 +743,7 @@ function CertificateManagement() {
             {activeButton === "employeeList" && (
                 <div className="employee-list-container animated fadeInDown">
                     {/* Department Filter */}
-                    <div className="flex flex-col mb-4">
+                    <div className="flex flex-col items-center sm:grid sm:grid-cols-3 sm:gap-2 mb-4">
                         <select
                             value={selectedDepartment}
                             onChange={handleDepartmentChange}
@@ -705,7 +756,6 @@ function CertificateManagement() {
                                 </option>
                             ))}
                         </select>
-
                         <input
                             type="text"
                             placeholder="Search employees by name or ID"
@@ -716,7 +766,7 @@ function CertificateManagement() {
 
                         {/* Button to open certificate update request modal */}
                         <button
-                            className="md:px-3 w-full py-[10px] bg-green-700 text-white h-fit rounded text-sm font-normal hover:bg-green-900"
+                            className="md:px-3 sm:mb-4 w-full py-[10px] bg-green-700 text-white h-fit rounded text-sm font-normal hover:bg-green-900"
                             onClick={handleOpenUpdateRequestModal}
                         >
                             Certificate Requests
@@ -724,9 +774,9 @@ function CertificateManagement() {
                     </div>
 
                     <div className="max-h-[400px] overflow-y-auto rounded-lg">
-                        <table className="bg-white text-black w-full xl:w-full">
+                        <table className="bg-white employee-table text-black w-full xl:w-full">
                             <thead className="sticky top-0 bg-gray-200 border-b-2">
-                                <tr className="text-base">
+                                <tr className="text-sm font-semibold">
                                     <th className="px-4 py-2 hidden md:table-cell">
                                         ID
                                     </th>
@@ -739,7 +789,7 @@ function CertificateManagement() {
                                     filteredEmployees.map((employee) => (
                                         <tr
                                             key={employee.user_id}
-                                            className="font-bold hover:bg-gray-100"
+                                            className="text-sm hover:bg-gray-100"
                                         >
                                             <td className="px-4 py-2 hidden md:table-cell">
                                                 {employee.user_id}
@@ -749,7 +799,7 @@ function CertificateManagement() {
                                             </td>
                                             <td className="px-4 py-2">
                                                 <button
-                                                    className="bg-green-700 px-4 py-2 rounded-md text-white font-normal hover:bg-green-900 transition"
+                                                    className="bg-green-800 w-full px-4 py-2 rounded-md text-white font-normal hover:bg-green-900 transition"
                                                     onClick={() =>
                                                         handleViewModal(
                                                             employee,
@@ -779,14 +829,12 @@ function CertificateManagement() {
 
             {activeButton === "employeeCertificate" && (
                 <div className="certificate-list-container animated fadeInDown">
-                    <h2 className="text-base mb-10">All Certificates</h2>
-
                     {/* Department Filter and Search */}
-                    <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 mb-4">
+                    <div className="flex flex-col items-center sm:grid sm:grid-cols-3 sm:gap-2 mb-4">
                         <select
                             value={selectedDepartment}
                             onChange={handleDepartmentChange}
-                            className="w-full md:w-1/3 p-2 border rounded text-black"
+                            className="w-full p-2 border rounded text-black"
                         >
                             <option value="">Select Department</option>
                             {departments.map((dept) => (
@@ -799,13 +847,13 @@ function CertificateManagement() {
                         <input
                             type="text"
                             placeholder="Search certificate, employee name, user ID, or date issued"
-                            className="w-full md:w-1/3 p-2 border rounded text-black"
+                            className="w-full p-2 border rounded text-black"
                             value={searchQuery}
                             onChange={handleSearchChange}
                         />
 
                         <button
-                            className="w-full md:w-auto px-3 py-2 bg-yellow-500 text-white rounded text-sm font-normal hover:bg-yellow-600"
+                            className="md:px-3 sm:mb-4 w-full py-[10px] bg-green-700 text-white h-fit rounded text-sm font-normal hover:bg-green-900"
                             onClick={handleOpenArchiveModal}
                         >
                             View Archived Certificates
@@ -813,9 +861,9 @@ function CertificateManagement() {
                     </div>
 
                     <div className="max-h-[450px] overflow-x-auto overflow-y-auto rounded-lg">
-                        <table className=" bg-white text-black w-full">
+                        <table className="employee-table bg-white text-black w-full">
                             <thead className="sticky top-0 bg-gray-200 border-b-2">
-                                <tr className="border-b-2 text-base">
+                                <tr className="border-b-2 text-sm font-semibold">
                                     <th className="px-4 py-2 hidden md:table-cell">
                                         User ID
                                     </th>
@@ -845,7 +893,7 @@ function CertificateManagement() {
                                         return (
                                             <tr
                                                 key={cert.id}
-                                                className="font-bold hover:bg-gray-100"
+                                                className="text-sm font-semibold hover:bg-gray-100"
                                             >
                                                 <td className="border px-4 py-2 hidden md:table-cell">
                                                     {cert.user_id}
@@ -1431,32 +1479,6 @@ function CertificateManagement() {
                 </div>
             )}
 
-            {/* View PDF Modal */}
-            {isPdfModalOpen && pdfUrl && (
-                <div
-                    className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
-                    style={{ zIndex: 9999 }} // Higher z-index for the PDF modal
-                    onClick={() => setIsPdfModalOpen(false)}
-                >
-                    <div className="transparent p-6 rounded-xl w-3/4 xl:w-3/4 h-full text-black overflow-hidden flex flex-col">
-                        <div className="mb-4 float-right flex justify-end">
-                            <button
-                                className="bg-red-600 px-4 py-2 rounded-md text-white font-normal hover:bg-red-900 transition"
-                                onClick={() => setIsPdfModalOpen(false)}
-                            >
-                                Close
-                            </button>
-                        </div>
-                        <iframe
-                            src={pdfUrl}
-                            title="Certificate PDF"
-                            width="100%"
-                            height="750px"
-                        />
-                    </div>
-                </div>
-            )}
-
             {/* Edit Certificate Modal */}
             {isEditModalOpen && editingCertificate && (
                 <div className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
@@ -1600,10 +1622,15 @@ function CertificateManagement() {
 
             {isArchivedModalOpen && (
                 <div className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                    <div className="bg-white p-6 rounded-xl w-3/4 xl:w-2/4 text-black overflow-hidden">
+                    <div className="bg-white p-6 rounded-xl w-3/4 text-black overflow-hidden">
                         <h2 className="text-lg font-bold mb-4">
                             Archived Certificates
                         </h2>
+                        {archivedSuccessMessage && (
+                            <div className="bg-green-200 text-green-800 p-4 mb-4 rounded">
+                                {archivedSuccessMessage}
+                            </div>
+                        )}
                         <div className="mb-4">
                             <input
                                 type="text"
@@ -1616,9 +1643,9 @@ function CertificateManagement() {
                             />
                         </div>
                         <div className="overflow-auto h-[400px]">
-                            <table className="table-auto w-full text-sm text-left border-collapse">
+                            <table className="employee-table table-auto w-full text-sm text-left border-collapse">
                                 <thead className="bg-gray-400 text-center">
-                                    <tr className="font-bold text-base">
+                                    <tr className="font-semibold text-sm">
                                         <th className="px-4 py-2">
                                             Certificate Name
                                         </th>
@@ -1661,20 +1688,58 @@ function CertificateManagement() {
                                                     </td>
                                                     <td>{cert.user_id}</td>
                                                     <td>
-                                                        {cert.certificate_file_path && (
+                                                        <div className="flex justify-center space-x-2">
                                                             <button
                                                                 onClick={() =>
-                                                                    handleOpenPdf(
-                                                                        `/storage/${cert.certificate_file_path}`,
+                                                                    handleViewArchivedDetails(
+                                                                        cert,
                                                                     )
                                                                 }
-                                                                className="px-3 py-2 bg-green-500 text-white rounded text-sm font-normal hover:bg-green-600"
+                                                                className="px-3 w-full py-2 flex  justify-center items-center bg-blue-500 text-white rounded text-sm font-normal hover:bg-blue-600"
                                                             >
-                                                                <RiFileDownloadFill
+                                                                View
+                                                            </button>
+                                                            <button
+                                                                onClick={() =>
+                                                                    handleRecoverCertificate(
+                                                                        cert.id,
+                                                                    )
+                                                                }
+                                                                className="px-3 w-full py-2 flex  justify-center items-center bg-green-500 text-white rounded text-sm font-normal hover:bg-green-600"
+                                                            >
+                                                                <MdRestore
                                                                     size={20}
                                                                 />
                                                             </button>
-                                                        )}
+                                                            <button
+                                                                onClick={() =>
+                                                                    openDeleteConfirmModal(
+                                                                        cert,
+                                                                    )
+                                                                }
+                                                                className="px-3 w-full py-2 flex  justify-center items-center bg-red-500 text-white rounded text-sm font-normal hover:bg-red-600"
+                                                            >
+                                                                <MdDelete
+                                                                    size={20}
+                                                                />
+                                                            </button>
+                                                            {cert.certificate_file_path && (
+                                                                <button
+                                                                    onClick={() =>
+                                                                        handleOpenPdf(
+                                                                            `/storage/${cert.certificate_file_path}`,
+                                                                        )
+                                                                    }
+                                                                    className="px-3 w-full py-2 flex  justify-center items-center bg-purple-500 text-white rounded text-sm font-normal hover:bg-purple-600"
+                                                                >
+                                                                    <RiFileDownloadFill
+                                                                        size={
+                                                                            20
+                                                                        }
+                                                                    />
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))
@@ -1697,6 +1762,131 @@ function CertificateManagement() {
                                 onClick={() => setIsArchivedModalOpen(false)}
                             >
                                 Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isArchivedDetailModalOpen && selectedArchivedCertificate && (
+                <div className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                    <div className="modal-content bg-white p-8 rounded-lg w-3/4 max-w-2xl">
+                        <h2 className="text-2xl font-bold mb-6 text-center">
+                            Archived Certificate Details
+                        </h2>
+                        <div className="text-black space-y-4 mb-6">
+                            <p>
+                                <strong className="font-semibold">
+                                    Certificate Name:
+                                </strong>{" "}
+                                {selectedArchivedCertificate.certificate_name}
+                            </p>
+                            <p>
+                                <strong className="font-semibold">Type:</strong>{" "}
+                                {selectedArchivedCertificate.type}
+                            </p>
+                            <p>
+                                <strong className="font-semibold">
+                                    Category:
+                                </strong>{" "}
+                                {selectedArchivedCertificate.category}
+                            </p>
+                            <p>
+                                <strong className="font-semibold">
+                                    Date Issued:
+                                </strong>{" "}
+                                {new Date(
+                                    selectedArchivedCertificate.issued_date,
+                                ).toLocaleDateString()}
+                            </p>
+                            <p>
+                                <strong className="font-semibold">
+                                    Expiring Date:
+                                </strong>{" "}
+                                {selectedArchivedCertificate.expiring_date
+                                    ? new Date(
+                                          selectedArchivedCertificate.expiring_date,
+                                      ).toLocaleDateString()
+                                    : "N/A"}
+                            </p>
+                            <p>
+                                <strong className="font-semibold">
+                                    Employee ID:
+                                </strong>{" "}
+                                {selectedArchivedCertificate.user_id}
+                            </p>
+                            <p>
+                                <strong className="font-semibold">
+                                    Created By:
+                                </strong>{" "}
+                                {selectedArchivedCertificate.created_by}
+                            </p>
+                            <p>
+                                <strong className="font-semibold">
+                                    Updated By:
+                                </strong>{" "}
+                                {selectedArchivedCertificate.updated_by}
+                            </p>
+                        </div>
+                        <div className="flex justify-end space-x-4">
+                            <button
+                                className="bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600 transition duration-200"
+                                onClick={() =>
+                                    handleRecoverCertificate(
+                                        selectedArchivedCertificate.id,
+                                    )
+                                }
+                            >
+                                Recover
+                            </button>
+                            <button
+                                className="bg-red-500 text-white px-6 py-2 rounded-md hover:bg-red-600 transition duration-200"
+                                onClick={() => {
+                                    setIsArchivedDetailModalOpen(false);
+                                    openDeleteConfirmModal(
+                                        selectedArchivedCertificate,
+                                    );
+                                }}
+                            >
+                                Delete Permanently
+                            </button>
+                            <button
+                                className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition duration-200"
+                                onClick={() =>
+                                    setIsArchivedDetailModalOpen(false)
+                                }
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isDeleteConfirmModalOpen && (
+                <div className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                    <div className="modal-content bg-white p-8 rounded-lg w-96">
+                        <h2 className="text-xl font-bold mb-4 text-center">
+                            Confirm Permanent Deletion
+                        </h2>
+                        <p className="mb-6 text-center">
+                            Are you sure you want to permanently delete this
+                            certificate? This action cannot be undone.
+                        </p>
+                        <div className="flex justify-center space-x-4">
+                            <button
+                                className="bg-red-500 text-white px-6 py-2 rounded-md hover:bg-red-600 transition duration-200"
+                                onClick={handlePermanentDelete}
+                            >
+                                Delete Permanently
+                            </button>
+                            <button
+                                className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition duration-200"
+                                onClick={() =>
+                                    setIsDeleteConfirmModalOpen(false)
+                                }
+                            >
+                                Cancel
                             </button>
                         </div>
                     </div>

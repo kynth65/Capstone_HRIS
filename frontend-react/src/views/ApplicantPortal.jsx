@@ -253,6 +253,7 @@ const ApplicantPortal = () => {
             setLoading(false);
         }
     };
+
     const handleLoginSuccess = (response) => {
         const token = response.credential;
         const decodedData = jwtDecode(token);

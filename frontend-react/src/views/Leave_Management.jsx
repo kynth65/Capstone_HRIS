@@ -454,7 +454,7 @@ function Leave_Management() {
                                                                             className="text-blue-600 hover:underline"
                                                                         >
                                                                             {
-                                                                                request.file_name
+                                                                                request.file_path
                                                                             }
                                                                         </a>
                                                                     </td>
