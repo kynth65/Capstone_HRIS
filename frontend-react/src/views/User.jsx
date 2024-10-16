@@ -93,10 +93,10 @@ function Profile() {
     );
 
     return (
-        <div className="bg-white px-14 py-10 rounded-lg mr-6 animated fadeInDown">
+        <div className="bg-white px-6 md:px-14 py-10 rounded-lg md:mr-6 animated fadeInDown">
             <div className="flex items-center mb-8 text-black">
                 <img
-                    className="w-40 h-40 rounded-md  object-cover"
+                    className="w-10 h-10 md:w-40 md:h-40 rounded-md  object-cover"
                     src={
                         user.profile
                             ? `http://127.0.0.1:8000/storage/images/${user.profile}`
@@ -104,12 +104,12 @@ function Profile() {
                     }
                     alt={user.name}
                 />
-                <div className="text-start flex justify-between w-full ml-4">
+                <div className="text-start flex flex-col items-center md:flex-row md:justify-between w-full ml-4">
                     <div>
-                        <h2 className="text-green-900 text-2xl font-semibold uppercase">
+                        <h2 className="text-green-900 md:text-2xl font-semibold uppercase">
                             {user.name}
                         </h2>
-                        <h4 className="text-base font-semibold">
+                        <h4 className="text-sm font-semibold">
                             {user.position}
                         </h4>
                     </div>
@@ -140,7 +140,7 @@ function Profile() {
                     )}
                 </div>
                 {expandedSections.personalInfo && (
-                    <div className="profile-details text-base font-kodchasan">
+                    <div className="profile-details text-sm md:text-base font-kodchasan">
                         {renderField("Email", user.email)}
                         {renderField("Age", calculateAge(user.date_of_birth))}
                         {renderField(
@@ -160,7 +160,7 @@ function Profile() {
             </div>
 
             {/* Contact Information Section */}
-            <div className="profile-section mt-4 text-black">
+            <div className="profile-section mt-14 text-black">
                 <div
                     className="section-header flex items-center cursor-pointer"
                     onClick={() => toggleSection("contactInfo")}
@@ -175,7 +175,7 @@ function Profile() {
                     )}
                 </div>
                 {expandedSections.contactInfo && (
-                    <div className="profile-details text-base font-kodchasan">
+                    <div className="profile-details text-sm md:text-base font-kodchasan">
                         {renderField("Contact", user.contact_number)}
                         {renderField("Address", user.address)}
                         {renderField("Personal Email", user.personal_email)}
@@ -186,7 +186,7 @@ function Profile() {
             </div>
 
             {/* Emergency Contacts Section */}
-            <div className="profile-section mt-4 text-black">
+            <div className="profile-section mt-14 text-black">
                 <div
                     className="section-header flex items-center cursor-pointer"
                     onClick={() => toggleSection("emergencyContacts")}
@@ -201,7 +201,7 @@ function Profile() {
                     )}
                 </div>
                 {expandedSections.emergencyContacts && (
-                    <div className="profile-details text-base font-kodchasan">
+                    <div className="profile-details text-sm md:text-base font-kodchasan">
                         {renderField(
                             "Emergency Contact",
                             user.emergency_contact_name,
@@ -219,7 +219,7 @@ function Profile() {
             </div>
 
             {/* Employment Details Section */}
-            <div className="profile-section mt-4 text-black">
+            <div className="profile-section mt-14 text-black">
                 <div
                     className="section-header flex items-center cursor-pointer"
                     onClick={() => toggleSection("employmentDetails")}
@@ -234,7 +234,7 @@ function Profile() {
                     )}
                 </div>
                 {expandedSections.employmentDetails && (
-                    <div className="profile-details text-base font-kodchasan">
+                    <div className="profile-details text-sm md:text-base font-kodchasan">
                         {renderField("Employee Type", user.employee_type)}
                         {renderField(
                             "Sick Leave Balance",
@@ -258,46 +258,12 @@ function Profile() {
             </div>
             {showModal && (
                 <div className="modal fixed inset-0 flex items-center justify-center z-50 bg-opacity-50 pt-28">
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl text-black">
+                    <div className="bg-white p-6 h-[700px] py-20 overflow-auto rounded-lg shadow-lg w-full max-w-4xl text-black">
                         <h2 className="text-2xl font-semibold mb-4">
                             Edit Profile
                         </h2>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                            {/* Contact Number */}
-                            <div className="mb-4">
-                                <label
-                                    className="block text-sm font-semibold mb-2"
-                                    htmlFor="contact_number"
-                                >
-                                    Contact Number
-                                </label>
-                                <input
-                                    type="text"
-                                    name="contact_number"
-                                    value={formData.contact_number || ""}
-                                    onChange={handleChange}
-                                    className="w-full p-2 border border-gray-300 rounded"
-                                />
-                            </div>
-
-                            {/* Address */}
-                            <div className="mb-4">
-                                <label
-                                    className="block text-sm font-semibold mb-2"
-                                    htmlFor="address"
-                                >
-                                    Address
-                                </label>
-                                <input
-                                    type="text"
-                                    name="address"
-                                    value={formData.address || ""}
-                                    onChange={handleChange}
-                                    className="w-full p-2 border border-gray-300 rounded"
-                                />
-                            </div>
-
                             {/* Profile Picture */}
                             <div className="mb-4">
                                 <label
@@ -424,16 +390,16 @@ function Profile() {
                         </div>
 
                         {/* Save and Cancel Buttons */}
-                        <div className="flex justify-between mt-4">
+                        <div className="flex justify-between gap-3 mt-4">
                             <button
                                 onClick={handleUpload}
-                                className="bg-green-900 hover:bg-white text-white py-2 px-4 rounded border-2 border-green-900 transition hover:text-green-900"
+                                className="bg-green-900 w-full hover:bg-white text-white py-2 px-4 rounded border-2 border-green-900 transition hover:text-green-900"
                             >
                                 Save Changes
                             </button>
                             <button
                                 onClick={() => setShowModal(false)}
-                                className="bg-red-500 hover:bg-white text-white py-2 px-4 rounded border-2 border-red-500 transition hover:text-red-500"
+                                className="bg-red-500 w-full hover:bg-white text-white py-2 px-4 rounded border-2 border-red-500 transition hover:text-red-500"
                             >
                                 Cancel
                             </button>
