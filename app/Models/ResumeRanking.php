@@ -15,8 +15,6 @@ class ResumeRanking extends Model
     {
         return $this->belongsTo(Position::class, 'position_id');
     }
-    protected $primaryKey = 'position_id';
-
     protected $fillable = [
         'filename',
         'file_path',

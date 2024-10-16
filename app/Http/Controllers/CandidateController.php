@@ -11,12 +11,19 @@ use Illuminate\Support\Str;
 
 class CandidateController extends Controller
 {
-    public function triggerOnboarding($candidateId)
+    public function triggerOnboarding(Request $request, $candidateId)
     {
         $candidate = Candidate::findOrFail($candidateId);
         $token = Str::random(60);
+
+        // Add new fields from the request
         $candidate->onboarding_token = $token;
         $candidate->onboarding_status = 'started';
+        $candidate->time = $request->time;
+        $candidate->date = $request->date;
+        $candidate->hr_name = $request->hr_name;
+        $candidate->position = $request->position;
+
         $candidate->save();
 
         // Log the onboarding process
@@ -26,6 +33,7 @@ class CandidateController extends Controller
 
         return response()->json(['message' => 'Onboarding email sent successfully']);
     }
+
 
     public function getCandidate()
     {

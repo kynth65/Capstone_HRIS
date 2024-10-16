@@ -14,7 +14,8 @@ const Onboarding = () => {
     const [showProceedSchedule, setShowProceedSchedule] = useState();
     const [showCandidateModal, setShowCandidateModal] = useState(false);
     const [selectedCandidate, setSelectedCandidate] = useState(null);
-
+    const [loading, setLoading] = useState(false);
+    const [sentEmails, setSentEmails] = useState([]);
     const [showInterviewCandidateModal, setShowInterviewCandidateModal] =
         useState(false);
     const [selectedInterviewCandidate, setSelectedInterviewCandidate] =
@@ -96,7 +97,7 @@ const Onboarding = () => {
 
     const handleTriggerOnboarding = (event, candidateId) => {
         event.preventDefault();
-
+        setLoading(true);
         axiosClient
             .post(`/trigger-onboarding/${candidateId}`, {
                 date: newCandidate.date,
@@ -106,10 +107,16 @@ const Onboarding = () => {
             })
             .then((response) => {
                 setSuccess("Email sent successfully!");
+                const updatedSentEmails = [...sentEmails, candidateId];
+                setSentEmails(updatedSentEmails);
+                localStorage.setItem(
+                    "sentEmails",
+                    JSON.stringify(updatedSentEmails),
+                );
                 setTimeout(() => {
                     setSuccess("");
                 }, 3000);
-                fetchCandidates(); // refresh list of candidates
+                fetchCandidates(); // Refresh list of candidates
                 setShowCandidateModal(false);
                 setShowSendEmail(false);
                 // Clear newCandidate fields after submission
@@ -122,10 +129,14 @@ const Onboarding = () => {
             })
             .catch((error) => {
                 console.error("Error triggering onboarding:", error);
+            })
+            .finally(() => {
+                setLoading(false);
             });
     };
 
     const handleInterviewPassed = (id) => {
+        setLoading(true);
         axiosClient
             .post(`/interview-passed/${id}`)
             .then((response) => {
@@ -137,9 +148,12 @@ const Onboarding = () => {
             })
             .catch((error) =>
                 console.error("Error triggering onboarding:", error),
-            );
+            )
+            .finally(() => setLoading(false)); // Reset loading state
     };
+
     const handleInterviewDeclined = (id) => {
+        setLoading(true);
         axiosClient
             .post(`/interview-declined/${id}`)
             .then((response) => {
@@ -151,53 +165,28 @@ const Onboarding = () => {
             })
             .catch((error) =>
                 console.error("Error triggering onboarding:", error),
-            );
+            )
+            .finally(() => setLoading(false));
     };
+
     const handleFinalInterview = (event, candidateId) => {
-        event.preventDefault(); // Prevent default form submission
+        event.preventDefault();
+        setLoading(true);
         axiosClient
             .post(`/final-interview/${candidateId}/`, newCandidate)
             .then((response) => {
                 setSuccess(
-                    "Email sent for final interview schedule is successfully!",
+                    "Email sent for final interview schedule successfully!",
                 );
                 setTimeout(() => {
                     setSuccess("");
                 }, 3000);
-                setNewCandidate({
-                    ...newCandidate,
-                    time: "",
-                    date: "",
-                });
+                setNewCandidate({ ...newCandidate, time: "", date: "" });
                 fetchCandidates();
                 setShowSchedule(false);
             })
-            .catch((error) => {
-                console.error("Error updating candidate:", error);
-            });
-    };
-    const handleCreateCandidate = (e) => {
-        e.preventDefault();
-        axiosClient
-            .post("/candidate", newCandidate)
-            .then((response) => {
-                setSuccess("Candidate created!");
-                setTimeout(() => {
-                    setSuccess("");
-                }, 3000);
-                setNewCandidate({
-                    name: "",
-                    email: "",
-                    time: "",
-                    date: "",
-                    job_position: "",
-                });
-                setShowCreateCandidateModal(false);
-                fetchCandidates();
-            })
-            .catch((error) =>
-                console.error("Error creating candidate:", error),
-            );
+            .catch((error) => console.error("Error updating candidate:", error))
+            .finally(() => setLoading(false));
     };
 
     const handleExam = (event, candidateId) => {
@@ -262,6 +251,7 @@ const Onboarding = () => {
             );
     };
     const handleProbationary = (id) => {
+        setLoading(true);
         axiosClient
             .post(`/orientation/${id}`)
             .then((response) => {
@@ -273,9 +263,12 @@ const Onboarding = () => {
             })
             .catch((error) =>
                 console.error("Error triggering onboarding:", error),
-            );
+            )
+            .finally(() => setLoading(false)); // Reset loading state
     };
+
     const handleRegular = (id) => {
+        setLoading(true);
         axiosClient
             .post(`/probationary/${id}`)
             .then((response) => {
@@ -287,7 +280,25 @@ const Onboarding = () => {
             })
             .catch((error) =>
                 console.error("Error triggering onboarding:", error),
+            )
+            .finally(() => setLoading(false)); // Reset loading state
+    };
+    const handleRegularEmployee = async (candidateId) => {
+        setLoading(true);
+        try {
+            const response = await axiosClient.post(
+                `/candidates/${candidateId}/notify-regular`,
             );
+            setSuccess(response.data.message);
+            setTimeout(() => {
+                setSuccess("");
+            }, 2000);
+        } catch (error) {
+            console.error("There was an error sending the email:", error);
+            alert("Failed to send the notification email.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleStepClick = (selectedStep) => {
@@ -323,6 +334,12 @@ const Onboarding = () => {
         setSelectedRegularCandidate(candidate);
         setShowRegularCandidateModal(true);
     };
+
+    useEffect(() => {
+        const savedSentEmails =
+            JSON.parse(localStorage.getItem("sentEmails")) || [];
+        setSentEmails(savedSentEmails);
+    }, []);
     return (
         <>
             <div className="text-start">
@@ -437,14 +454,27 @@ const Onboarding = () => {
                                                                     View
                                                                 </button>
                                                                 <button
-                                                                    className="hidden md:block bg-green-600 px-4 py-2 rounded text-white font-medium hover:bg-green-700 transition-all"
+                                                                    className={`hidden md:block px-4 py-2 rounded text-white font-medium transition-all ${
+                                                                        sentEmails.includes(
+                                                                            candidate.id,
+                                                                        )
+                                                                            ? "bg-gray-400 cursor-not-allowed"
+                                                                            : "bg-green-600 hover:bg-green-700"
+                                                                    }`}
                                                                     onClick={() =>
                                                                         handleSendEmail(
                                                                             candidate.id,
                                                                         )
                                                                     }
+                                                                    disabled={sentEmails.includes(
+                                                                        candidate.id,
+                                                                    )} // Disable button if email is sent
                                                                 >
-                                                                    Send Email
+                                                                    {sentEmails.includes(
+                                                                        candidate.id,
+                                                                    )
+                                                                        ? "Email Sent"
+                                                                        : "Send Email"}
                                                                 </button>
                                                             </div>
                                                         </td>
@@ -613,14 +643,20 @@ const Onboarding = () => {
                                         <button
                                             type="submit"
                                             className="bg-green-900 hover:bg-white text-white py-2 px-4 rounded border-2 border-green-900 transition hover:text-green-900"
+                                            disabled={loading}
                                         >
-                                            Save / Send email
+                                            {sentEmails.includes(candidateId)
+                                                ? "Email Sent"
+                                                : loading
+                                                  ? "Sending..."
+                                                  : "Save / Send email"}
                                         </button>
                                         <button
                                             className="bg-red-700 hover:bg-white text-white py-2 px-4 rounded border-2 border-red-700 transition hover:text-red-700"
                                             onClick={() =>
                                                 setShowSendEmail(false)
                                             }
+                                            disabled={loading}
                                         >
                                             Close
                                         </button>
@@ -667,107 +703,147 @@ const Onboarding = () => {
                                                         candidate.recruitment_stage ===
                                                         "Interview",
                                                 )
-                                                .map((candidate) => (
-                                                    <tr
-                                                        key={candidate.id}
-                                                        className="hover:bg-gray-50 transition-colors"
-                                                    >
-                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm">
-                                                            {candidate.name}
-                                                        </td>
-                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
-                                                            {candidate.email}
-                                                        </td>
-                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
-                                                            {
-                                                                candidate.job_position
-                                                            }
-                                                        </td>
-                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
-                                                            <div>
+                                                .map((candidate) => {
+                                                    // Combine date and time into a single Date object
+                                                    const interviewDateTime =
+                                                        new Date(
+                                                            `${candidate.date}T${candidate.time}`,
+                                                        );
+                                                    const currentTime =
+                                                        new Date(); // Get the current date and time
+
+                                                    // Disable buttons if the interview date and time is in the future
+                                                    const isFutureInterview =
+                                                        interviewDateTime >
+                                                        currentTime;
+
+                                                    return (
+                                                        <tr
+                                                            key={candidate.id}
+                                                            className="hover:bg-gray-50 transition-colors"
+                                                        >
+                                                            <td className="px-6 py-4 border-b border-gray-200 text-sm">
+                                                                {candidate.name}
+                                                            </td>
+                                                            <td className="px-6 py-4 border-b border-gray-200 text-sm">
+                                                                {
+                                                                    candidate.email
+                                                                }
+                                                            </td>
+                                                            <td className="px-6 py-4 border-b border-gray-200 text-sm">
+                                                                {
+                                                                    candidate.job_position
+                                                                }
+                                                            </td>
+                                                            <td className="px-6 py-4 border-b border-gray-200 text-sm">
                                                                 <div>
-                                                                    Date:{" "}
-                                                                    {new Date(
-                                                                        candidate.date,
-                                                                    ).toLocaleDateString(
-                                                                        "en-US",
-                                                                        {
-                                                                            month: "long",
-                                                                            day: "2-digit",
-                                                                            year: "numeric",
-                                                                        },
-                                                                    )}
+                                                                    <div>
+                                                                        Date:{" "}
+                                                                        {new Date(
+                                                                            candidate.date,
+                                                                        ).toLocaleDateString(
+                                                                            "en-US",
+                                                                            {
+                                                                                month: "long",
+                                                                                day: "2-digit",
+                                                                                year: "numeric",
+                                                                            },
+                                                                        )}
+                                                                    </div>
+                                                                    <div>
+                                                                        Time:{" "}
+                                                                        {new Date(
+                                                                            "1970-01-01T" +
+                                                                                candidate.time,
+                                                                        ).toLocaleTimeString(
+                                                                            "en-US",
+                                                                            {
+                                                                                hour: "numeric",
+                                                                                minute: "2-digit",
+                                                                                hour12: true,
+                                                                            },
+                                                                        )}
+                                                                    </div>
                                                                 </div>
-                                                                <div>
-                                                                    Time:{" "}
-                                                                    {new Date(
-                                                                        "1970-01-01T" +
-                                                                            candidate.time,
-                                                                    ).toLocaleTimeString(
-                                                                        "en-US",
-                                                                        {
-                                                                            hour: "numeric",
-                                                                            minute: "2-digit",
-                                                                            hour12: true,
-                                                                        },
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm">
-                                                            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
-                                                                <button
-                                                                    className="md:hidden bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                                                                    onClick={() =>
-                                                                        handleViewInterviewCandidate(
-                                                                            candidate,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    View
-                                                                </button>
-                                                                <div className="hidden md:flex space-x-1">
+                                                            </td>
+                                                            <td className="px-6 py-4 border-b border-gray-200 text-sm space-x-2">
+                                                                <div className="flex space-x-1">
                                                                     <button
-                                                                        className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-md text-sm"
+                                                                        className="md:hidden bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                                                                        onClick={() =>
+                                                                            handleViewInterviewCandidate(
+                                                                                candidate,
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        View
+                                                                    </button>
+                                                                    <button
+                                                                        className={`py-1 px-3 rounded-md text-sm text-white ${isFutureInterview ? "bg-blue-300 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"}`}
                                                                         onClick={() =>
                                                                             handleSchedule(
                                                                                 candidate.id,
                                                                             )
                                                                         }
+                                                                        disabled={
+                                                                            loading ||
+                                                                            isFutureInterview
+                                                                        }
                                                                     >
-                                                                        Final
-                                                                        Interview
+                                                                        {loading
+                                                                            ? "Loading..."
+                                                                            : "Final Interview"}
                                                                     </button>
+
                                                                     <button
-                                                                        className="bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded-md text-sm"
+                                                                        className={`py-1 px-3 rounded-md text-sm text-white ${isFutureInterview ? "bg-green-300 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"}`}
                                                                         onClick={() =>
                                                                             handleInterviewPassed(
                                                                                 candidate.id,
                                                                             )
                                                                         }
+                                                                        disabled={
+                                                                            loading ||
+                                                                            isFutureInterview
+                                                                        }
                                                                     >
-                                                                        Accept
+                                                                        {loading
+                                                                            ? "Processing..."
+                                                                            : "Accept"}
                                                                     </button>
+
                                                                     <button
-                                                                        className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-md text-sm"
+                                                                        className={`py-1 px-3 rounded-md text-sm text-white ${isFutureInterview ? "bg-red-300 cursor-not-allowed" : "bg-red-500 hover:bg-red-600"}`}
                                                                         onClick={() =>
                                                                             handleInterviewDeclined(
                                                                                 candidate.id,
                                                                             )
                                                                         }
+                                                                        disabled={
+                                                                            loading ||
+                                                                            isFutureInterview
+                                                                        }
                                                                     >
-                                                                        Decline
+                                                                        {loading
+                                                                            ? "Processing..."
+                                                                            : "Decline"}
                                                                     </button>
                                                                 </div>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
+                                                                {isFutureInterview && (
+                                                                    <div className="text-sm text-yellow-500 mt-2">
+                                                                        Status:
+                                                                        Pending
+                                                                    </div>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })
                                         ) : (
                                             <tr>
                                                 <td
                                                     colSpan="5"
-                                                    className="text-center py-4"
+                                                    className="text-center"
                                                 >
                                                     No candidates available.
                                                 </td>
@@ -993,106 +1069,149 @@ const Onboarding = () => {
                                                         candidate.recruitment_stage ===
                                                         "Exam",
                                                 )
-                                                .map((candidate) => (
-                                                    <tr
-                                                        key={candidate.id}
-                                                        className="hover:bg-gray-50 transition-colors"
-                                                    >
-                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm">
-                                                            {candidate.name}
-                                                        </td>
-                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
-                                                            {candidate.email}
-                                                        </td>
-                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
-                                                            {
-                                                                candidate.job_position
-                                                            }
-                                                        </td>
-                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
-                                                            <div>
+                                                .map((candidate) => {
+                                                    const examDateTime =
+                                                        new Date(
+                                                            `${candidate.date}T${candidate.time}`,
+                                                        );
+                                                    const currentTime =
+                                                        new Date();
+                                                    const isFutureExam =
+                                                        examDateTime >
+                                                        currentTime;
+
+                                                    return (
+                                                        <tr
+                                                            key={candidate.id}
+                                                            className="hover:bg-gray-50 transition-colors"
+                                                        >
+                                                            <td className="px-6 py-4 border-b border-gray-200 text-sm">
+                                                                {candidate.name}
+                                                            </td>
+                                                            <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
+                                                                {
+                                                                    candidate.email
+                                                                }
+                                                            </td>
+                                                            <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
+                                                                {
+                                                                    candidate.job_position
+                                                                }
+                                                            </td>
+                                                            <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
                                                                 <div>
-                                                                    Date:{" "}
-                                                                    {candidate.date
-                                                                        ? new Date(
-                                                                              candidate.date,
-                                                                          ).toLocaleDateString(
-                                                                              "en-US",
-                                                                              {
-                                                                                  month: "long",
-                                                                                  day: "2-digit",
-                                                                                  year: "numeric",
-                                                                              },
-                                                                          )
-                                                                        : "Set Date"}
+                                                                    <div>
+                                                                        Date:{" "}
+                                                                        {candidate.date
+                                                                            ? new Date(
+                                                                                  candidate.date,
+                                                                              ).toLocaleDateString(
+                                                                                  "en-US",
+                                                                                  {
+                                                                                      month: "long",
+                                                                                      day: "2-digit",
+                                                                                      year: "numeric",
+                                                                                  },
+                                                                              )
+                                                                            : "Set Date"}
+                                                                    </div>
+                                                                    <div>
+                                                                        Time:{" "}
+                                                                        {candidate.time
+                                                                            ? new Date(
+                                                                                  "1970-01-01T" +
+                                                                                      candidate.time,
+                                                                              ).toLocaleTimeString(
+                                                                                  "en-US",
+                                                                                  {
+                                                                                      hour: "numeric",
+                                                                                      minute: "2-digit",
+                                                                                      hour12: true,
+                                                                                  },
+                                                                              )
+                                                                            : "Set Time"}
+                                                                    </div>
                                                                 </div>
-                                                                <div>
-                                                                    Time:{" "}
-                                                                    {candidate.time
-                                                                        ? new Date(
-                                                                              "1970-01-01T" +
-                                                                                  candidate.time,
-                                                                          ).toLocaleTimeString(
-                                                                              "en-US",
-                                                                              {
-                                                                                  hour: "numeric",
-                                                                                  minute: "2-digit",
-                                                                                  hour12: true,
-                                                                              },
-                                                                          )
-                                                                        : "Set Time"}
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-4 space-x-2 border-b border-gray-200 text-sm">
-                                                            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
-                                                                <button
-                                                                    className="md:hidden bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                                                                    onClick={() =>
-                                                                        handleViewExamCandidate(
-                                                                            candidate,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    View
-                                                                </button>
-                                                                <div className="hidden md:flex space-x-2">
+                                                            </td>
+                                                            <td className="px-6 py-4 space-x-2 border-b border-gray-200 text-sm">
+                                                                <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
                                                                     <button
-                                                                        className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md font-medium transition-all"
+                                                                        className="md:hidden bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                                                                        onClick={() =>
+                                                                            handleViewExamCandidate(
+                                                                                candidate,
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        View
+                                                                    </button>
+                                                                    <button
+                                                                        className={`py-1 px-3 rounded-md text-sm text-white ${isFutureExam ? "bg-blue-300 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"}`}
                                                                         onClick={() =>
                                                                             handleExamSchedule(
                                                                                 candidate.id,
                                                                             )
+                                                                        }
+                                                                        disabled={
+                                                                            isFutureExam
                                                                         }
                                                                     >
                                                                         Schedule
                                                                         for Exam
                                                                     </button>
                                                                     <button
-                                                                        className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md font-medium transition-all"
+                                                                        className={`py-1 px-3 rounded-md text-sm text-white ${
+                                                                            isFutureExam ||
+                                                                            !candidate.date ||
+                                                                            !candidate.time
+                                                                                ? "bg-green-300 cursor-not-allowed"
+                                                                                : "bg-green-500 hover:bg-green-600"
+                                                                        }`}
                                                                         onClick={() =>
                                                                             handleProceedSchedule(
                                                                                 candidate.id,
                                                                             )
                                                                         }
+                                                                        disabled={
+                                                                            isFutureExam ||
+                                                                            !candidate.date ||
+                                                                            !candidate.time
+                                                                        }
                                                                     >
                                                                         Passed
                                                                     </button>
                                                                     <button
-                                                                        className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md font-medium transition-all"
+                                                                        className={`py-1 px-3 rounded-md text-sm text-white ${
+                                                                            isFutureExam ||
+                                                                            !candidate.date ||
+                                                                            !candidate.time
+                                                                                ? "bg-red-300 cursor-not-allowed"
+                                                                                : "bg-red-500 hover:bg-red-600"
+                                                                        }`}
                                                                         onClick={() =>
                                                                             handleExamFailed(
                                                                                 candidate.id,
                                                                             )
                                                                         }
+                                                                        disabled={
+                                                                            isFutureExam ||
+                                                                            !candidate.date ||
+                                                                            !candidate.time
+                                                                        }
                                                                     >
                                                                         Failed
                                                                     </button>
                                                                 </div>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
+                                                                {isFutureExam && (
+                                                                    <div className="text-sm text-yellow-500 mt-2">
+                                                                        Status:
+                                                                        Pending
+                                                                    </div>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })
                                         ) : (
                                             <tr>
                                                 <td
@@ -1224,8 +1343,6 @@ const Onboarding = () => {
                                     <h3 className="text-2xl font-semibold mb-4 text-center">
                                         Set Schedule for Final Interview
                                     </h3>
-
-                                    {/* Close Icon */}
                                     <span
                                         className="absolute top-2 right-2 cursor-pointer text-xl font-bold text-gray-600 hover:text-gray-900"
                                         onClick={() =>
@@ -1234,8 +1351,6 @@ const Onboarding = () => {
                                     >
                                         &times;
                                     </span>
-
-                                    {/* Date Input */}
                                     <div className="mb-4">
                                         <label className="block text-sm font-semibold mb-2">
                                             Select Date
@@ -1253,8 +1368,6 @@ const Onboarding = () => {
                                             className="w-full p-2 border border-gray-300 rounded"
                                         />
                                     </div>
-
-                                    {/* Time Input */}
                                     <div className="mb-4">
                                         <label className="block text-sm font-semibold mb-2">
                                             Select Time
@@ -1272,14 +1385,15 @@ const Onboarding = () => {
                                             className="w-full p-2 border border-gray-300 rounded"
                                         />
                                     </div>
-
-                                    {/* Save/Send Button */}
                                     <div className="flex justify-center">
                                         <button
                                             type="submit"
                                             className="bg-green-900 hover:bg-white text-white py-2 px-4 rounded border-2 border-green-900 transition hover:text-green-900"
+                                            disabled={loading}
                                         >
-                                            Save / Send email
+                                            {loading
+                                                ? "Sending..."
+                                                : "Save / Send email"}
                                         </button>
                                     </div>
                                 </form>
@@ -1299,8 +1413,6 @@ const Onboarding = () => {
                                     <h3 className="text-2xl font-semibold mb-4 text-center">
                                         Set Schedule for Orientation
                                     </h3>
-
-                                    {/* Close Icon */}
                                     <span
                                         className="absolute top-2 right-2 cursor-pointer text-xl font-bold text-gray-600 hover:text-gray-900"
                                         onClick={() =>
@@ -1309,8 +1421,6 @@ const Onboarding = () => {
                                     >
                                         &times;
                                     </span>
-
-                                    {/* Date Input */}
                                     <div className="mb-4">
                                         <label className="block text-sm font-semibold mb-2">
                                             Select Date
@@ -1328,8 +1438,6 @@ const Onboarding = () => {
                                             className="w-full p-2 border border-gray-300 rounded"
                                         />
                                     </div>
-
-                                    {/* Time Input */}
                                     <div className="mb-4">
                                         <label className="block text-sm font-semibold mb-2">
                                             Select Time
@@ -1347,89 +1455,15 @@ const Onboarding = () => {
                                             className="w-full p-2 border border-gray-300 rounded"
                                         />
                                     </div>
-
-                                    {/* Save/Send Button */}
                                     <div className="flex justify-center">
                                         <button
                                             type="submit"
                                             className="bg-green-900 hover:bg-white text-white py-2 px-4 rounded border-2 border-green-900 transition hover:text-green-900"
+                                            disabled={loading}
                                         >
-                                            Save / Send email
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    )}
-
-                    {showProceedSchedule && (
-                        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-                            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md text-black relative">
-                                <form
-                                    onSubmit={(event) =>
-                                        handleExamPassed(event, candidateId)
-                                    }
-                                    className="space-y-4"
-                                >
-                                    <h3 className="text-2xl font-semibold mb-4 text-center">
-                                        Set Schedule for Orientation
-                                    </h3>
-
-                                    {/* Close Icon */}
-                                    <span
-                                        className="absolute top-2 right-2 cursor-pointer text-xl font-bold text-gray-600 hover:text-gray-900"
-                                        onClick={() =>
-                                            setShowProceedSchedule(false)
-                                        }
-                                    >
-                                        &times;
-                                    </span>
-
-                                    {/* Date Input */}
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-semibold mb-2">
-                                            Select Date
-                                        </label>
-                                        <input
-                                            type="date"
-                                            value={newCandidate.date}
-                                            onChange={(e) =>
-                                                setNewCandidate({
-                                                    ...newCandidate,
-                                                    date: e.target.value,
-                                                })
-                                            }
-                                            required
-                                            className="w-full p-2 border border-gray-300 rounded"
-                                        />
-                                    </div>
-
-                                    {/* Time Input */}
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-semibold mb-2">
-                                            Select Time
-                                        </label>
-                                        <input
-                                            type="time"
-                                            value={newCandidate.time}
-                                            onChange={(e) =>
-                                                setNewCandidate({
-                                                    ...newCandidate,
-                                                    time: e.target.value,
-                                                })
-                                            }
-                                            required
-                                            className="w-full p-2 border border-gray-300 rounded"
-                                        />
-                                    </div>
-
-                                    {/* Save/Send Button */}
-                                    <div className="flex justify-center">
-                                        <button
-                                            type="submit"
-                                            className="bg-green-900 hover:bg-white text-white py-2 px-4 rounded border-2 border-green-900 transition hover:text-green-900"
-                                        >
-                                            Save / Send email
+                                            {loading
+                                                ? "Sending..."
+                                                : "Save / Send email"}
                                         </button>
                                     </div>
                                 </form>
@@ -1472,83 +1506,114 @@ const Onboarding = () => {
                                                         candidate.recruitment_stage ===
                                                         "Orientation",
                                                 )
-                                                .map((candidate) => (
-                                                    <tr
-                                                        key={candidate.id}
-                                                        className="hover:bg-gray-50 transition-colors"
-                                                    >
-                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm">
-                                                            {candidate.name}
-                                                        </td>
-                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
-                                                            {candidate.email}
-                                                        </td>
-                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
-                                                            {
-                                                                candidate.job_position
-                                                            }
-                                                        </td>
-                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
-                                                            <div>
+                                                .map((candidate) => {
+                                                    const orientationDateTime =
+                                                        new Date(
+                                                            `${candidate.date}T${candidate.time}`,
+                                                        );
+                                                    const currentTime =
+                                                        new Date();
+                                                    const isFutureOrientation =
+                                                        orientationDateTime >
+                                                        currentTime;
+
+                                                    return (
+                                                        <tr
+                                                            key={candidate.id}
+                                                            className="hover:bg-gray-50 transition-colors"
+                                                        >
+                                                            <td className="px-6 py-4 border-b border-gray-200 text-sm">
+                                                                {candidate.name}
+                                                            </td>
+                                                            <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
+                                                                {
+                                                                    candidate.email
+                                                                }
+                                                            </td>
+                                                            <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
+                                                                {
+                                                                    candidate.job_position
+                                                                }
+                                                            </td>
+                                                            <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
                                                                 <div>
-                                                                    Date:{" "}
-                                                                    {candidate.date
-                                                                        ? new Date(
-                                                                              candidate.date,
-                                                                          ).toLocaleDateString(
-                                                                              "en-US",
-                                                                              {
-                                                                                  month: "long",
-                                                                                  day: "2-digit",
-                                                                                  year: "numeric",
-                                                                              },
-                                                                          )
-                                                                        : "Set Date"}
+                                                                    <div>
+                                                                        Date:{" "}
+                                                                        {candidate.date
+                                                                            ? new Date(
+                                                                                  candidate.date,
+                                                                              ).toLocaleDateString(
+                                                                                  "en-US",
+                                                                                  {
+                                                                                      month: "long",
+                                                                                      day: "2-digit",
+                                                                                      year: "numeric",
+                                                                                  },
+                                                                              )
+                                                                            : "Set Date"}
+                                                                    </div>
+                                                                    <div>
+                                                                        Time:{" "}
+                                                                        {candidate.time
+                                                                            ? new Date(
+                                                                                  "1970-01-01T" +
+                                                                                      candidate.time,
+                                                                              ).toLocaleTimeString(
+                                                                                  "en-US",
+                                                                                  {
+                                                                                      hour: "numeric",
+                                                                                      minute: "2-digit",
+                                                                                      hour12: true,
+                                                                                  },
+                                                                              )
+                                                                            : "Set Time"}
+                                                                    </div>
                                                                 </div>
-                                                                <div>
-                                                                    Time:{" "}
-                                                                    {candidate.time
-                                                                        ? new Date(
-                                                                              "1970-01-01T" +
-                                                                                  candidate.time,
-                                                                          ).toLocaleTimeString(
-                                                                              "en-US",
-                                                                              {
-                                                                                  hour: "numeric",
-                                                                                  minute: "2-digit",
-                                                                                  hour12: true,
-                                                                              },
-                                                                          )
-                                                                        : "Set Time"}
+                                                            </td>
+                                                            <td className="px-6 py-4 border-b border-gray-200 text-sm">
+                                                                <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                                                                    <button
+                                                                        className="md:hidden bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                                                                        onClick={() =>
+                                                                            handleViewOrientationCandidate(
+                                                                                candidate,
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        View
+                                                                    </button>
+                                                                    <button
+                                                                        className={`hidden md:block bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-md text-sm ${
+                                                                            isFutureOrientation ||
+                                                                            loading
+                                                                                ? "cursor-not-allowed bg-blue-300"
+                                                                                : ""
+                                                                        }`}
+                                                                        onClick={() =>
+                                                                            handleProbationary(
+                                                                                candidate.id,
+                                                                            )
+                                                                        }
+                                                                        disabled={
+                                                                            isFutureOrientation ||
+                                                                            loading
+                                                                        }
+                                                                    >
+                                                                        {loading
+                                                                            ? "Processing..."
+                                                                            : "Proceed"}
+                                                                    </button>
                                                                 </div>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm">
-                                                            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
-                                                                <button
-                                                                    className="md:hidden bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                                                                    onClick={() =>
-                                                                        handleViewOrientationCandidate(
-                                                                            candidate,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    View
-                                                                </button>
-                                                                <button
-                                                                    className="hidden md:block bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-md text-sm"
-                                                                    onClick={() =>
-                                                                        handleProbationary(
-                                                                            candidate.id,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Proceed
-                                                                </button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
+                                                                {isFutureOrientation && (
+                                                                    <div className="text-sm text-yellow-500 mt-2">
+                                                                        Status:
+                                                                        Pending
+                                                                    </div>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })
                                         ) : (
                                             <tr>
                                                 <td
@@ -1696,48 +1761,79 @@ const Onboarding = () => {
                                                         candidate.recruitment_stage ===
                                                         "Probationary",
                                                 )
-                                                .map((candidate) => (
-                                                    <tr
-                                                        key={candidate.id}
-                                                        className="hover:bg-gray-50 transition-colors"
-                                                    >
-                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm">
-                                                            {candidate.name}
-                                                        </td>
-                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
-                                                            {candidate.email}
-                                                        </td>
-                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
-                                                            {
-                                                                candidate.job_position
-                                                            }
-                                                        </td>
-                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm">
-                                                            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
-                                                                <button
-                                                                    className="md:hidden bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                                                                    onClick={() =>
-                                                                        handleViewProbationaryCandidate(
-                                                                            candidate,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    View
-                                                                </button>
-                                                                <button
-                                                                    className="hidden md:block bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-md text-sm"
-                                                                    onClick={() =>
-                                                                        handleRegular(
-                                                                            candidate.id,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Send Email
-                                                                </button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
+                                                .map((candidate) => {
+                                                    const probationaryDateTime =
+                                                        new Date(
+                                                            `${candidate.date}T${candidate.time}`,
+                                                        );
+                                                    const currentTime =
+                                                        new Date();
+                                                    const isFutureProbationary =
+                                                        probationaryDateTime >
+                                                        currentTime;
+
+                                                    return (
+                                                        <tr
+                                                            key={candidate.id}
+                                                            className="hover:bg-gray-50 transition-colors"
+                                                        >
+                                                            <td className="px-6 py-4 border-b border-gray-200 text-sm">
+                                                                {candidate.name}
+                                                            </td>
+                                                            <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
+                                                                {
+                                                                    candidate.email
+                                                                }
+                                                            </td>
+                                                            <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
+                                                                {
+                                                                    candidate.job_position
+                                                                }
+                                                            </td>
+                                                            <td className="px-6 py-4 border-b border-gray-200 text-sm">
+                                                                <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                                                                    <button
+                                                                        className="md:hidden bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                                                                        onClick={() =>
+                                                                            handleViewProbationaryCandidate(
+                                                                                candidate,
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        View
+                                                                    </button>
+                                                                    <button
+                                                                        className={`hidden md:block bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-md text-sm ${
+                                                                            isFutureProbationary ||
+                                                                            loading
+                                                                                ? "cursor-not-allowed bg-blue-300"
+                                                                                : ""
+                                                                        }`}
+                                                                        onClick={() =>
+                                                                            handleRegular(
+                                                                                candidate.id,
+                                                                            )
+                                                                        }
+                                                                        disabled={
+                                                                            isFutureProbationary ||
+                                                                            loading
+                                                                        }
+                                                                    >
+                                                                        {loading
+                                                                            ? "Sending..."
+                                                                            : "Send Email"}
+                                                                    </button>
+                                                                </div>
+                                                                {isFutureProbationary && (
+                                                                    <div className="text-sm text-yellow-500 mt-2">
+                                                                        Status:
+                                                                        Pending
+                                                                    </div>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })
                                         ) : (
                                             <tr>
                                                 <td
@@ -1879,14 +1975,19 @@ const Onboarding = () => {
                                                                     View
                                                                 </button>
                                                                 <button
-                                                                    className="hidden md:block bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-md text-sm"
+                                                                    className={`hidden md:block bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-md text-sm ${loading ? "cursor-not-allowed bg-blue-300" : ""}`}
                                                                     onClick={() =>
-                                                                        handleTriggerOnboarding(
+                                                                        handleRegularEmployee(
                                                                             candidate.id,
                                                                         )
                                                                     }
+                                                                    disabled={
+                                                                        loading
+                                                                    }
                                                                 >
-                                                                    Send Email
+                                                                    {loading
+                                                                        ? "Sending..."
+                                                                        : "Send Email"}
                                                                 </button>
                                                             </div>
                                                         </td>

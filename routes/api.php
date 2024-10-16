@@ -27,6 +27,7 @@ use App\Http\Controllers\TrackingAttendanceController;
 use App\Http\Controllers\EmployeeAttendanceController;
 use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\callOpenAi;
+use App\Http\Controllers\RegularEmployeeController;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
@@ -176,4 +177,6 @@ Route::prefix('applicants')->group(function () {
 Route::post('/suggestTag', [AdminTagsController::class, 'suggestTag']);
 Route::get('/getSuggestedTags', [AdminTagsController::class, 'getSuggestedTags']);
 Route::post('/reviewSuggestedTag', [AdminTagsController::class, 'reviewSuggestedTag']);
+
+Route::post('/candidates/{candidateId}/notify-regular', [RegularEmployeeController::class, 'notifyRegularEmployee']);
 //->middleware('auth:sanctum');

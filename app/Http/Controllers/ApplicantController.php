@@ -177,7 +177,7 @@ class ApplicantController extends Controller
     {
         try {
             $validatedData = $request->validate([
-                'files' => 'required|file|mimes:pdf|max:2048',
+                'files' => 'required|file|mimes:pdf|max:5120',
                 'filename' => 'required|string',
                 'email' => 'required|email',
                 'position_name' => 'required|string',
