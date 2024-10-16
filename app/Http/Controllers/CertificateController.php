@@ -176,27 +176,7 @@ class CertificateController extends Controller
         return response()->json($certificates);
     }
 
-    // Archive a certificate by moving it to the ArchivedCertificate table
 
-    public function getArchivedCertificates()
-    {
-        try {
-            $archivedCertificates = ArchivedCertificate::all();
-
-            Log::info('Fetched archived certificates:', ['count' => $archivedCertificates->count()]);
-
-            foreach ($archivedCertificates as $cert) {
-                if ($cert->certificate_file_path) {
-                    $cert->file_url = asset('storage/' . $cert->certificate_file_path);
-                }
-            }
-
-            return response()->json($archivedCertificates, 200);
-        } catch (\Exception $e) {
-            Log::error('Error fetching archived certificates:', ['error' => $e->getMessage()]);
-            return response()->json(['message' => 'Error fetching archived certificates'], 500);
-        }
-    }
 
     public function archiveCertificate($id)
     {

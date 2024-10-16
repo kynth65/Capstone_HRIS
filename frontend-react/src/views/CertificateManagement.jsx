@@ -448,10 +448,11 @@ function CertificateManagement() {
 
     const fetchArchivedCertificates = async () => {
         try {
-            const response = await axiosClient.get("/certificates/archived");
+            const response = await axiosClient.get("/archived-certificates");
             console.log("Archived certificates response:", response.data);
-            if (Array.isArray(response.data)) {
-                setArchivedCertificates(response.data);
+
+            if (response.data && Array.isArray(response.data.data)) {
+                setArchivedCertificates(response.data.data);
             } else {
                 console.error("Unexpected response format:", response.data);
                 setArchivedCertificates([]);
@@ -1625,7 +1626,7 @@ function CertificateManagement() {
                                             Date Issued
                                         </th>
                                         <th className="px-4 py-2">
-                                            Employee Name
+                                            Employee ID
                                         </th>
                                         <th className="px-4 py-2">Action</th>
                                     </tr>
@@ -1640,7 +1641,7 @@ function CertificateManagement() {
                                                         .includes(
                                                             archivedSearchQuery.toLowerCase(),
                                                         ) ||
-                                                    cert.employee_name
+                                                    cert.user_id
                                                         .toLowerCase()
                                                         .includes(
                                                             archivedSearchQuery.toLowerCase(),
@@ -1652,19 +1653,19 @@ function CertificateManagement() {
                                                         {cert.certificate_name}
                                                     </td>
                                                     <td>
-                                                        {new Date(
-                                                            cert.issued_date,
-                                                        ).toLocaleDateString()}
+                                                        {cert.issued_date
+                                                            ? new Date(
+                                                                  cert.issued_date,
+                                                              ).toLocaleDateString()
+                                                            : "N/A"}
                                                     </td>
+                                                    <td>{cert.user_id}</td>
                                                     <td>
-                                                        {cert.employee_name}
-                                                    </td>
-                                                    <td>
-                                                        {cert.file_url && (
+                                                        {cert.certificate_file_path && (
                                                             <button
                                                                 onClick={() =>
                                                                     handleOpenPdf(
-                                                                        cert.file_url,
+                                                                        `/storage/${cert.certificate_file_path}`,
                                                                     )
                                                                 }
                                                                 className="px-3 py-2 bg-green-500 text-white rounded text-sm font-normal hover:bg-green-600"

@@ -12,35 +12,36 @@ class AttendanceController extends Controller
     public function getAttendanceRecords()
     {
         try {
-            Log::info('Fetching attendance records directly from the test table');
+            Log::info('Fetching attendance records directly from the attendance table');
 
-            $attendanceRecords = DB::connection('mysql_second')
-                ->table('test')
-                ->join('gammacare_db.users', 'test.rfid', '=', 'users.rfid')
+            $attendanceRecords = DB::table('attendances')
+                ->join('users', 'attendances.user_id', '=', 'users.user_id')
                 ->select(
-                    'test.id',
+                    'attendances.id',
                     'users.user_id',
-                    'test.name',
-                    'test.date',
-                    'test.time_in',
-                    'test.time_out'
+                    'users.name',
+                    'attendances.date',
+                    'attendances.time_in',
+                    'attendances.time_out',
+                    'attendances.status',
+                    'attendances.accumulated_work_time'
                 )
-                ->orderBy('test.date', 'desc')
+                ->orderBy('attendances.date', 'desc')
                 ->get();
 
-            // Calculate accumulated time for display only
+            // If accumulated_work_time is not calculated in the database, calculate it here
             $attendanceRecords = $attendanceRecords->map(function ($record) {
                 if ($record->time_in && $record->time_out) {
                     $timeIn = Carbon::parse($record->time_in);
                     $timeOut = Carbon::parse($record->time_out);
                     $accumulatedMinutes = $timeIn->diffInMinutes($timeOut);
 
-                    // Assign accumulated time with a label
-                    $record->accumulated_time = ($accumulatedMinutes < 60)
+                    // Calculate and assign accumulated work time
+                    $record->accumulated_work_time = ($accumulatedMinutes < 60)
                         ? $accumulatedMinutes . ' minutes'
                         : round($accumulatedMinutes / 60, 2) . ' hours';
                 } else {
-                    $record->accumulated_time = '0 minutes';
+                    $record->accumulated_work_time = '0 minutes';
                 }
                 return $record;
             });
@@ -57,13 +58,14 @@ class AttendanceController extends Controller
             ], 500);
         }
     }
+
     public function archiveDailyAttendance()
     {
         $today = Carbon::now()->toDateString();
 
         try {
             // Fetch today's attendance records from 'test' table
-            $attendanceRecords = DB::connection('mysql_second')->table('test')
+            $attendanceRecords = DB::table('attendances')
                 ->whereDate('date', $today)
                 ->get();
 
@@ -82,7 +84,7 @@ class AttendanceController extends Controller
             }
 
             // Delete the records from 'test' table after moving them
-            DB::connection('mysql_second')->table('test')
+            DB::table('attendances')
                 ->whereDate('date', $today)
                 ->delete();
 
