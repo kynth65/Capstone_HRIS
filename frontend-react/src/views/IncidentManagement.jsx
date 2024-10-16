@@ -115,44 +115,52 @@ const IncidentManagement = () => {
     };
 
     return (
-        <div className="p-6 bg-white rounded-xl shadow-md mx-auto">
+        <div className="pt-5 md:p-6 bg-white rounded-xl shadow-md mx-auto">
             {successMessage && (
                 <p className="text-green-600 ">{successMessage}</p>
             )}
             {errorMessage && <p className="text-red-600 ">{errorMessage}</p>}
-            <h2 className="text-2xl font-semibold mb-4 text-black">
+            <h2 className="text-lg lg:text-2xl font-semibold mb-4 text-black">
                 Incident Management
             </h2>
             <div className="overflow-y-auto max-h-[600px]">
                 <table className="employee-table min-w-full border-collapse w-full">
                     <thead className="bg-gray-100 text-black sticky top-0 z-10">
                         <tr>
-                            <th className="p-2 ">Name</th>
+                            <th className="p-2 hidden md:table-cell">Name</th>
                             <th className="p-2 ">Title</th>
-                            <th className="p-2 ">Description</th>
-                            <th className="p-2 ">Date</th>
-                            <th className="p-2 ">Severity</th>
+                            <th className="p-2  hidden md:table-cell">
+                                Description
+                            </th>
+                            <th className="p-2  hidden lg:table-cell">Date</th>
+                            <th className="p-2  hidden md:table-cell">
+                                Severity
+                            </th>
                             <th className="p-2 ">Status</th>
-                            <th className="p-2 ">PDF</th>
+                            <th className="p-2  hidden md:table-cell">PDF</th>
                             <th className="p-2 ">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="text-black">
                         {incidents.map((incident) => (
                             <tr key={incident.id} className="text-center">
-                                <td className="p-2 ">{incident.name}</td>
+                                <td className="p-2  hidden md:table-cell">
+                                    {incident.name}
+                                </td>
                                 <td className="p-2 ">{incident.title}</td>
-                                <td className="p-2 max-w-xs truncate overflow-hidden">
+                                <td className="p-2 max-w-xs truncate overflow-hidden  hidden md:table-cell">
                                     <span title={incident.description}>
                                         {incident.description}
                                     </span>
                                 </td>
-                                <td className="p-2 ">
+                                <td className="p-2  hidden lg:table-cell">
                                     {incident.incident_date}
                                 </td>
-                                <td className="p-2 ">{incident.severity}</td>
+                                <td className="p-2  hidden md:table-cell">
+                                    {incident.severity}
+                                </td>
                                 <td className="p-2 ">{incident.status}</td>
-                                <td className="p-2 ">
+                                <td className="p-2  hidden md:table-cell">
                                     {incident.file_path ? (
                                         <a
                                             href={`http://localhost:8000/storage/${incident.file_path}`}
@@ -166,10 +174,10 @@ const IncidentManagement = () => {
                                         "No PDF"
                                     )}
                                 </td>
-                                <td className="flex justify-center p-2">
+                                <td className="flex flex-col lg:grid lg:grid-cols-2 gap-3 p-2">
                                     <button
                                         onClick={() => handleView(incident)}
-                                        className="mr-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
                                     >
                                         View
                                     </button>
@@ -194,7 +202,7 @@ const IncidentManagement = () => {
                         <h3 className="text-xl font-semibold mb-4 text-center">
                             Incident Details
                         </h3>
-                        <div className="space-y-2 mb-4">
+                        <div className="space-y-2 mb-4 text-base">
                             <p>
                                 <strong>Title:</strong> {selectedIncident.name}
                             </p>
@@ -206,7 +214,8 @@ const IncidentManagement = () => {
                                 {selectedIncident.description}
                             </p>
                             <p>
-                                <strong>Date:</strong> {selectedIncident.date}
+                                <strong>Date:</strong>{" "}
+                                {selectedIncident.incident_date}
                             </p>
                             <p>
                                 <strong>Severity:</strong>{" "}
@@ -218,7 +227,7 @@ const IncidentManagement = () => {
                             </p>
                             {selectedIncident.file_path && (
                                 <p>
-                                    <strong>PDF:</strong>
+                                    <strong>PDF: </strong>
                                     <a
                                         href={`http://localhost:8000/storage/${selectedIncident.file_path}`}
                                         target="_blank"
