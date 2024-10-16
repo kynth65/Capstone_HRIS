@@ -75,40 +75,47 @@ const HRTagSuggestion = () => {
     return (
         <div className="bg-white p-6 rounded-lg text-black">
             <h2 className="text-2xl font-bold mb-4">Suggest New Tag</h2>
-            <div className="mb-4">
-                <label className="block mb-2">Position:</label>
-                <select
-                    value={selectedPosition}
-                    onChange={handlePositionChange}
-                    className="w-full p-2 border rounded"
-                >
-                    <option value="">Select a position</option>
-                    <option value="Accounting">Accounting</option>
-                    <option value="Anatomical">Anatomical</option>
-                    <option value="RMT">RMT</option>
-                    <option value="XRay Tech">XRay Tech</option>
-                    <option value="Ultrasound">Ultrasound</option>
-                    <option value="Medical Secretary">Medical Secretary</option>
-                    <option value="Receptionist">Receptionist</option>
-                    <option value="Rider">Rider</option>
-                    <option value="Security">Security</option>
-                    <option value="Maintenance">Maintenance</option>
-                    <option value="Purchasing Clerk">Purchasing Clerk</option>
-                </select>
+            <div className="flex flex-col md:grid md:grid-cols-2">
+                <div className="mb-4">
+                    <label className="block mb-2">Position:</label>
+                    <select
+                        value={selectedPosition}
+                        onChange={handlePositionChange}
+                        className="w-full p-2 border rounded"
+                    >
+                        <option value="">Select a position</option>
+                        <option value="Accounting">Accounting</option>
+                        <option value="Anatomical">Anatomical</option>
+                        <option value="RMT">RMT</option>
+                        <option value="XRay Tech">XRay Tech</option>
+                        <option value="Ultrasound">Ultrasound</option>
+                        <option value="Medical Secretary">
+                            Medical Secretary
+                        </option>
+                        <option value="Receptionist">Receptionist</option>
+                        <option value="Rider">Rider</option>
+                        <option value="Security">Security</option>
+                        <option value="Maintenance">Maintenance</option>
+                        <option value="Purchasing Clerk">
+                            Purchasing Clerk
+                        </option>
+                    </select>
+                </div>
+                <div className="mb-4">
+                    <label className="block mb-2">New Tag:</label>
+                    <input
+                        type="text"
+                        value={newTag}
+                        onChange={handleTagInput}
+                        className="w-full p-2 border rounded"
+                        placeholder="Enter a new tag"
+                    />
+                </div>
             </div>
-            <div className="mb-4">
-                <label className="block mb-2">New Tag:</label>
-                <input
-                    type="text"
-                    value={newTag}
-                    onChange={handleTagInput}
-                    className="w-full p-2 border rounded"
-                    placeholder="Enter a new tag"
-                />
-            </div>
+
             <button
                 onClick={suggestTag}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                className="bg-green-700 text-white px-14 py-2 rounded hover:bg-green-900"
             >
                 Suggest Tag
             </button>

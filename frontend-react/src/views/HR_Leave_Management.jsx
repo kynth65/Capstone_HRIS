@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axiosClient from "../axiosClient";
 import { jsPDF } from "jspdf";
 import { MdVisibility } from "react-icons/md";
+import { RiFileDownloadFill } from "react-icons/ri";
 import { useStateContext } from "../contexts/ContextProvider";
 import Spinner from "./SpinnerLoading";
 
@@ -207,6 +208,20 @@ const HR_Leave_Management = () => {
         setSelectedRequest(null);
     };
 
+    const handleOpenPdf = (pdfUrl) => {
+        // Check if the URL already has the backend URL prefix
+        const backendBaseUrl = import.meta.env.VITE_BASE_URL;
+        const fullUrl = pdfUrl.startsWith("http")
+            ? pdfUrl
+            : `${backendBaseUrl}/storage/${pdfUrl}`;
+
+        if (fullUrl) {
+            window.open(fullUrl, "_blank"); // Open the PDF in a new tab
+        } else {
+            alert("No PDF available for this file.");
+        }
+    };
+
     return (
         <>
             <div className="text-start">
@@ -264,9 +279,7 @@ const HR_Leave_Management = () => {
                                     <th className="p-2 border-b border-gray-300 hidden lg:table-cell">
                                         Status
                                     </th>
-                                    <th className="p-2 border-b border-gray-300 hidden sm:table-cell">
-                                        File
-                                    </th>
+
                                     <th className="p-2 border-b border-gray-300">
                                         Actions
                                     </th>
@@ -301,16 +314,7 @@ const HR_Leave_Management = () => {
                                             <td className="p-2 border border-gray-300 hidden lg:table-cell">
                                                 {request.statuses}
                                             </td>
-                                            <td className="p-2 border border-gray-300 hidden sm:table-cell">
-                                                <a
-                                                    href={`/${request.file_path}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-blue-600 hover:underline"
-                                                >
-                                                    View PDF
-                                                </a>
-                                            </td>
+
                                             <td className="p-2 border border-gray-300">
                                                 <div className="flex flex-col items-center space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
                                                     <button
@@ -324,6 +328,18 @@ const HR_Leave_Management = () => {
                                                     {user.position ===
                                                         "Human Resource Manager" && (
                                                         <>
+                                                            {request.file_path && (
+                                                                <button
+                                                                    className="px-4 hidden py-1 sm:flex  bg-blue-600 text-white rounded text-sm font-normal hover:bg-blue-600"
+                                                                    onClick={() =>
+                                                                        handleOpenPdf(
+                                                                            request.file_path,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    Form
+                                                                </button>
+                                                            )}
                                                             <button
                                                                 className={`px-3 w-full py-1 rounded ${
                                                                     request.statuses ===
@@ -392,53 +408,42 @@ const HR_Leave_Management = () => {
                 )}
 
                 {showModal && selectedRequest && (
-                    <div
-                        className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-                        onClick={() => setShowModal(false)}
-                    >
-                        <div className="relative top-20 mx-auto p-5 border w-11/12 sm:w-96 shadow-lg rounded-md bg-white">
+                    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                        <div className="relative top-20 mx-auto p-5 border w-11/12 sm:w-96 md:w-[600px] shadow-lg rounded-md bg-white">
                             <div className="mt-3 text-center">
                                 <h3 className="text-lg leading-6 font-semibold text-gray-900">
                                     Leave Request Details
                                 </h3>
-                                <div className="mt-2 px-7 py-3">
-                                    <p className="text-lg text-gray-500">
+                                <div className="mt-2 px-7 py-3 text-st">
+                                    <p className="font-bold text-lg text-gray-500">
                                         <strong>Employee:</strong>{" "}
                                         {selectedRequest.user_name}
                                     </p>
-                                    <p className="text-lg text-gray-500">
+                                    <p className="font-bold text-lg text-gray-500">
                                         <strong>Date Requested:</strong>{" "}
                                         {formatDate(selectedRequest.created_at)}
                                     </p>
-                                    <p className="text-lg text-gray-500">
+                                    <p className="font-bold text-lg text-gray-500">
                                         <strong>Start Date:</strong>{" "}
                                         {formatDate(selectedRequest.start_date)}
                                     </p>
-                                    <p className="text-lg text-gray-500">
+                                    <p className="font-bold text-lg text-gray-500">
                                         <strong>End Date:</strong>{" "}
                                         {formatDate(selectedRequest.end_date)}
                                     </p>
-                                    <p className="text-lg text-gray-500">
+                                    <p className="font-bold text-lg text-gray-500">
                                         <strong>Days Requested:</strong>{" "}
                                         {selectedRequest.days_requested}
                                     </p>
-                                    <p className="text-lg text-gray-500">
+                                    <p className="font-bold text-lg text-gray-500">
                                         <strong>Status:</strong>{" "}
                                         {selectedRequest.statuses}
                                     </p>
-                                    <a
-                                        href={`/${selectedRequest.file_path}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-600 hover:underline text-lg"
-                                    >
-                                        View PDF
-                                    </a>
                                 </div>
                                 {user.position === "Human Resource Manager" && (
                                     <div className="flex justify-center space-x-4 mt-4">
                                         <button
-                                            className={`px-4 py-2 rounded ${
+                                            className={`w-full py-2 rounded ${
                                                 selectedRequest.statuses ===
                                                     "approved" ||
                                                 selectedRequest.statuses ===
@@ -462,7 +467,7 @@ const HR_Leave_Management = () => {
                                             Approve
                                         </button>
                                         <button
-                                            className={`px-4 py-2 rounded ${
+                                            className={`w-full py-2 rounded ${
                                                 selectedRequest.statuses ===
                                                     "declined" ||
                                                 selectedRequest.statuses ===
@@ -485,13 +490,23 @@ const HR_Leave_Management = () => {
                                         >
                                             Decline
                                         </button>
+                                        <button
+                                            className="w-full py-1  bg-blue-600 text-white rounded text-sm font-normal hover:bg-blue-800"
+                                            onClick={() =>
+                                                handleOpenPdf(
+                                                    selectedRequest.file_path,
+                                                )
+                                            }
+                                        >
+                                            Form
+                                        </button>
                                     </div>
                                 )}
                             </div>
                             <div className="items-center px-4 py-3">
                                 <button
                                     id="ok-btn"
-                                    className="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                    className="w-full py-2 bg-gray-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2"
                                     onClick={closeModal}
                                 >
                                     Close
