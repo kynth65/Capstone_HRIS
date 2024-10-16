@@ -19,6 +19,7 @@ class RegularEmployeeController extends Controller
         $candidate->save();
 
         // Log the regular employee notification
+
         Log::info("Regular employee notification sent for candidate: {$candidate->id}, email sent to: {$candidate->email}");
 
         // Send email to notify that the candidate is now a regular employee
