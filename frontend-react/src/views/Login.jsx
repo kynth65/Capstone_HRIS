@@ -29,14 +29,10 @@ function Login() {
     const navigateBasedOnRole = (user) => {
         const hrPositions = [
             "Human Resource Manager",
-            "HR Manager",
             "Human Resource Assistant",
-            "Accountant",
-            "Marketing",
-            "Book Keeper",
         ];
 
-        const adminPositions = ["Purchasing", "Admin"];
+        const adminPositions = ["Admin"];
 
         if (hrPositions.includes(user.position)) {
             navigate("/dashboard");
