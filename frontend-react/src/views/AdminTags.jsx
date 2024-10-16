@@ -128,16 +128,16 @@ const AdminTags = () => {
     };
 
     return (
-        <div className="bg-white overflow-auto h-full xl:w-3/4 text-sm flex xl:ml-32 xl:mt-12 flex-col items-center mx-4 px-7 pb-10 pt-4 rounded-lg">
-            <div className="w-full h-fit flex justify-between">
+        <div className="bg-white overflow-auto h-full xl:w-3/4 text-sm flex xl:ml-32 xl:mt-12 flex-col items-center md:mx-7 md:px-7 p-2 pb-10 pt-4 rounded-lg">
+            <div>
                 <h3 className="tags text-xl 2xl:pl-[300px] 2xl:text-2xl mb-3 font-bold">
                     ADD TAGS
                 </h3>
             </div>
 
             <div className="flex flex-col w-full gap-4">
-                <div className="title-select flex justify-center items-center">
-                    <label className="tags mr-5 font-bold">Title:</label>
+                <div className="title-select flex flex-col gap-2 justify-center items-center">
+                    <label className="tags font-bold">Title:</label>
                     <select
                         className="hover:border-green-700 mb-0 text-black rounded-lg"
                         name="title"
@@ -163,8 +163,8 @@ const AdminTags = () => {
                     </select>
                 </div>
 
-                <div className="tags-input flex justify-center items-center">
-                    <label className="tags mr-5 font-bold">New Tag:</label>
+                <div className="tags-input flex flex-col gap-2 justify-center items-center">
+                    <label className="tags font-bold">New Tag:</label>
                     <input
                         style={{ color: "black" }}
                         type="text"
@@ -176,7 +176,7 @@ const AdminTags = () => {
                     />
                     <button
                         onClick={addTag}
-                        className="ml-2 bg-green-900 text-white rounded px-4 py-2 border-2 border-white hover:border-green-900 hover:text-green-900 hover:bg-white transition"
+                        className="ml-2 bg-green-900 text-white rounded-lg px-4 py-2 border-2 border-white hover:border-green-900 hover:text-green-900 hover:bg-white transition"
                     >
                         Add Tag
                     </button>
@@ -185,7 +185,7 @@ const AdminTags = () => {
                 {existingTags.length > 0 ? (
                     <div className="existing-tags mt-4 flex flex-col items-center gap-4">
                         <label className="tags font-bold">Existing Tags:</label>
-                        <div className="border-2 w-[360px] lg:w-[650px] min-h-10 max-h-56 rounded-lg overflow-auto text-black font-kodchasan font-semibold p-2">
+                        <div className="border-2 md:w-[360px] lg:w-[650px] min-h-10 max-h-56 rounded-lg overflow-auto text-black font-kodchasan font-semibold p-2">
                             {existingTags.map((tag, index) => (
                                 <span
                                     key={index}
@@ -205,7 +205,7 @@ const AdminTags = () => {
                 ) : (
                     <div className="existing-tags mt-4 flex flex-col items-center gap-4">
                         <label className="tags font-bold">Existing Tags:</label>
-                        <div className="border-2 w-[360px] lg:w-[650px] min-h-10 max-h-56 rounded-lg overflow-auto text-black font-kodchasan font-semibold p-2">
+                        <div className="border-2 w-[200px] md:w-[360px] lg:w-[650px] min-h-10 max-h-56 rounded-lg overflow-auto text-black font-kodchasan font-semibold p-2">
                             <span className="text-gray-500">
                                 No tags available for this position.
                             </span>
@@ -223,13 +223,13 @@ const AdminTags = () => {
                             <table className="w-full text-black">
                                 <thead className="bg-gray-200 sticky top-0">
                                     <tr>
-                                        <th className="px-4 py-2 text-left">
+                                        <th className="px-1 sm:px-4 py-2 sm:py-4 text-center">
                                             Position
                                         </th>
-                                        <th className="px-4 py-2 text-left">
+                                        <th className="px-1 sm:px-4 py-2 sm:py-4 text-center">
                                             Tag
                                         </th>
-                                        <th className="px-4 py-2 text-center">
+                                        <th className="px-1 sm:px-4 py-2 sm:py-4 text-center">
                                             Actions
                                         </th>
                                     </tr>
@@ -240,13 +240,13 @@ const AdminTags = () => {
                                             key={suggestedTag.id}
                                             className="border-t"
                                         >
-                                            <td className="px-4 py-2">
+                                            <td className="px-1 sm:px-4 py-2 sm:py-4">
                                                 {suggestedTag.position}
                                             </td>
-                                            <td className="px-4 py-2">
+                                            <td className="px-1 sm:px-4 py-2 sm:py-4">
                                                 {suggestedTag.tag}
                                             </td>
-                                            <td className="px-4 py-2 text-center">
+                                            <td className="px-1 sm:px-4 py-2 sm:py-4 grid gap-2 sm:flex text-center">
                                                 <button
                                                     onClick={() =>
                                                         reviewSuggestedTag(
@@ -254,7 +254,7 @@ const AdminTags = () => {
                                                             "approve",
                                                         )
                                                     }
-                                                    className="bg-green-500 text-white px-3 py-1 rounded mr-2 hover:bg-green-600 text-sm"
+                                                    className="bg-green-800 text-white px-3 py-3 rounded hover:bg-green-900 text-sm"
                                                 >
                                                     Approve
                                                 </button>
@@ -265,7 +265,7 @@ const AdminTags = () => {
                                                             "decline",
                                                         )
                                                     }
-                                                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
+                                                    className="bg-red-700 text-white px-3 py-3 rounded hover:bg-red-900 text-sm"
                                                 >
                                                     Decline
                                                 </button>
