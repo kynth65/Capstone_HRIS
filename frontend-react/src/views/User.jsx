@@ -96,7 +96,7 @@ function Profile() {
         <div className="bg-white px-6 md:px-14 py-10 rounded-lg md:mr-6 animated fadeInDown">
             <div className="flex items-center mb-8 text-black">
                 <img
-                    className="w-10 h-10 md:w-40 md:h-40 rounded-md  object-cover"
+                    className="w-20 h-20 md:w-40 md:h-40 rounded-md  object-cover"
                     src={
                         user.profile
                             ? `http://127.0.0.1:8000/storage/images/${user.profile}`
@@ -104,7 +104,7 @@ function Profile() {
                     }
                     alt={user.name}
                 />
-                <div className="text-start flex flex-col items-center md:flex-row md:justify-between w-full ml-4">
+                <div className="text-center md:text-start flex flex-col items-center md:flex-row md:justify-between w-full ml-4">
                     <div>
                         <h2 className="text-green-900 md:text-2xl font-semibold uppercase">
                             {user.name}
@@ -395,11 +395,11 @@ function Profile() {
                                 onClick={handleUpload}
                                 className="bg-green-900 w-full hover:bg-white text-white py-2 px-4 rounded border-2 border-green-900 transition hover:text-green-900"
                             >
-                                Save Changes
+                                Save
                             </button>
                             <button
                                 onClick={() => setShowModal(false)}
-                                className="bg-red-500 w-full hover:bg-white text-white py-2 px-4 rounded border-2 border-red-500 transition hover:text-red-500"
+                                className="bg-red-700 w-full hover:bg-white text-white py-2 px-4 rounded border-2 border-red-700 transition hover:text-red-700"
                             >
                                 Cancel
                             </button>
