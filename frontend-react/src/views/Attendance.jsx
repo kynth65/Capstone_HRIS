@@ -56,33 +56,27 @@ function Attendance() {
 
     return (
         <div>
-            <nav>
-                <ul>
-                    <li>
-                        <button
-                            className={`navButton ${activeButton === "monitoring" ? "active" : ""}`}
-                            onClick={() => setActiveButton("monitoring")}
-                        >
-                            Monitoring
-                        </button>
-                    </li>
-                    <li>
-                        <button
-                            className={`navButton ${activeButton === "totalHours" ? "active" : ""}`}
-                            onClick={() => setActiveButton("totalHours")}
-                        >
-                            Accumulated Total Time
-                        </button>
-                    </li>
-                    <li>
-                        <button
-                            className={`navButton ${activeButton === "allEmployees" ? "active" : ""}`}
-                            onClick={() => setActiveButton("allEmployees")}
-                        >
-                            All Employees Data
-                        </button>
-                    </li>
-                </ul>
+            <nav className="grid grid-cols-3">
+                <button
+                    className={`navButton ${activeButton === "monitoring" ? "active" : ""}`}
+                    onClick={() => setActiveButton("monitoring")}
+                >
+                    Monitoring
+                </button>
+
+                <button
+                    className={`navButton ${activeButton === "totalHours" ? "active" : ""}`}
+                    onClick={() => setActiveButton("totalHours")}
+                >
+                    Accumulated Total Time
+                </button>
+
+                <button
+                    className={`navButton ${activeButton === "allEmployees" ? "active" : ""}`}
+                    onClick={() => setActiveButton("allEmployees")}
+                >
+                    All Employees Data
+                </button>
             </nav>
             <div className="animated fadeInDown">
                 {activeButton === "monitoring" && (
@@ -98,7 +92,9 @@ function Attendance() {
                             <table className="employee-table bg-white text-black rounded-xl overflow-hidden w-3/4">
                                 <thead>
                                     <tr>
-                                        <th>User ID</th>
+                                        <th className="hidden md:table-cell">
+                                            User ID
+                                        </th>
                                         <th>Name</th>
                                         <th>Date</th>
                                         <th>Time In</th>
@@ -109,7 +105,9 @@ function Attendance() {
                                     {filteredEmployees.length > 0 ? (
                                         filteredEmployees.map((employee) => (
                                             <tr key={employee.id}>
-                                                <td>{employee.user_id}</td>
+                                                <td className="hidden md:table-cell">
+                                                    {employee.user_id}
+                                                </td>
                                                 <td>{employee.name}</td>
                                                 <td>{employee.date}</td>
                                                 <td>{employee.time_in}</td>
@@ -171,9 +169,13 @@ function Attendance() {
                         <table className="employee-table bg-white text-black rounded-xl overflow-hidden w-3/4">
                             <thead>
                                 <tr>
-                                    <th>User ID</th>
+                                    <th className="hidden md:table-cell">
+                                        User ID
+                                    </th>
                                     <th>Name</th>
-                                    <th>Average Time In</th>
+                                    <th hidden md:table-cell>
+                                        Average Time In
+                                    </th>
                                     <th>Average Time Out</th>
                                     <th>Average Hours Per Day</th>
                                 </tr>
@@ -182,9 +184,13 @@ function Attendance() {
                                 {allEmployeesData.length > 0 ? (
                                     allEmployeesData.map((employee) => (
                                         <tr key={employee.user_id}>
-                                            <td>{employee.user_id}</td>
+                                            <td className="hidden md:table-cell">
+                                                {employee.user_id}
+                                            </td>
                                             <td>{employee.name}</td>
-                                            <td>{employee.avg_time_in}</td>
+                                            <td hidden md:table-cell>
+                                                {employee.avg_time_in}
+                                            </td>
                                             <td>{employee.avg_time_out}</td>
                                             <td>{employee.avg_hours}</td>
                                         </tr>

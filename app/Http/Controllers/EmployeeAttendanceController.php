@@ -62,6 +62,7 @@ class EmployeeAttendanceController extends Controller
         }
     }
 
+
     /**
      * Get daily average time in, time out, and hours worked for an employee by RFID.
      */

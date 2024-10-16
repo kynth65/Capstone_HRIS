@@ -54,12 +54,12 @@ function User() {
         <div>
             <div className="employee-list-container">
                 <div className="employee-list">
-                    <table className="employee-table bg-white text-black rounded-xl overflow-hidden w-3/4 xl:w-11/12">
+                    <table className="employee-table bg-white text-black rounded-xl overflow-hidden w-full md:w-3/4 xl:w-11/12">
                         <thead>
                             <tr className="font-bold text-base">
-                                <th>ID</th>
+                                <th className="hidden md:table-cell">ID</th>
                                 <th>Name</th>
-                                <th>Email</th>
+                                <th className="hidden lg:table-cell">Email</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -67,9 +67,13 @@ function User() {
                             {employees.length > 0 ? (
                                 employees.map((employee) => (
                                     <tr key={employee.id} className="font-bold">
-                                        <td>{employee.user_id}</td>
+                                        <td className="hidden md:table-cell">
+                                            {employee.user_id}
+                                        </td>
                                         <td>{employee.name}</td>
-                                        <td>{employee.email}</td>
+                                        <td className="hidden lg:table-cell">
+                                            {employee.email}
+                                        </td>
                                         <td>
                                             <button
                                                 className="bg-green-900 hover:bg-white font-normal text-white py-2 px-4 rounded border-2 border-green-900 transition hover:text-green-900"
@@ -97,7 +101,7 @@ function User() {
                 <div className="modal modal-overlay overflow-y-auto">
                     <div className=" p-6 bg-white rounded-lg shadow-lg w-full max-w-6xl">
                         <button
-                            className="float-right right-8 px-3 py-1 text-xl text-white rounded-full bg-red-600 hover:text-red-600 hover:bg-white hover:border-red-600 hover:border transition"
+                            className="float-right right-8 px-3 py-1 text-xl text-white rounded-full bg-red-700 hover:text-red-600 hover:bg-white hover:border-red-600 hover:border transition"
                             onClick={handleCloseModal}
                         >
                             &times;
@@ -127,7 +131,7 @@ function User() {
                         </div>
 
                         {/* Four Categories in Two Columns */}
-                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 h-[500px] overflow-auto ">
                             {/* Personal Information */}
                             <div className="profile-section text-black">
                                 <h3 className="text-xl font-semibold mb-4">

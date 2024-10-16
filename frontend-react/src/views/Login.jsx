@@ -20,17 +20,11 @@ function Login() {
         const token = localStorage.getItem("access_token");
         if (token) {
             const storedUser = JSON.parse(localStorage.getItem("user"));
-            if (storedUser) {  // Ensure storedUser is not null
-                setUser(storedUser); // Restore user from localStorage
-                setToken(token); // Set token from localStorage
-                navigateBasedOnRole(storedUser); // Navigate based on the user's position
-            } else {
-                // Handle the case where there is a token but no user (e.g., logout or fetch user data again)
-                console.error("User data is missing in localStorage.");
-            }
+            setUser(storedUser); // Restore user from localStorage
+            setToken(token); // Set token from localStorage
+            navigateBasedOnRole(storedUser); // Navigate based on the user's position
         }
     }, [setUser, setToken, navigate]);
-    
 
     const navigateBasedOnRole = (user) => {
         const hrPositions = [

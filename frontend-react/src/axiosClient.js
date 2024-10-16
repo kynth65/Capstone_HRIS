@@ -4,7 +4,7 @@ import useRefreshToken from "./hooks/useRefreshToken";
 
 // Create an Axios instance
 const axiosClient = axios.create({
-    baseURL: "http://127.0.0.1:8000/api",
+    baseURL: `${import.meta.env.VITE_BASE_URL}/api`,
     headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
@@ -24,16 +24,33 @@ axiosClient.interceptors.request.use((config) => {
     return config;
 });
 
-// Function to handle token refresh logic
-const refreshAuthLogic = async (failedRequest) => {
-    const refresh = useRefreshToken();
-    const newAccessToken = await refresh();
-
-    // Update the failed request with the new token and retry it
-    failedRequest.response.config.headers.Authorization = `Bearer ${newAccessToken}`;
-    return Promise.resolve();
+const refreshToken = async () => {
+    try {
+        const response = await axiosClient.post(
+            "/refresh",
+            {},
+            { withCredentials: true },
+        );
+        const newAccessToken = response.data.access_token;
+        localStorage.setItem("access_token", newAccessToken);
+        return newAccessToken;
+    } catch (error) {
+        console.error("Error refreshing token:", error);
+        return null;
+    }
 };
 
+// Function to handle token refresh logic
+const refreshAuthLogic = async (failedRequest) => {
+    const newAccessToken = await refreshToken();
+
+    if (newAccessToken) {
+        failedRequest.response.config.headers.Authorization = `Bearer ${newAccessToken}`;
+        return Promise.resolve();
+    } else {
+        return Promise.reject(failedRequest);
+    }
+};
 // Create and attach the refresh interceptor
 createAuthRefreshInterceptor(axiosClient, refreshAuthLogic);
 

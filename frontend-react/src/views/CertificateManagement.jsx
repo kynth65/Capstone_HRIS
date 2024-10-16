@@ -20,7 +20,8 @@ function CertificateManagement() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingCertificate, setEditingCertificate] = useState(null);
     const [successMessage, setSuccessMessage] = useState(""); // State for success messages
-
+    const [showCertificateModal, setShowCertificateModal] = useState(false);
+    const [selectedCertificate, setSelectedCertificate] = useState(null);
     const [newCertificate, setNewCertificate] = useState({
         user_id: "",
         certificate_name: "",
@@ -88,6 +89,7 @@ function CertificateManagement() {
                 console.error("Error fetching employees:", error);
             });
     }, []);
+
     useEffect(() => {
         if (activeButton === "employeeCertificate") {
             fetchAllCertificates();
@@ -516,6 +518,12 @@ function CertificateManagement() {
         setNewType(request.type); // Set the initial type
         setIsUpdateModalOpen(true); // Open the update modal
     };
+
+    const handleViewCertificate = (certificate) => {
+        setSelectedCertificate(certificate);
+        setShowCertificateModal(true);
+    };
+
     const handleUpdateSubmit = async (event) => {
         event.preventDefault();
 
@@ -657,42 +665,33 @@ function CertificateManagement() {
     return (
         <>
             <div className="mb-4">
-                <nav>
-                    <ul className="flex space-x-4">
-                        <li>
-                            <button
-                                className={`navButton ${
-                                    activeButton === "employeeList"
-                                        ? "active"
-                                        : ""
-                                }`}
-                                onClick={() => setActiveButton("employeeList")}
-                            >
-                                Employee List
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                className={`navButton ${
-                                    activeButton === "employeeCertificate"
-                                        ? "active"
-                                        : ""
-                                }`}
-                                onClick={() =>
-                                    setActiveButton("employeeCertificate")
-                                }
-                            >
-                                Employee Certificates
-                            </button>
-                        </li>
-                    </ul>
+                <nav className="grid grid-cols-2">
+                    <button
+                        className={`navButton ${
+                            activeButton === "employeeList" ? "active" : ""
+                        }`}
+                        onClick={() => setActiveButton("employeeList")}
+                    >
+                        Employee List
+                    </button>
+
+                    <button
+                        className={`navButton ${
+                            activeButton === "employeeCertificate"
+                                ? "active"
+                                : ""
+                        }`}
+                        onClick={() => setActiveButton("employeeCertificate")}
+                    >
+                        Employee Certificates
+                    </button>
                 </nav>
             </div>
 
             {activeButton === "employeeList" && (
                 <div className="employee-list-container animated fadeInDown">
                     {/* Department Filter */}
-                    <div className="flex space-x-4 mb-4">
+                    <div className="flex flex-col mb-4">
                         <select
                             value={selectedDepartment}
                             onChange={handleDepartmentChange}
@@ -716,10 +715,10 @@ function CertificateManagement() {
 
                         {/* Button to open certificate update request modal */}
                         <button
-                            className="px-3 lg:py-[10px] bg-blue-500 text-white h-fit rounded text-sm font-normal hover:bg-blue-600 "
+                            className="md:px-3 w-full py-[10px] bg-green-700 text-white h-fit rounded text-sm font-normal hover:bg-green-900"
                             onClick={handleOpenUpdateRequestModal}
                         >
-                            View Certificate Update Requests
+                            Certificate Requests
                         </button>
                     </div>
 
@@ -727,7 +726,9 @@ function CertificateManagement() {
                         <table className="bg-white text-black w-full xl:w-full">
                             <thead className="sticky top-0 bg-gray-200 border-b-2">
                                 <tr className="text-base">
-                                    <th className="px-4 py-2">ID</th>
+                                    <th className="px-4 py-2 hidden md:table-cell">
+                                        ID
+                                    </th>
                                     <th className="px-4 py-2">Name</th>
                                     <th className="px-4 py-2">Action</th>
                                 </tr>
@@ -739,7 +740,7 @@ function CertificateManagement() {
                                             key={employee.user_id}
                                             className="font-bold hover:bg-gray-100"
                                         >
-                                            <td className="px-4 py-2">
+                                            <td className="px-4 py-2 hidden md:table-cell">
                                                 {employee.user_id}
                                             </td>
                                             <td className="px-4 py-2">
@@ -779,12 +780,12 @@ function CertificateManagement() {
                 <div className="certificate-list-container animated fadeInDown">
                     <h2 className="text-base mb-10">All Certificates</h2>
 
-                    {/* Department Filter */}
-                    <div className="flex space-x-4 mb-4">
+                    {/* Department Filter and Search */}
+                    <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 mb-4">
                         <select
                             value={selectedDepartment}
-                            onChange={handleDepartmentChange} // Reuse the department change handler
-                            className="w-full p-2 border rounded text-black"
+                            onChange={handleDepartmentChange}
+                            className="w-full md:w-1/3 p-2 border rounded text-black"
                         >
                             <option value="">Select Department</option>
                             {departments.map((dept) => (
@@ -794,34 +795,42 @@ function CertificateManagement() {
                             ))}
                         </select>
 
-                        {/* Search Certificate */}
                         <input
                             type="text"
                             placeholder="Search certificate, employee name, user ID, or date issued"
-                            className="w-full p-2 border rounded mb-4 text-black"
+                            className="w-full md:w-1/3 p-2 border rounded text-black"
                             value={searchQuery}
-                            onChange={handleSearchChange} // Bind search input change to handler
+                            onChange={handleSearchChange}
                         />
+
                         <button
-                            className="px-3 py-2 bg-yellow-500 text-white rounded text-sm font-normal hover:bg-yellow-600"
+                            className="w-full md:w-auto px-3 py-2 bg-yellow-500 text-white rounded text-sm font-normal hover:bg-yellow-600"
                             onClick={handleOpenArchiveModal}
                         >
                             View Archived Certificates
                         </button>
                     </div>
 
-                    <div className="max-h-[450px] overflow-y-auto rounded-lg">
-                        <table className="bg-white text-black w-full xl:w-full">
+                    <div className="max-h-[450px] overflow-x-auto overflow-y-auto rounded-lg">
+                        <table className=" bg-white text-black w-full">
                             <thead className="sticky top-0 bg-gray-200 border-b-2">
                                 <tr className="border-b-2 text-base">
-                                    <th className="px-10 py-2">User ID</th>
+                                    <th className="px-4 py-2 hidden md:table-cell">
+                                        User ID
+                                    </th>
                                     <th className="px-4 py-2">Employee Name</th>
-                                    <th className="px-4 py-2">
+                                    <th className="px-4 py-2 hidden md:table-cell">
                                         Certificate Name
                                     </th>
-                                    <th className="px-4 py-2">Date Issued</th>
-                                    <th className="px-4 py-2">Expiring Date</th>
-                                    <th className="px-4 py-2">Status</th>
+                                    <th className="px-4 py-2 hidden md:table-cell">
+                                        Date Issued
+                                    </th>
+                                    <th className="px-4 py-2 hidden md:table-cell">
+                                        Expiring Date
+                                    </th>
+                                    <th className="px-4 py-2 hidden md:table-cell">
+                                        Status
+                                    </th>
                                     <th className="px-4 py-2">Action</th>
                                 </tr>
                             </thead>
@@ -830,30 +839,30 @@ function CertificateManagement() {
                                     filteredCertificates.map((cert) => {
                                         const status = getCertificateStatus(
                                             cert.expiring_date,
-                                            cert.type, // Pass the certificate type here
+                                            cert.type,
                                         );
                                         return (
                                             <tr
                                                 key={cert.id}
                                                 className="font-bold hover:bg-gray-100"
                                             >
-                                                <td className="border px-4 py-2">
+                                                <td className="border px-4 py-2 hidden md:table-cell">
                                                     {cert.user_id}
                                                 </td>
                                                 <td className="border px-4 py-2">
                                                     {cert.employee_name}
                                                 </td>
-                                                <td className="border px-4 py-2">
+                                                <td className="border px-4 py-2 hidden md:table-cell">
                                                     {cert.certificate_name}
                                                 </td>
-                                                <td className="border px-4 py-2">
+                                                <td className="border px-4 py-2 hidden md:table-cell">
                                                     {new Date(
                                                         cert.issued_date,
                                                     ).toLocaleDateString(
                                                         "en-US",
                                                     )}
                                                 </td>
-                                                <td className="border px-4 py-2">
+                                                <td className="border px-4 py-2 hidden md:table-cell">
                                                     {cert.type ===
                                                     "non-expirable"
                                                         ? "N/A"
@@ -866,55 +875,69 @@ function CertificateManagement() {
                                                           : ""}
                                                 </td>
                                                 <td
-                                                    className="border px-4 font-normal"
+                                                    className="border px-4 font-normal hidden md:table-cell"
                                                     style={{
                                                         backgroundColor:
                                                             status ===
                                                             "Expiring"
-                                                                ? "#f19c09" // Yellow for expiring
+                                                                ? "#f19c09"
                                                                 : status ===
                                                                     "Expired"
-                                                                  ? "#ff0000" // Red for expired
-                                                                  : "rgb(34, 197, 94)", // Green for active
+                                                                  ? "#ff0000"
+                                                                  : "rgb(34, 197, 94)",
                                                     }}
                                                 >
                                                     {status}
                                                 </td>
-                                                <td className="border px-4 py-2 flex space-x-2">
-                                                    <button
-                                                        className="px-3 bg-red-500 text-white rounded text-sm font-normal hover:bg-red-600"
-                                                        onClick={() =>
-                                                            handleDelete(
-                                                                cert.id,
-                                                            )
-                                                        }
-                                                    >
-                                                        <MdDelete size={20} />
-                                                    </button>
-                                                    {cert.file_url && (
+                                                <td className="border px-4 py-2">
+                                                    <div className="flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2">
                                                         <button
-                                                            className="px-3 py-2 bg-green-500 text-white rounded text-sm font-normal hover:bg-green-600"
+                                                            className="md:hidden px-3 py-2 bg-blue-500 text-white rounded text-sm font-normal hover:bg-blue-600"
                                                             onClick={() =>
-                                                                handleOpenPdf(
-                                                                    cert.file_url,
+                                                                handleViewCertificate(
+                                                                    cert,
                                                                 )
                                                             }
                                                         >
-                                                            <RiFileDownloadFill
+                                                            View
+                                                        </button>
+                                                        <button
+                                                            className="px-3 py-2 bg-red-500 text-white rounded text-sm font-normal hover:bg-red-600"
+                                                            onClick={() =>
+                                                                handleDelete(
+                                                                    cert.id,
+                                                                )
+                                                            }
+                                                        >
+                                                            <MdDelete
                                                                 size={20}
                                                             />
                                                         </button>
-                                                    )}
-                                                    <button
-                                                        className="bg-purple-500 font-normal text-white px-3 py-2 rounded-md hover:bg-purple-700"
-                                                        onClick={() =>
-                                                            handleOpenDetailModal(
-                                                                cert.id,
-                                                            )
-                                                        }
-                                                    >
-                                                        View Details
-                                                    </button>
+                                                        {cert.file_url && (
+                                                            <button
+                                                                className="px-3 py-2 bg-green-500 text-white rounded text-sm font-normal hover:bg-green-600"
+                                                                onClick={() =>
+                                                                    handleOpenPdf(
+                                                                        cert.file_url,
+                                                                    )
+                                                                }
+                                                            >
+                                                                <RiFileDownloadFill
+                                                                    size={20}
+                                                                />
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            className="hidden md:block bg-purple-500 font-normal text-white px-3 py-2 rounded-md hover:bg-purple-700"
+                                                            onClick={() =>
+                                                                handleOpenDetailModal(
+                                                                    cert.id,
+                                                                )
+                                                            }
+                                                        >
+                                                            View Details
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         );
@@ -931,6 +954,91 @@ function CertificateManagement() {
                                 )}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            )}
+
+            {/* Certificate View Modal for Small Screens */}
+            {showCertificateModal && selectedCertificate && (
+                <div
+                    className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+                    onClick={() => setShowCertificateModal(false)}
+                >
+                    <div
+                        className="relative top-20 mx-auto p-5 border w-11/12 sm:w-96 shadow-lg rounded-md bg-white"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="mt-3 text-center">
+                            <h3 className="text-lg leading-6 font-semibold text-gray-900 mb-2">
+                                Certificate Details
+                            </h3>
+                            <div className="mt-2 py-3 text-left text-base">
+                                <p className="text-gray-700">
+                                    <strong>Employee Name:</strong>{" "}
+                                    {selectedCertificate.employee_name}
+                                </p>
+                                <p className="text-gray-700">
+                                    <strong>Certificate Name:</strong>{" "}
+                                    {selectedCertificate.certificate_name}
+                                </p>
+                                <p className="text-gray-700">
+                                    <strong>Date Issued:</strong>{" "}
+                                    {new Date(
+                                        selectedCertificate.issued_date,
+                                    ).toLocaleDateString("en-US")}
+                                </p>
+                                <p className="text-gray-700">
+                                    <strong>Expiring Date:</strong>{" "}
+                                    {selectedCertificate.type ===
+                                    "non-expirable"
+                                        ? "N/A"
+                                        : selectedCertificate.expiring_date
+                                          ? new Date(
+                                                selectedCertificate.expiring_date,
+                                            ).toLocaleDateString("en-US")
+                                          : ""}
+                                </p>
+                                <p className="text-gray-700">
+                                    <strong>Status:</strong>{" "}
+                                    {getCertificateStatus(
+                                        selectedCertificate.expiring_date,
+                                        selectedCertificate.type,
+                                    )}
+                                </p>
+                            </div>
+                            <div className="flex justify-center space-x-4 mt-4">
+                                {selectedCertificate.file_url && (
+                                    <button
+                                        className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
+                                        onClick={() =>
+                                            handleOpenPdf(
+                                                selectedCertificate.file_url,
+                                            )
+                                        }
+                                    >
+                                        Download
+                                    </button>
+                                )}
+                                <button
+                                    className="bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded"
+                                    onClick={() =>
+                                        handleOpenDetailModal(
+                                            selectedCertificate.id,
+                                        )
+                                    }
+                                >
+                                    View Details
+                                </button>
+                                <button
+                                    className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+                                    onClick={() =>
+                                        setShowCertificateModal(false)
+                                    }
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
@@ -1832,49 +1940,63 @@ function CertificateManagement() {
             )}
             {isDetailModalOpen && detailedCertificate && (
                 <div className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                    <div className="modal-content bg-white p-6 rounded-lg w-1/2">
-                        <h2 className="text-lg font-bold mb-4">
+                    <div className="modal-content bg-white p-8 rounded-lg w-3/4 max-w-2xl">
+                        <h2 className="text-2xl font-bold mb-6 text-center">
                             Certificate Details
                         </h2>
-                        <div className="text-black mb-4">
+                        <div className="text-black space-y-4 mb-6">
                             <p>
-                                <strong>Certificate Name:</strong>{" "}
+                                <strong className="font-semibold">
+                                    Certificate Name:
+                                </strong>{" "}
                                 {detailedCertificate.certificate_name}
                             </p>
                             <p>
-                                <strong>Type:</strong>{" "}
+                                <strong className="font-semibold">Type:</strong>{" "}
                                 {detailedCertificate.type}
                             </p>
                             <p>
-                                <strong>Category:</strong>{" "}
+                                <strong className="font-semibold">
+                                    Category:
+                                </strong>{" "}
                                 {detailedCertificate.category}
                             </p>
                             <p>
-                                <strong>Date Issued:</strong>{" "}
+                                <strong className="font-semibold">
+                                    Date Issued:
+                                </strong>{" "}
                                 {new Date(
                                     detailedCertificate.issued_date,
                                 ).toLocaleDateString()}
                             </p>
                             <p>
-                                <strong>Expiring Date:</strong>{" "}
+                                <strong className="font-semibold">
+                                    Expiring Date:
+                                </strong>{" "}
                                 {detailedCertificate.expiring_date
                                     ? new Date(
                                           detailedCertificate.expiring_date,
                                       ).toLocaleDateString()
                                     : "N/A"}
                             </p>
-                            <div className="text-black mb-4">
+                            <div className="space-y-2">
                                 <p>
-                                    <strong>Created By:</strong>{" "}
+                                    <strong className="font-semibold">
+                                        Created By:
+                                    </strong>{" "}
                                     {detailedCertificate.created_by_name}
                                 </p>
                                 <p>
-                                    <strong>Updated By:</strong>{" "}
+                                    <strong className="font-semibold">
+                                        Updated By:
+                                    </strong>{" "}
                                     {detailedCertificate.updated_by_name}
                                 </p>
                             </div>
                             <p>
-                                <strong>Status:</strong>{" "}
+                                <strong className="font-semibold">
+                                    Status:
+                                </strong>{" "}
                                 {getCertificateStatus(
                                     detailedCertificate.expiring_date,
                                     detailedCertificate.type,
@@ -1883,7 +2005,7 @@ function CertificateManagement() {
                         </div>
                         <div className="flex justify-end">
                             <button
-                                className="bg-red-500 text-white p-2 rounded"
+                                className="bg-red-500 text-white px-6 py-2 rounded-md hover:bg-red-600 transition duration-200"
                                 onClick={() => setIsDetailModalOpen(false)}
                             >
                                 Close

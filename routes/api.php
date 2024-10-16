@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\EmployeeNotificationController;
 use App\Http\Controllers\TrackingAttendanceController;
 use App\Http\Controllers\EmployeeAttendanceController;
 use App\Http\Controllers\IncidentController;
+use App\Http\Controllers\callOpenAi;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
@@ -52,6 +53,8 @@ Route::get('/data', [AuthController::class, 'getData']);
 Route::post('/positions', [OpenPositionController::class, 'store']);
 Route::get('/open-positions', [OpenPositionController::class, 'index']);
 Route::get('/hr-tags/{id}', [OpenPositionController::class, 'getHrTags']);
+Route::post('/storeTag', [AdminTagsController::class, 'storeTag']);
+Route::post('/deleteTag', [AdminTagsController::class, 'deleteTag']);
 Route::get('/applicants/{positionId}', [OpenPositionController::class, 'getApplicants']);
 Route::get('/open-files/{filename}', [OpenFileController::class, 'openFile']);
 Route::get('/record-attendance', [AttendanceController::class, 'recordAttendance']);
@@ -71,7 +74,6 @@ Route::post('/forgot-password', [PasswordResetController::class, 'forgotPassword
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
 Route::post('/saveTags', [AdminTagsController::class, 'storeTags']);
 Route::get('/tags/{position}', [AdminTagsController::class, 'getTagsByPosition']);
-
 Route::get('/allCertificates', [CertificateController::class, 'allCertificates']);
 Route::get('/certificates/{userId}', [CertificateController::class, 'index']);
 Route::get('/certificates/download/{id}', [CertificateController::class, 'download']);
@@ -150,4 +152,28 @@ Route::prefix('incidents')->group(function () {
 });
 
 
+//Post OpenAi
+Route::post('/generate-document', [callOpenAi::class, 'generateDocument']);
+
+Route::post('/applicants/upload', [ApplicantController::class, 'upload']);
+Route::post('/rank-resume', [ApplicantController::class, 'rankResume']);
+Route::post('/applicants/upload-and-rank', [ApplicantController::class, 'uploadAndRank']);
+Route::post('/applicants/update-upload-status', [ApplicantController::class, 'updateUploadStatus']);
+
+Route::prefix('applicants')->group(function () {
+    Route::get('/', [ApplicantController::class, 'index']);
+    Route::get('/{id}', [ApplicantController::class, 'show']);
+    Route::post('/upload', [ApplicantController::class, 'store']);
+    Route::put('/{id}', [ApplicantController::class, 'update']);
+    Route::delete('/{id}', [ApplicantController::class, 'destroy']);
+
+    // Routes for upload status
+    Route::get('/check-upload-status/{google_id}', [ApplicantController::class, 'checkUploadStatus']);
+    Route::post('/update-upload-status', [ApplicantController::class, 'updateUploadStatus']);
+});
+
+
+Route::post('/suggestTag', [AdminTagsController::class, 'suggestTag']);
+Route::get('/getSuggestedTags', [AdminTagsController::class, 'getSuggestedTags']);
+Route::post('/reviewSuggestedTag', [AdminTagsController::class, 'reviewSuggestedTag']);
 //->middleware('auth:sanctum');

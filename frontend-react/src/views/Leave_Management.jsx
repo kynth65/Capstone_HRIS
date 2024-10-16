@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import axiosClient from "../axiosClient"; // Import axiosClient
-import axios from "axios";
 import "../styles/registration.css";
 import "../styles/global.css";
 import "../styles/LeaveRequest.css";
@@ -13,6 +12,7 @@ import { jsPDF } from "jspdf";
 function Leave_Management() {
     const [activeButton, setActiveButton] = useState("documentGenerator");
     const refresh = useRefreshToken();
+    const [loading, setLoading] = useState(false);
     const [documentType, setDocumentType] = useState("leaveLetter");
     const [documentContent, setDocumentContent] = useState("");
     const [formData, setFormData] = useState({
@@ -127,74 +127,46 @@ function Leave_Management() {
     };
 
     // for Document Generator
-    useEffect(() => {
-        setDocumentContent(useDocument[documentType]);
-
-        // Effect for styling adjustments
-        const labels = document.querySelectorAll(".form label");
-        labels.forEach((label) => {
-            label.style.display = "block";
-            label.style.marginBottom = "8px";
-            label.style.textAlign = "left";
-            label.style.color = "black";
-        });
-
-        return () => {
-            labels.forEach((label) => {
-                label.style.display = "";
-                label.style.marginBottom = "";
-                label.style.textAlign = "";
-            });
-            clearTimeout(errorTimeoutRef.current);
-        };
-    }, [documentType]);
-
-    const handleDocumentChange = (event) => {
-        setDocumentContent(event.target.value);
-    };
-
     const generateDocumentContent = async () => {
         try {
-            const response = await axios.post(
-                "https://api.openai.com/v1/chat/completions",
-                {
-                    model: "gpt-4", // Specify the GPT-4 model here
-                    messages: [
-                        {
-                            role: "system",
-                            content:
-                                "You are a helpful assistant that generates formal documents.",
-                        },
-                        {
-                            role: "user",
-                            content: `Create a ${documentType} for the following reason: ${reason}`,
-                        },
-                    ],
-                    max_tokens: 500,
-                    temperature: 0.7,
-                },
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${import.meta.env.VITE_APP_OPENAI_API_KEY}`,
-                    },
-                },
-            );
+            const response = await axiosClient.post("/generate-document", {
+                documentType,
+                reason,
+            });
 
-            const generatedContent =
-                response.data.choices[0].message.content.trim();
-            setDocumentContent(generatedContent);
+            // Debug: Log the entire response to understand the structure
+            console.log("Document generation response:", response.data);
+
+            // Check if the response data has the expected structure
+            if (
+                response.data.choices &&
+                response.data.choices[0] &&
+                response.data.choices[0].message
+            ) {
+                const generatedContent =
+                    response.data.choices[0].message.content.trim();
+                setDocumentContent(generatedContent);
+            } else {
+                setError(
+                    "Unexpected response structure from document generation.",
+                );
+                console.error("Unexpected response structure:", response.data);
+            }
         } catch (error) {
             console.error("Error generating document:", error);
+            setError("Failed to generate document. Please try again later.");
         }
     };
+
     const handleGenerate = () => {
         if (documentType && reason) {
+            setLoading(true);
             generateDocumentContent();
         } else {
             alert("Please select a document type and provide a reason.");
         }
     };
+
     const handleDownloadPdf = () => {
         const doc = new jsPDF();
 
@@ -306,7 +278,7 @@ function Leave_Management() {
                             onChange={(e) => setDocumentContent(e.target.value)}
                             rows="10"
                             cols="50"
-                            placeholder="Edit the document content here..."
+                            placeholder="Wait for the document..."
                             className="h-full w-full rounded-lg p-9 text-black border-2 border-green-800 text-base"
                         />
                         <button className="button" onClick={handleDownloadPdf}>

@@ -5,46 +5,33 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Tag;
 use Illuminate\Support\Facades\Log;
+use App\Models\SuggestedTag;
 
 class AdminTagsController extends Controller
 {
-    public function storeTags(Request $request)
+    public function storeTag(Request $request)
     {
         $position = $request->input('position');
-        $tags = $request->input('tags');
+        $tag = $request->input('tag');
 
-        // Log the incoming request
-        Log::info('Storing tags for position: ' . $position, ['tags' => $tags]);
+        Log::info('Storing tag for position: ' . $position, ['tag' => $tag]);
 
         try {
-            // Retrieve the existing tags for the position (if any)
-            $existingTagRecord = Tag::where('position', $position)->first();
-
-            if ($existingTagRecord) {
-                // Append the new tags to the existing ones, making sure there are no duplicates
-                $existingTags = explode(',', $existingTagRecord->tag);
-                $mergedTags = array_unique(array_merge($existingTags, $tags));
-
-                // Update the tags in the database
-                $existingTagRecord->update([
-                    'tag' => implode(',', $mergedTags)
+            $tagRecord = Tag::firstOrCreate(['position' => $position], ['tag' => '']);
+            $existingTags = explode(',', $tagRecord->tag);
+            if (!in_array($tag, $existingTags)) {
+                $existingTags[] = $tag;
+                $tagRecord->update([
+                    'tag' => implode(',', array_filter($existingTags))
                 ]);
-
-                Log::info('Tags updated successfully for position: ' . $position);
+                Log::info('Tag added successfully for position: ' . $position);
+                return response()->json(['message' => 'Tag added successfully', 'tags' => $existingTags]);
             } else {
-                // Create a new record for the position if it doesn't exist
-                Tag::create([
-                    'position' => $position,
-                    'tag' => implode(',', $tags) // Store tags as a comma-separated string
-                ]);
-
-                Log::info('Tags saved successfully for new position: ' . $position);
+                return response()->json(['message' => 'Tag already exists', 'tags' => $existingTags]);
             }
-
-            return response()->json(['message' => 'Tags saved successfully']);
         } catch (\Exception $e) {
-            Log::error('Error saving tags for position: ' . $position, ['error' => $e->getMessage()]);
-            return response()->json(['message' => 'Error saving tags'], 500);
+            Log::error('Error adding tag for position: ' . $position, ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Error adding tag'], 500);
         }
     }
 
@@ -52,10 +39,97 @@ class AdminTagsController extends Controller
     {
         $tagRecord = Tag::where('position', $position)->first();
         if ($tagRecord) {
-            $tags = explode(',', $tagRecord->tag); // Convert the string back to an array
-            return response()->json(['tags' => $tags]);
+            $tags = explode(',', $tagRecord->tag);
+            return response()->json(['tags' => array_filter($tags)]);
         } else {
             return response()->json(['tags' => []]);
+        }
+    }
+
+    public function removeTag(Request $request)
+    {
+        $position = $request->input('position');
+        $tagToRemove = $request->input('tag');
+
+        Log::info('Removing tag for position: ' . $position, ['tag' => $tagToRemove]);
+
+        try {
+            $tagRecord = Tag::where('position', $position)->first();
+            if ($tagRecord) {
+                $existingTags = explode(',', $tagRecord->tag);
+                $updatedTags = array_diff($existingTags, [$tagToRemove]);
+                $tagRecord->update([
+                    'tag' => implode(',', array_filter($updatedTags))
+                ]);
+                Log::info('Tag removed successfully for position: ' . $position);
+                return response()->json(['message' => 'Tag removed successfully', 'tags' => array_values($updatedTags)]);
+            } else {
+                return response()->json(['message' => 'No tags found for this position'], 404);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error removing tag for position: ' . $position, ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Error removing tag'], 500);
+        }
+    }
+
+    public function suggestTag(Request $request)
+    {
+        $position = $request->input('position');
+        $tag = $request->input('tag');
+
+        Log::info('Suggesting tag for position: ' . $position, ['tag' => $tag]);
+
+        try {
+            SuggestedTag::create([
+                'position' => $position,
+                'tag' => $tag,
+                'status' => 'pending'
+            ]);
+
+            return response()->json(['message' => 'Tag suggestion submitted successfully']);
+        } catch (\Exception $e) {
+            Log::error('Error suggesting tag for position: ' . $position, ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Error suggesting tag'], 500);
+        }
+    }
+
+    public function getSuggestedTags()
+    {
+        $suggestedTags = SuggestedTag::where('status', 'pending')->get();
+        return response()->json(['suggestedTags' => $suggestedTags]);
+    }
+
+    public function reviewSuggestedTag(Request $request)
+    {
+        $id = $request->input('id');
+        $action = $request->input('action'); // 'approve' or 'decline'
+
+        try {
+            $suggestedTag = SuggestedTag::findOrFail($id);
+
+            if ($action === 'approve') {
+                $tagRecord = Tag::firstOrCreate(
+                    ['position' => $suggestedTag->position],
+                    ['tag' => '']
+                );
+
+                $existingTags = explode(',', $tagRecord->tag);
+                if (!in_array($suggestedTag->tag, $existingTags)) {
+                    $existingTags[] = $suggestedTag->tag;
+                    $tagRecord->update([
+                        'tag' => implode(',', array_filter($existingTags))
+                    ]);
+                }
+
+                $suggestedTag->delete();
+                return response()->json(['message' => 'Tag approved and added successfully']);
+            } elseif ($action === 'decline') {
+                $suggestedTag->delete();
+                return response()->json(['message' => 'Tag suggestion declined']);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error reviewing suggested tag', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Error reviewing suggested tag'], 500);
         }
     }
 }

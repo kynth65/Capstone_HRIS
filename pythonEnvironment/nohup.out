@@ -1,0 +1,282 @@
+[2024-10-13 17:12:50 +0000] [4193779] [INFO] Starting gunicorn 23.0.0
+[2024-10-13 17:12:50 +0000] [4193779] [ERROR] Connection in use: ('0.0.0.0', 8080)
+[2024-10-13 17:12:50 +0000] [4193779] [ERROR] connection to ('0.0.0.0', 8080) failed: [Errno 98] Address already in use
+[2024-10-13 17:12:51 +0000] [4193779] [ERROR] Connection in use: ('0.0.0.0', 8080)
+[2024-10-13 17:12:51 +0000] [4193779] [ERROR] connection to ('0.0.0.0', 8080) failed: [Errno 98] Address already in use
+[2024-10-13 17:12:52 +0000] [4193779] [ERROR] Connection in use: ('0.0.0.0', 8080)
+[2024-10-13 17:12:52 +0000] [4193779] [ERROR] connection to ('0.0.0.0', 8080) failed: [Errno 98] Address already in use
+[2024-10-13 17:12:53 +0000] [4193779] [ERROR] Connection in use: ('0.0.0.0', 8080)
+[2024-10-13 17:12:53 +0000] [4193779] [ERROR] connection to ('0.0.0.0', 8080) failed: [Errno 98] Address already in use
+[2024-10-13 17:12:54 +0000] [4193779] [ERROR] Connection in use: ('0.0.0.0', 8080)
+[2024-10-13 17:12:54 +0000] [4193779] [ERROR] connection to ('0.0.0.0', 8080) failed: [Errno 98] Address already in use
+[2024-10-13 17:12:55 +0000] [4193779] [ERROR] Can't connect to ('0.0.0.0', 8080)
+[2024-10-13 17:14:06 +0000] [104826] [INFO] Starting gunicorn 23.0.0
+[2024-10-13 17:14:06 +0000] [104826] [INFO] Listening at: http://0.0.0.0:5000 (104826)
+[2024-10-13 17:14:06 +0000] [104826] [INFO] Using worker: sync
+[2024-10-13 17:14:06 +0000] [105018] [INFO] Booting worker with pid: 105018
+[2024-10-13 17:14:06 +0000] [105018] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/usr/lib64/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 984, in _find_and_load_unlocked
+ModuleNotFoundError: No module named 'resumeRank'
+[2024-10-13 17:14:06 +0000] [105018] [INFO] Worker exiting (pid: 105018)
+[2024-10-13 17:14:06 +0000] [104826] [ERROR] Worker (pid:105018) exited with code 3
+[2024-10-13 17:14:06 +0000] [104826] [ERROR] Shutting down: Master
+[2024-10-13 17:14:06 +0000] [104826] [ERROR] Reason: Worker failed to boot.
+[2024-10-13 17:14:08 +0000] [111031] [INFO] Starting gunicorn 23.0.0
+[2024-10-13 17:14:08 +0000] [111031] [INFO] Listening at: http://0.0.0.0:5000 (111031)
+[2024-10-13 17:14:08 +0000] [111031] [INFO] Using worker: sync
+[2024-10-13 17:14:08 +0000] [111187] [INFO] Booting worker with pid: 111187
+[2024-10-13 17:14:08 +0000] [111187] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/usr/lib64/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 984, in _find_and_load_unlocked
+ModuleNotFoundError: No module named 'resumeRank'
+[2024-10-13 17:14:08 +0000] [111187] [INFO] Worker exiting (pid: 111187)
+[2024-10-13 17:14:08 +0000] [111200] [INFO] Booting worker with pid: 111200
+[2024-10-13 17:14:08 +0000] [111200] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/usr/lib64/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 984, in _find_and_load_unlocked
+ModuleNotFoundError: No module named 'resumeRank'
+[2024-10-13 17:14:08 +0000] [111200] [INFO] Worker exiting (pid: 111200)
+[2024-10-13 17:14:08 +0000] [111031] [ERROR] Worker (pid:111187) exited with code 3
+[2024-10-13 17:14:08 +0000] [111031] [ERROR] Worker (pid:111200) was sent SIGTERM!
+[2024-10-13 17:14:08 +0000] [111031] [ERROR] Shutting down: Master
+[2024-10-13 17:14:08 +0000] [111031] [ERROR] Reason: Worker failed to boot.
+[2024-10-13 17:14:59 +0000] [215028] [INFO] Starting gunicorn 23.0.0
+[2024-10-13 17:14:59 +0000] [215028] [INFO] Listening at: http://0.0.0.0:5000 (215028)
+[2024-10-13 17:14:59 +0000] [215028] [INFO] Using worker: sync
+[2024-10-13 17:14:59 +0000] [215178] [INFO] Booting worker with pid: 215178
+[2024-10-13 17:14:59 +0000] [215178] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/usr/lib64/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 984, in _find_and_load_unlocked
+ModuleNotFoundError: No module named 'resumeRank'
+[2024-10-13 17:14:59 +0000] [215178] [INFO] Worker exiting (pid: 215178)
+[2024-10-13 17:14:59 +0000] [215199] [INFO] Booting worker with pid: 215199
+[2024-10-13 17:14:59 +0000] [215199] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/usr/lib64/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 984, in _find_and_load_unlocked
+ModuleNotFoundError: No module named 'resumeRank'
+[2024-10-13 17:14:59 +0000] [215199] [INFO] Worker exiting (pid: 215199)
+[2024-10-13 17:14:59 +0000] [215028] [ERROR] Worker (pid:215178) exited with code 3
+[2024-10-13 17:14:59 +0000] [215028] [ERROR] Worker (pid:215199) was sent SIGTERM!
+[2024-10-13 17:14:59 +0000] [215028] [ERROR] Shutting down: Master
+[2024-10-13 17:14:59 +0000] [215028] [ERROR] Reason: Worker failed to boot.
+[2024-10-13 17:15:07 +0000] [239377] [INFO] Starting gunicorn 23.0.0
+[2024-10-13 17:15:07 +0000] [239377] [INFO] Listening at: http://0.0.0.0:5000 (239377)
+[2024-10-13 17:15:07 +0000] [239377] [INFO] Using worker: sync
+[2024-10-13 17:15:07 +0000] [239654] [INFO] Booting worker with pid: 239654
+[2024-10-13 17:15:07 +0000] [239654] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/usr/lib64/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 984, in _find_and_load_unlocked
+ModuleNotFoundError: No module named 'resumeRank'
+[2024-10-13 17:15:07 +0000] [239654] [INFO] Worker exiting (pid: 239654)
+[2024-10-13 17:15:07 +0000] [239377] [ERROR] Worker (pid:239654) exited with code 3
+[2024-10-13 17:15:07 +0000] [239377] [ERROR] Shutting down: Master
+[2024-10-13 17:15:07 +0000] [239377] [ERROR] Reason: Worker failed to boot.
+[2024-10-13 18:11:33 +0000] [1692038] [INFO] Starting gunicorn 23.0.0
+[2024-10-13 18:11:33 +0000] [1692038] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2024-10-13 18:11:33 +0000] [1692038] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 98] Address already in use
+[2024-10-13 18:11:34 +0000] [1692038] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2024-10-13 18:11:34 +0000] [1692038] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 98] Address already in use
+[2024-10-13 18:11:35 +0000] [1692038] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2024-10-13 18:11:35 +0000] [1692038] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 98] Address already in use
+[2024-10-13 18:11:36 +0000] [1692038] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2024-10-13 18:11:36 +0000] [1692038] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 98] Address already in use
+[2024-10-13 18:11:37 +0000] [1692038] [ERROR] Connection in use: ('0.0.0.0', 5000)
+[2024-10-13 18:11:37 +0000] [1692038] [ERROR] connection to ('0.0.0.0', 5000) failed: [Errno 98] Address already in use
+[2024-10-13 18:11:38 +0000] [1692038] [ERROR] Can't connect to ('0.0.0.0', 5000)
+[2024-10-13 18:12:16 +0000] [1748883] [INFO] Starting gunicorn 23.0.0
+[2024-10-13 18:12:16 +0000] [1748883] [INFO] Listening at: http://0.0.0.0:8000 (1748883)
+[2024-10-13 18:12:16 +0000] [1748883] [INFO] Using worker: sync
+[2024-10-13 18:12:16 +0000] [1749014] [INFO] Booting worker with pid: 1749014
+[2024-10-13 18:12:16 +0000] [1749014] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/usr/lib64/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 984, in _find_and_load_unlocked
+ModuleNotFoundError: No module named 'resumeRank'
+[2024-10-13 18:12:16 +0000] [1749014] [INFO] Worker exiting (pid: 1749014)
+[2024-10-13 18:12:16 +0000] [1749042] [INFO] Booting worker with pid: 1749042
+[2024-10-13 18:12:16 +0000] [1748883] [ERROR] Worker (pid:1749014) exited with code 3
+[2024-10-13 18:12:16 +0000] [1749042] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/usr/lib64/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 984, in _find_and_load_unlocked
+ModuleNotFoundError: No module named 'resumeRank'
+[2024-10-13 18:12:16 +0000] [1749042] [INFO] Worker exiting (pid: 1749042)
+[2024-10-13 18:12:16 +0000] [1748883] [ERROR] Worker (pid:1749042) exited with code 3
+Traceback (most recent call last):
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/arbiter.py", line 201, in run
+    self.manage_workers()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/arbiter.py", line 570, in manage_workers
+    self.spawn_workers()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/arbiter.py", line 642, in spawn_workers
+    time.sleep(0.1 * random.random())
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/arbiter.py", line 241, in handle_chld
+    self.reap_workers()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/arbiter.py", line 529, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/u556129284/.local/bin/gunicorn", line 8, in <module>
+    sys.exit(run())
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 66, in run
+    WSGIApplication("%(prog)s [OPTIONS] [APP_MODULE]", prog=prog).run()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/base.py", line 235, in run
+    super().run()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/app/base.py", line 71, in run
+    Arbiter(self).run()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/arbiter.py", line 228, in run
+    self.halt(reason=inst.reason, exit_status=inst.exit_status)
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/arbiter.py", line 341, in halt
+    self.stop()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/arbiter.py", line 395, in stop
+    time.sleep(0.1)
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/arbiter.py", line 241, in handle_chld
+    self.reap_workers()
+  File "/home/u556129284/.local/lib/python3.9/site-packages/gunicorn/arbiter.py", line 529, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
