@@ -41,6 +41,7 @@ const ApplicantPortal = () => {
     const [selectedPosition, setSelectedPosition] = useState(null);
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
+    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const fileInputRef = useRef(null);
     const [userData, setUserData] = useState(null);
     const [attemptMessage, setAttemptMessage] = useState(false);
@@ -235,6 +236,11 @@ const ApplicantPortal = () => {
             setShowSuccessPopup("You successfully submitted your resume!");
             setTimeout(() => setShowSuccessPopup(""), 4000);
 
+            closeModal();
+            closeViewAllModal();
+            setShowSuccessMessage("Application submitted successfully!");
+            setTimeout(() => setShowSuccessMessage(""), 5000);
+
             // Update upload status on the server
             await axiosClient.post("/applicants/update-upload-status", {
                 google_id: userData?.sub,
@@ -376,7 +382,7 @@ const ApplicantPortal = () => {
                         </span>
                     </div>
                     <strong className="text-base font-semibold">
-                        Skills:{" "}
+                        Job Criteria:{" "}
                     </strong>
                     <div className="h-full flex flex-col items-start w-full text-black">
                         {position.hr_tags.split(", ").map((tag, index) => (
@@ -423,6 +429,12 @@ const ApplicantPortal = () => {
                         <div className="w-40"></div>
                     )}
                 </div>
+
+                {showSuccessMessage && (
+                    <div className="success-message bg-green-100 text-green-700 p-4 rounded mb-4 text-center">
+                        {showSuccessMessage}
+                    </div>
+                )}
 
                 {!loggedIn && (
                     <div className="h-[600px] w-full flex items-center justify-center">
@@ -500,7 +512,9 @@ const ApplicantPortal = () => {
 
                                     <div className="border border-green-800 w-full" />
                                     <div className="h-full flex flex-col items-start w-full">
-                                        Skills:
+                                        <span className="mb-2">
+                                            Job Criteria:
+                                        </span>
                                         {selectedPosition.hr_tags
                                             .split(", ")
                                             .map((tag, index) => (
@@ -517,7 +531,7 @@ const ApplicantPortal = () => {
 
                                     <div className="flex flex-col gap-4 items-center">
                                         <strong>Job Description</strong>
-                                        <div className="border-2 h-fit w-56 md:w-[550px] lg:w-[900px] overflow-auto border-green-900 px-4 py-4 rounded-lg">
+                                        <div className="border-2 h-fit w-fit md:w-[550px] lg:w-[900px] overflow-auto border-green-900 px-4 py-4 rounded-lg">
                                             <p
                                                 style={{
                                                     whiteSpace: "pre-wrap",
@@ -530,7 +544,7 @@ const ApplicantPortal = () => {
                                     </div>
                                     <div className="flex flex-col gap-4 items-center">
                                         <strong>Qualifications</strong>
-                                        <div className="border-2 h-fit w-56 md:w-[550px] lg:w-[900px] overflow-auto border-green-900 px-4 py-4 rounded-lg">
+                                        <div className="border-2 h-fit w-auto md:w-[550px] lg:w-[900px] overflow-auto border-green-900 px-4 py-4 rounded-lg">
                                             <p
                                                 style={{
                                                     whiteSpace: "pre-wrap",

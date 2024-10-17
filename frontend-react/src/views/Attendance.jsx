@@ -84,6 +84,12 @@ function Attendance() {
         return date.getHours().toString().padStart(2, "0") + ":00";
     };
 
+    const formatDate = (dateString) => {
+        if (!dateString) return "N/A";
+        const date = new Date(dateString);
+        const options = { month: "long", day: "numeric" };
+        return date.toLocaleDateString("en-US", options);
+    };
     return (
         <div>
             <nav className="grid grid-cols-2">
@@ -135,7 +141,11 @@ function Attendance() {
                                                         {employee.user_id}
                                                     </td>
                                                     <td>{employee.name}</td>
-                                                    <td>{employee.date}</td>
+                                                    <td>
+                                                        {formatDate(
+                                                            employee.date,
+                                                        )}
+                                                    </td>
                                                     <td>
                                                         {formatToHour(
                                                             employee.time_in,

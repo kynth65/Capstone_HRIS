@@ -199,6 +199,19 @@ const Dashboard = () => {
         return `Sent ${daysDiff} days ago`; // For any other day
     };
 
+    const formatToHour = (timestamp) => {
+        if (!timestamp) return "N/A";
+        const date = new Date(timestamp);
+        return date.getHours().toString().padStart(2, "0") + ":00";
+    };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return "N/A";
+        const date = new Date(dateString);
+        const options = { month: "long", day: "numeric" };
+        return date.toLocaleDateString("en-US", options);
+    };
+
     return (
         <>
             <div className="animated fadeInDown">
@@ -223,9 +236,9 @@ const Dashboard = () => {
                                 Attendance Records
                             </h1>
                             <div className="employee-list-container w-full h-72">
-                                <table className="employee-table bg-white text-black rounded-xl overflow-hidden w-full">
+                                <table className="employee-table bg-white text-black rounded-xl  w-full">
                                     <thead>
-                                        <tr>
+                                        <tr className="sticky top-[-10px]">
                                             <th className="hidden md:table-cell">
                                                 User ID
                                             </th>
@@ -244,12 +257,20 @@ const Dashboard = () => {
                                                             {record.user_id}
                                                         </td>
                                                         <td>{record.name}</td>
-                                                        <td>{record.date}</td>
                                                         <td>
-                                                            {record.time_in}
+                                                            {formatDate(
+                                                                record.date,
+                                                            )}
                                                         </td>
                                                         <td>
-                                                            {record.time_out}
+                                                            {formatToHour(
+                                                                record.time_in,
+                                                            )}
+                                                        </td>
+                                                        <td>
+                                                            {formatToHour(
+                                                                record.time_out,
+                                                            )}
                                                         </td>
                                                     </tr>
                                                 ),
