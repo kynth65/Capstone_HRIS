@@ -174,34 +174,41 @@ function Attendance() {
 
                 {activeButton === "allEmployees" && (
                     <div className="all-employees-data">
-                        <label>Select Month:</label>
-                        <select
-                            className="text-black"
-                            value={selectedMonth}
-                            onChange={(e) => setSelectedMonth(e.target.value)}
-                        >
-                            {[...Array(12).keys()].map((m) => (
-                                <option key={m + 1} value={m + 1}>
-                                    {new Date(0, m).toLocaleString("default", {
-                                        month: "long",
-                                    })}
-                                </option>
-                            ))}
-                        </select>
-
-                        <label>Select Year:</label>
-                        <select
-                            className="text-black"
-                            value={selectedYear}
-                            onChange={(e) => setSelectedYear(e.target.value)}
-                        >
-                            {[2023, 2024, 2025, 2026].map((year) => (
-                                <option key={year} value={year}>
-                                    {year}
-                                </option>
-                            ))}
-                        </select>
-
+                        <div className="flex justify-between items-center">
+                            <label>Select Month:</label>
+                            <select
+                                className="text-black mb-0"
+                                value={selectedMonth}
+                                onChange={(e) =>
+                                    setSelectedMonth(e.target.value)
+                                }
+                            >
+                                {[...Array(12).keys()].map((m) => (
+                                    <option key={m + 1} value={m + 1}>
+                                        {new Date(0, m).toLocaleString(
+                                            "default",
+                                            {
+                                                month: "long",
+                                            },
+                                        )}
+                                    </option>
+                                ))}
+                            </select>
+                            <label>Select Year:</label>
+                            <select
+                                className="text-black mb-0"
+                                value={selectedYear}
+                                onChange={(e) =>
+                                    setSelectedYear(e.target.value)
+                                }
+                            >
+                                {[2023, 2024, 2025, 2026].map((year) => (
+                                    <option key={year} value={year}>
+                                        {year}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                         <input
                             type="text"
                             ref={searchRef}
@@ -209,6 +216,7 @@ function Attendance() {
                             onChange={handleSearch}
                             className="search-bar mt-10 text-black"
                         />
+
                         <table className="employee-table bg-white text-black rounded-xl overflow-hidden w-3/4">
                             <thead>
                                 <tr>
