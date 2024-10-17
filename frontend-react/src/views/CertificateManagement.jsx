@@ -308,8 +308,13 @@ function CertificateManagement() {
 
     const handleOpenPdf = (pdfUrl) => {
         if (pdfUrl) {
-            console.log(pdfUrl); // Log the pdfUrl to ensure it's being passed correctly
-            window.open(pdfUrl, "_blank"); // Open the PDF in a new browser tab
+            const baseUrl = import.meta.env.VITE_BASE_URL;
+            const fullUrl = pdfUrl.startsWith("http")
+                ? pdfUrl // Use the URL as is if it’s already a full URL
+                : `${baseUrl}/storage/${pdfUrl}`; // Construct the URL based on the base URL
+
+            console.log(fullUrl); // Log the full URL to ensure it's being passed correctly
+            window.open(fullUrl, "_blank"); // Open the PDF in a new browser tab
         } else {
             alert("No PDF available for this certificate.");
         }
@@ -1727,7 +1732,7 @@ function CertificateManagement() {
                                                                 <button
                                                                     onClick={() =>
                                                                         handleOpenPdf(
-                                                                            `/storage/${cert.certificate_file_path}`,
+                                                                            cert.certificate_file_path,
                                                                         )
                                                                     }
                                                                     className="px-3 w-full py-2 flex  justify-center items-center bg-purple-500 text-white rounded text-sm font-normal hover:bg-purple-600"
