@@ -1,8 +1,9 @@
 <?php
+
 $servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "gammacare_db";
+$username = "u556129284_gammacare_db";
+$password = "q^XnKj4hE~";
+$dbname = "u556129284_gammacare_db";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
