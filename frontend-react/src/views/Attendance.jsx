@@ -3,74 +3,96 @@ import axiosClient from "../axiosClient";
 
 function Attendance() {
     const [activeButton, setActiveButton] = useState("monitoring");
-    const [employees, setEmployees] = useState([]);
-    const [filteredEmployees, setFilteredEmployees] = useState([]);
+    const [monitoringData, setMonitoringData] = useState([]);
     const [allEmployeesData, setAllEmployeesData] = useState([]);
+    const [filteredMonitoringEmployees, setFilteredMonitoringEmployees] =
+        useState([]);
+    const [filteredAllEmployeesData, setFilteredAllEmployeesData] = useState(
+        [],
+    );
+    const [selectedMonth, setSelectedMonth] = useState(
+        new Date().getMonth() + 1,
+    );
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const searchRef = useRef();
 
-    // Fetch employee data from the test table in attendance_system
-    const fetchEmployees = async () => {
+    // Fetch monitoring data
+    const fetchMonitoringData = async () => {
         try {
             const response = await axiosClient.get("/sync-attendance");
-            setEmployees(response.data);
-            setFilteredEmployees(response.data); // Reset filtered employees
+            setMonitoringData(response.data);
+            setFilteredMonitoringEmployees(response.data); // Reset filtered employees for monitoring
         } catch (error) {
-            console.error("Error fetching employees:", error);
+            console.error("Error fetching monitoring data:", error);
         }
     };
 
-    // Fetch all employees' averages from tracking_attendance
-    const fetchAllEmployeesData = async () => {
+    // Fetch all employees data based on selected month and year
+    const fetchAllEmployeesData = async (month, year) => {
         try {
-            const response = await axiosClient.get("/attendance/averages");
+            const response = await axiosClient.get("/monthly-attendance", {
+                params: { month, year },
+            });
             setAllEmployeesData(response.data);
+            setFilteredAllEmployeesData(response.data); // Reset filtered employees for all employees data
         } catch (error) {
-            console.error("Error fetching all employees' data:", error);
+            console.error("Error fetching all employees data:", error);
         }
     };
 
-    // Polling data every 5 seconds for monitoring
+    // Handle data fetching based on active button
     useEffect(() => {
         if (activeButton === "monitoring") {
-            fetchEmployees();
-
-            const intervalId = setInterval(() => {
-                fetchEmployees();
-            }, 5000); // Fetch every 5 seconds
-
-            return () => clearInterval(intervalId);
+            fetchMonitoringData();
         } else if (activeButton === "allEmployees") {
-            fetchAllEmployeesData();
+            fetchAllEmployeesData(selectedMonth, selectedYear);
+        }
+    }, [activeButton, selectedMonth, selectedYear]);
+
+    // Polling for real-time updates in monitoring
+    useEffect(() => {
+        if (activeButton === "monitoring") {
+            const intervalId = setInterval(() => {
+                fetchMonitoringData();
+            }, 5000); // Poll every 5 seconds
+            return () => clearInterval(intervalId);
         }
     }, [activeButton]);
 
     const handleSearch = () => {
         const searchTerm = searchRef.current.value.trim().toLowerCase();
-        const filtered = employees.filter(
-            (employee) =>
-                employee.name.toLowerCase().includes(searchTerm) ||
-                employee.user_id.toString().includes(searchTerm),
-        );
-        setFilteredEmployees(filtered);
+        if (activeButton === "monitoring") {
+            const filtered = monitoringData.filter(
+                (employee) =>
+                    employee.name.toLowerCase().includes(searchTerm) ||
+                    employee.user_id.toString().includes(searchTerm),
+            );
+            setFilteredMonitoringEmployees(filtered);
+        } else if (activeButton === "allEmployees") {
+            const filtered = allEmployeesData.filter(
+                (employee) =>
+                    employee.name.toLowerCase().includes(searchTerm) ||
+                    employee.user_id.toString().includes(searchTerm),
+            );
+            setFilteredAllEmployeesData(filtered);
+        }
+    };
+
+    const formatToHour = (timestamp) => {
+        if (!timestamp) return "N/A";
+        const date = new Date(timestamp);
+        return date.getHours().toString().padStart(2, "0") + ":00";
     };
 
     return (
         <div>
-            <nav className="grid grid-cols-3">
+            <nav className="grid grid-cols-2">
                 <button
                     className={`navButton ${activeButton === "monitoring" ? "active" : ""}`}
                     onClick={() => setActiveButton("monitoring")}
                 >
                     Monitoring
                 </button>
-
-                <button
-                    className={`navButton ${activeButton === "totalHours" ? "active" : ""}`}
-                    onClick={() => setActiveButton("totalHours")}
-                >
-                    Accumulated Total Time
-                </button>
-
                 <button
                     className={`navButton ${activeButton === "allEmployees" ? "active" : ""}`}
                     onClick={() => setActiveButton("allEmployees")}
@@ -78,6 +100,7 @@ function Attendance() {
                     All Employees Data
                 </button>
             </nav>
+
             <div className="animated fadeInDown">
                 {activeButton === "monitoring" && (
                     <div className="employee-list">
@@ -102,18 +125,30 @@ function Attendance() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredEmployees.length > 0 ? (
-                                        filteredEmployees.map((employee) => (
-                                            <tr key={employee.id}>
-                                                <td className="hidden md:table-cell">
-                                                    {employee.user_id}
-                                                </td>
-                                                <td>{employee.name}</td>
-                                                <td>{employee.date}</td>
-                                                <td>{employee.time_in}</td>
-                                                <td>{employee.time_out}</td>
-                                            </tr>
-                                        ))
+                                    {filteredMonitoringEmployees.length > 0 ? (
+                                        filteredMonitoringEmployees.map(
+                                            (employee) => (
+                                                <tr
+                                                    key={`${employee.user_id}-${employee.date}`}
+                                                >
+                                                    <td className="hidden md:table-cell">
+                                                        {employee.user_id}
+                                                    </td>
+                                                    <td>{employee.name}</td>
+                                                    <td>{employee.date}</td>
+                                                    <td>
+                                                        {formatToHour(
+                                                            employee.time_in,
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        {formatToHour(
+                                                            employee.time_out,
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ),
+                                        )
                                     ) : (
                                         <tr>
                                             <td colSpan="5">
@@ -126,8 +161,37 @@ function Attendance() {
                         </div>
                     </div>
                 )}
-                {activeButton === "totalHours" && (
-                    <div className="employee-accumulated-hours">
+
+                {activeButton === "allEmployees" && (
+                    <div className="all-employees-data">
+                        <label>Select Month:</label>
+                        <select
+                            className="text-black"
+                            value={selectedMonth}
+                            onChange={(e) => setSelectedMonth(e.target.value)}
+                        >
+                            {[...Array(12).keys()].map((m) => (
+                                <option key={m + 1} value={m + 1}>
+                                    {new Date(0, m).toLocaleString("default", {
+                                        month: "long",
+                                    })}
+                                </option>
+                            ))}
+                        </select>
+
+                        <label>Select Year:</label>
+                        <select
+                            className="text-black"
+                            value={selectedYear}
+                            onChange={(e) => setSelectedYear(e.target.value)}
+                        >
+                            {[2023, 2024, 2025, 2026].map((year) => (
+                                <option key={year} value={year}>
+                                    {year}
+                                </option>
+                            ))}
+                        </select>
+
                         <input
                             type="text"
                             ref={searchRef}
@@ -138,66 +202,42 @@ function Attendance() {
                         <table className="employee-table bg-white text-black rounded-xl overflow-hidden w-3/4">
                             <thead>
                                 <tr>
-                                    <th>User ID</th>
+                                    <th className="hidden md:table-cell">
+                                        User ID
+                                    </th>
                                     <th>Name</th>
-                                    <th>Accumulated Total Time</th>
+                                    <th>Average Time In</th>
+                                    <th>Average Time Out</th>
+                                    <th>Average Hours Per Day</th>
+                                    <th>Total Hours This Month</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredEmployees.length > 0 ? (
-                                    filteredEmployees.map((employee) => (
+                                {filteredAllEmployeesData.length > 0 ? (
+                                    filteredAllEmployeesData.map((employee) => (
                                         <tr key={employee.user_id}>
-                                            <td>{employee.user_id}</td>
+                                            <td className="hidden md:table-cell">
+                                                {employee.user_id}
+                                            </td>
                                             <td>{employee.name}</td>
                                             <td>
-                                                {employee.accumulated_time ||
+                                                {employee.avg_time_in || "N/A"}
+                                            </td>
+                                            <td>
+                                                {employee.avg_time_out || "N/A"}
+                                            </td>
+                                            <td>
+                                                {employee.avg_hours || "N/A"}
+                                            </td>
+                                            <td>
+                                                {employee.total_hours ||
                                                     "0 minutes"}
                                             </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="3">No employees found.</td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-                {activeButton === "allEmployees" && (
-                    <div className="all-employees-data">
-                        <table className="employee-table bg-white text-black rounded-xl overflow-hidden w-3/4">
-                            <thead>
-                                <tr>
-                                    <th className="hidden md:table-cell">
-                                        User ID
-                                    </th>
-                                    <th>Name</th>
-                                    <th hidden md:table-cell>
-                                        Average Time In
-                                    </th>
-                                    <th>Average Time Out</th>
-                                    <th>Average Hours Per Day</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {allEmployeesData.length > 0 ? (
-                                    allEmployeesData.map((employee) => (
-                                        <tr key={employee.user_id}>
-                                            <td className="hidden md:table-cell">
-                                                {employee.user_id}
-                                            </td>
-                                            <td>{employee.name}</td>
-                                            <td hidden md:table-cell>
-                                                {employee.avg_time_in}
-                                            </td>
-                                            <td>{employee.avg_time_out}</td>
-                                            <td>{employee.avg_hours}</td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan="5">
+                                        <td colSpan="6">
                                             No employees data found.
                                         </td>
                                     </tr>

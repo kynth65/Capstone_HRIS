@@ -59,6 +59,62 @@ class AttendanceController extends Controller
         }
     }
 
+    public function getMonthlyAttendanceRecords(Request $request)
+    {
+        $month = $request->input('month', date('m')); // Default to current month
+        $year = $request->input('year', date('Y'));   // Default to current year
+
+        try {
+            $attendanceRecords = DB::table('attendances')
+                ->join('users', 'attendances.user_id', '=', 'users.user_id')
+                ->select(
+                    'users.user_id',
+                    'users.name',
+                    DB::raw('SUM(attendances.accumulated_work_time) AS total_minutes'),
+                    DB::raw('AVG(TIME_TO_SEC(attendances.time_in)) AS avg_time_in_seconds'),
+                    DB::raw('AVG(TIME_TO_SEC(attendances.time_out)) AS avg_time_out_seconds'),
+                    DB::raw('AVG(TIMESTAMPDIFF(MINUTE, attendances.time_in, attendances.time_out)) AS avg_daily_minutes')
+                )
+                ->whereYear('attendances.date', $year)
+                ->whereMonth('attendances.date', $month)
+                ->groupBy('users.user_id', 'users.name')
+                ->get();
+
+            // Convert values to more readable formats
+            $attendanceRecords->transform(function ($record) {
+                // Total accumulated hours
+                $hours = floor($record->total_minutes / 60);
+                $minutes = $record->total_minutes % 60;
+                $record->total_hours = $hours . ' hours ' . $minutes . ' minutes';
+
+                // Average time in (convert seconds to HH:MM format)
+                $avgTimeIn = gmdate("H:i", $record->avg_time_in_seconds);
+                $record->avg_time_in = $avgTimeIn;
+
+                // Average time out (convert seconds to HH:MM format)
+                $avgTimeOut = gmdate("H:i", $record->avg_time_out_seconds);
+                $record->avg_time_out = $avgTimeOut;
+
+                // Average daily work hours
+                $avgHours = floor($record->avg_daily_minutes / 60);
+                $avgMinutes = $record->avg_daily_minutes % 60;
+                $record->avg_hours = $avgHours . ' hours ' . $avgMinutes . ' minutes';
+
+                return $record;
+            });
+
+            return response()->json($attendanceRecords);
+        } catch (\Exception $e) {
+            Log::error('Error fetching monthly attendance records: ' . $e->getMessage(), [
+                'exception' => $e,
+            ]);
+
+            return response()->json([
+                'message' => 'Internal Server Error. Please check the logs for details.',
+            ], 500);
+        }
+    }
+
     public function archiveDailyAttendance()
     {
         $today = Carbon::now()->toDateString();

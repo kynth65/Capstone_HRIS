@@ -84,7 +84,7 @@ function EmployeeLayout() {
     };
 
     const handleViewProfile = () => {
-        navigate("/profile-admin");
+        navigate("/employee-profile");
         setShowModal(false);
     };
     const toggleModal = () => setShowModal(!showModal);

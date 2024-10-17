@@ -136,6 +136,8 @@ Route::get('/csrf-token', function () {
 });
 
 Route::get('/sync-attendance', [AttendanceController::class, 'getAttendanceRecords']);
+Route::get('/monthly-attendance', [AttendanceController::class, 'getMonthlyAttendanceRecords']);
+
 Route::post('/attendance', [TrackingAttendanceController::class, 'recordAttendance']);
 Route::patch('/attendance/{id}', [TrackingAttendanceController::class, 'updateTimeOut']);
 Route::get('/attendance/averages', [TrackingAttendanceController::class, 'getDailyAverage']);
