@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import axiosClient from "../axiosClient";
 
+import Modal from "react-modal";
+
+Modal.setAppElement("#root");
+
 function Attendance() {
     const [activeButton, setActiveButton] = useState("monitoring");
     const [monitoringData, setMonitoringData] = useState([]);
@@ -14,6 +18,8 @@ function Attendance() {
         new Date().getMonth() + 1,
     );
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedEmployee, setSelectedEmployee] = useState(null);
     const searchRef = useRef();
 
     // Fetch monitoring data
@@ -90,6 +96,16 @@ function Attendance() {
         const options = { month: "long", day: "numeric" };
         return date.toLocaleDateString("en-US", options);
     };
+
+    const openModal = (employee) => {
+        setSelectedEmployee(employee);
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setSelectedEmployee(null);
+        setIsModalOpen(false);
+    };
     return (
         <div>
             <nav className="grid grid-cols-2">
@@ -126,8 +142,13 @@ function Attendance() {
                                         </th>
                                         <th>Name</th>
                                         <th>Date</th>
-                                        <th>Time In</th>
-                                        <th>Time Out</th>
+                                        <th className="hidden md:table-cell">
+                                            Time In
+                                        </th>
+                                        <th className="hidden md:table-cell">
+                                            Time Out
+                                        </th>
+                                        <th className="md:hidden">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -146,15 +167,27 @@ function Attendance() {
                                                             employee.date,
                                                         )}
                                                     </td>
-                                                    <td>
+                                                    <td className="hidden md:table-cell">
                                                         {formatToHour(
                                                             employee.time_in,
                                                         )}
                                                     </td>
-                                                    <td>
+                                                    <td className="hidden md:table-cell">
                                                         {formatToHour(
                                                             employee.time_out,
                                                         )}
+                                                    </td>
+                                                    <td className="md:hidden">
+                                                        <button
+                                                            className="view-btn bg-green-800 w-full py-2 px-4 rounded-md text-white hover:bg-green-900"
+                                                            onClick={() =>
+                                                                openModal(
+                                                                    employee,
+                                                                )
+                                                            }
+                                                        >
+                                                            View
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             ),
@@ -174,48 +207,57 @@ function Attendance() {
 
                 {activeButton === "allEmployees" && (
                     <div className="all-employees-data">
-                        <div className="flex justify-between items-center">
-                            <label>Select Month:</label>
-                            <select
-                                className="text-black mb-0"
-                                value={selectedMonth}
-                                onChange={(e) =>
-                                    setSelectedMonth(e.target.value)
-                                }
-                            >
-                                {[...Array(12).keys()].map((m) => (
-                                    <option key={m + 1} value={m + 1}>
-                                        {new Date(0, m).toLocaleString(
-                                            "default",
-                                            {
-                                                month: "long",
-                                            },
-                                        )}
-                                    </option>
-                                ))}
-                            </select>
-                            <label>Select Year:</label>
-                            <select
-                                className="text-black mb-0"
-                                value={selectedYear}
-                                onChange={(e) =>
-                                    setSelectedYear(e.target.value)
-                                }
-                            >
-                                {[2023, 2024, 2025, 2026].map((year) => (
-                                    <option key={year} value={year}>
-                                        {year}
-                                    </option>
-                                ))}
-                            </select>
+                        <div className="flex flex-col gap-2 md:grid md:grid-cols-3 md:justify-between  mt-5">
+                            <div className="flex flex-col items-center gap-1">
+                                <label>Select Month:</label>
+                                <select
+                                    className="text-black mb-0 rounded-lg"
+                                    value={selectedMonth}
+                                    onChange={(e) =>
+                                        setSelectedMonth(e.target.value)
+                                    }
+                                >
+                                    {[...Array(12).keys()].map((m) => (
+                                        <option key={m + 1} value={m + 1}>
+                                            {new Date(0, m).toLocaleString(
+                                                "default",
+                                                {
+                                                    month: "long",
+                                                },
+                                            )}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="flex flex-col items-center gap-1">
+                                <label>Select Year:</label>
+                                <select
+                                    className="text-black mb-0 rounded-lg"
+                                    value={selectedYear}
+                                    onChange={(e) =>
+                                        setSelectedYear(e.target.value)
+                                    }
+                                >
+                                    {[2023, 2024, 2025, 2026].map((year) => (
+                                        <option key={year} value={year}>
+                                            {year}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="flex flex-col items-center gap-1">
+                                <label className="md:mr-2   md:mt-0">
+                                    Search:
+                                </label>
+                                <input
+                                    type="text"
+                                    ref={searchRef}
+                                    placeholder="Search by name or ID..."
+                                    onChange={handleSearch}
+                                    className="rounded-lg mt-2 md:mt-0 mb-0 text-black"
+                                />
+                            </div>
                         </div>
-                        <input
-                            type="text"
-                            ref={searchRef}
-                            placeholder="Search by name or ID..."
-                            onChange={handleSearch}
-                            className="search-bar mt-10 text-black"
-                        />
 
                         <table className="employee-table bg-white text-black rounded-xl overflow-hidden w-3/4">
                             <thead>
@@ -224,10 +266,17 @@ function Attendance() {
                                         User ID
                                     </th>
                                     <th>Name</th>
-                                    <th>Average Time In</th>
-                                    <th>Average Time Out</th>
-                                    <th>Average Hours Per Day</th>
+                                    <th className="hidden md:table-cell">
+                                        Average Time In
+                                    </th>
+                                    <th className="hidden md:table-cell">
+                                        Average Time Out
+                                    </th>
+                                    <th className="hidden md:table-cell">
+                                        Average Hours Per Day
+                                    </th>
                                     <th>Total Hours This Month</th>
+                                    <th className="md:hidden">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -238,24 +287,34 @@ function Attendance() {
                                                 {employee.user_id}
                                             </td>
                                             <td>{employee.name}</td>
-                                            <td>
+                                            <td className="hidden md:table-cell">
                                                 {employee.avg_time_in || "N/A"}
                                             </td>
-                                            <td>
+                                            <td className="hidden md:table-cell">
                                                 {employee.avg_time_out || "N/A"}
                                             </td>
-                                            <td>
+                                            <td className="hidden md:table-cell">
                                                 {employee.avg_hours || "N/A"}
                                             </td>
                                             <td>
                                                 {employee.total_hours ||
                                                     "0 minutes"}
                                             </td>
+                                            <td className="md:hidden">
+                                                <button
+                                                    className="view-btn bg-green-800 w-full py-2 px-4 rounded-md text-white hover:bg-green-900"
+                                                    onClick={() =>
+                                                        openModal(employee)
+                                                    }
+                                                >
+                                                    View
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="6">
+                                        <td colSpan="7">
                                             No employees data found.
                                         </td>
                                     </tr>
@@ -264,6 +323,54 @@ function Attendance() {
                         </table>
                     </div>
                 )}
+                <Modal
+                    isOpen={isModalOpen}
+                    onRequestClose={closeModal}
+                    contentLabel="Employee Details"
+                    className="modal"
+                    overlayClassName="overlay"
+                >
+                    <div className="modal-content bg-white p-4 rounded-lg">
+                        {selectedEmployee && (
+                            <div className="employee-details text-sm md:text-lg space-y-4 text-black">
+                                <h2 className="text-xl font-bold mb-4">
+                                    Employee Details
+                                </h2>
+                                <p>
+                                    <strong>User ID:</strong>{" "}
+                                    {selectedEmployee.user_id}
+                                </p>
+                                <p>
+                                    <strong>Name:</strong>{" "}
+                                    {selectedEmployee.name}
+                                </p>
+                                <p>
+                                    <strong>Average Time In:</strong>{" "}
+                                    {selectedEmployee.avg_time_in || "N/A"}
+                                </p>
+                                <p>
+                                    <strong>Average Time Out:</strong>{" "}
+                                    {selectedEmployee.avg_time_out || "N/A"}
+                                </p>
+                                <p>
+                                    <strong>Average Hours Per Day:</strong>{" "}
+                                    {selectedEmployee.avg_hours || "N/A"}
+                                </p>
+                                <p>
+                                    <strong>Total Hours This Month:</strong>{" "}
+                                    {selectedEmployee.total_hours ||
+                                        "0 minutes"}
+                                </p>
+                                <button
+                                    className="close-btn bg-red-800 text-white w-full py-2 mt-3"
+                                    onClick={closeModal}
+                                >
+                                    close
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </Modal>
             </div>
         </div>
     );
