@@ -191,3 +191,5 @@ Route::get('/archived-certificates', function () {
         'data' => $certificates
     ]);
 });
+
+Route::post('/user-information', [AuthController::class, 'completeProfile']);
