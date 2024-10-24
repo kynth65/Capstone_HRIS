@@ -176,7 +176,7 @@ const HR_Leave_Management = () => {
                         className={`navButton ${activeButton === "leaveFormList" ? "active" : ""}`}
                         onClick={() => toggleView("leaveFormList")}
                     >
-                        Leave Form List
+                        Leave Form Lists
                     </button>
                     <button
                         className={`navButton ${activeButton === "templateProviderAI" ? "active" : ""}`}
@@ -205,7 +205,7 @@ const HR_Leave_Management = () => {
                             <p className="text-red-600 mb-4">{errorMessage}</p>
                         )}
                         <table className="employee-table table-auto w-full border-collapse border border-gray-300">
-                            <thead className="bg-gray-100 text-black sticky top-[-1px] z-10">
+                            <thead className="bg-gray-100 text-black sticky top-[-3px] z-10">
                                 <tr>
                                     <th className="p-2 border-b border-gray-300">
                                         Employee Name
@@ -257,7 +257,7 @@ const HR_Leave_Management = () => {
                                             </td>
                                             <td className="p-2 border border-gray-300">
                                                 <a
-                                                    href={`/${request.file_path}`}
+                                                    href={`${import.meta.env.VITE_BASE_URL}/storage/${request.file_path}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="text-blue-600 hover:underline"
@@ -324,7 +324,7 @@ const HR_Leave_Management = () => {
                 )}
 
                 {activeButton === "templateProviderAI" && (
-                    <div className="bg-white rounded-xl p-4">
+                    <div className="bg-white rounded-xl p-4 ">
                         <h2 className="titles pt-5">
                             AI Letter Template Generator
                         </h2>
@@ -424,6 +424,27 @@ const HR_Leave_Management = () => {
                                 Submit Leave Request
                             </button>
                         </form>
+                    </div>
+                )}
+                {/* PDF Modal */}
+                {isPdfModalOpen && (
+                    <div className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                        <div className="bg-white p-6 rounded-xl w-3/4 xl:w-3/4 h-full text-black overflow-hidden flex flex-col">
+                            <div className="mb-4 float-right flex justify-end">
+                                <button
+                                    className="bg-red-600 px-4 py-2 rounded-md text-white font-normal hover:bg-red-900 transition"
+                                    onClick={handleClosePdfModal}
+                                >
+                                    Close
+                                </button>
+                            </div>
+                            <iframe
+                                src={pdfUrl}
+                                title="Leave Request PDF"
+                                width="100%"
+                                height="750px"
+                            />
+                        </div>
                     </div>
                 )}
             </div>
