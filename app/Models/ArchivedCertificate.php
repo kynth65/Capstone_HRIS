@@ -9,7 +9,6 @@ class ArchivedCertificate extends Model
 {
     use HasFactory;
 
-
     protected $fillable = [
         'user_id',
         'certificate_name',
@@ -19,12 +18,25 @@ class ArchivedCertificate extends Model
         'status',
         'type',
         'category',
+        'is_archived',
+        'can_update',
         'created_by',
         'updated_by',
-        'is_archived',
+    ];
+
+    protected $attributes = [
+        'status' => 'Active',
+        'type' => 'expirable',
+        'is_archived' => false,
+        'can_update' => false,
+    ];
+
+    protected $casts = [
+        'is_archived' => 'boolean',
+        'can_update' => 'boolean',
+        'issued_date' => 'date',
+        'expiring_date' => 'date',
     ];
 
     public $timestamps = true;
-
-    // No relationships defined
 }

@@ -1,30 +1,34 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import axiosClient from "../axiosClient";
+import { jwtDecode } from "jwt-decode";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import Modal from "react-modal";
-import "../styles/applicantPortal.css";
-import "../styles/openPosition.css";
-import { jwtDecode } from "jwt-decode";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import countryCodes from "../hooks/useCountryCodes";
-import AccountingQuestions from "../views/questions/AccountingQuestions";
-import MaintenanceQuestions from "../views/questions/MaintenanceQuestions";
-import RMTQuestions from "../views/questions/RMTQuestions";
-import RiderQuestions from "../views/questions/RiderQuestions";
-import XrayTechQuestions from "../views/questions/XrayTechQuestions";
-import SecurityQuestions from "../views/questions/SecurityQuestions";
-import AnatomicalQuestions from "../views/questions/AnatomicalQuestions";
-import MedicalSecretaryQuestions from "../views/questions/MedicalSecretaryQuestions";
 import Terms from "../views/Terms";
 import Conditions from "../views/Conditions";
+
+import * as pdfjsLib from "pdfjs-dist";
+import "pdfjs-dist/build/pdf.worker.mjs";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+
 import {
     validateEmail,
     validatePhoneNumber,
     validateFileUpload,
     validateAdditionalQuestions,
 } from "../hooks/useValidationUtil";
+import axiosClient from "../axiosClient";
+import MedicalSecretaryQuestions from "../views/questions/MedicalSecretaryQuestions";
+import AccountingQuestions from "../views/questions/AccountingQuestions";
+import AnatomicalQuestions from "../views/questions/AnatomicalQuestions";
+import MaintenanceQuestions from "../views/questions/MaintenanceQuestions";
+import RiderQuestions from "../views/questions/RiderQuestions";
+import RMTQuestions from "../views/questions/RMTQuestions";
+import SecurityQuestions from "../views/questions/SecurityQuestions";
+
 Modal.setAppElement("#root");
 
 const ApplicantPortal = () => {
@@ -34,17 +38,12 @@ const ApplicantPortal = () => {
     const [loading, setLoading] = useState(false);
     const [loggedIn, setLoggedIn] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isViewAllModalOpen, setIsViewAllModalOpen] = useState(false);
     const [selectedPosition, setSelectedPosition] = useState(null);
-    const [remove, setRemove] = useState([]);
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
+    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const fileInputRef = useRef(null);
     const [userData, setUserData] = useState(null);
-    //const [hasUploaded, setHasUploaded] = useState(() => {
-    //    const savedHasUploaded = localStorage.getItem("hasUploaded");
-    //   return savedHasUploaded ? JSON.parse(savedHasUploaded) : false;
-    //});
     const [attemptMessage, setAttemptMessage] = useState(false);
     const [isTermsOpen, setIsTermsOpen] = useState(false);
     const [isConditionsOpen, setIsConditionsOpen] = useState(false);
@@ -55,10 +54,6 @@ const ApplicantPortal = () => {
         phoneCountryCode: "+63",
         mobileNumber: "",
     });
-    const openTermsModal = () => setIsTermsOpen(true);
-    const closeTermsModal = () => setIsTermsOpen(false);
-    const openConditionsModal = () => setIsConditionsOpen(true);
-    const closeConditionsModal = () => setIsConditionsOpen(false);
     const [resume, setResume] = useState(null);
     const [questions, setQuestions] = useState({
         question1: "",
@@ -72,18 +67,48 @@ const ApplicantPortal = () => {
         question9: "",
         question10: "",
     });
+    const [errors, setErrors] = useState({
+        email: "",
+        mobileNumber: "",
+        file: "",
+    });
+
+    const openTermsModal = () => setIsTermsOpen(true);
+    const closeTermsModal = () => setIsTermsOpen(false);
+    const openConditionsModal = () => setIsConditionsOpen(true);
+    const closeConditionsModal = () => setIsConditionsOpen(false);
+    const [isViewAllModalOpen, setIsViewAllModalOpen] = useState(false);
+
+    const closeViewAllModal = () => {
+        setIsViewAllModalOpen(false);
+    };
     const closeModal = () => {
         setIsModalOpen(false);
         setSelectedFiles([]);
-        setQuestions({});
+        setQuestions({
+            question1: "",
+            question2: "",
+            question3: "",
+            question4: "",
+            question5: "",
+            question6: "",
+            question7: "",
+            question8: "",
+            question9: "",
+            question10: "",
+        });
         setErrorMessage("");
-        setContactInfo({});
+        setContactInfo({
+            email: "",
+            phoneCountryCode: "+63",
+            mobileNumber: "",
+        });
     };
+
     const handleNextStep = () => {
         let validationErrors = {};
 
         if (step === 1) {
-            // Validate email and phone number in step 1
             if (!validateEmail(contactInfo.email)) {
                 validationErrors.email = "Please enter a valid email address.";
             }
@@ -93,7 +118,6 @@ const ApplicantPortal = () => {
         }
 
         if (step === 2) {
-            // Validate file upload in step 2
             const fileError = validateFileUpload(resume);
             if (fileError) {
                 validationErrors.file = fileError;
@@ -101,7 +125,6 @@ const ApplicantPortal = () => {
         }
 
         if (step === 3) {
-            console.log("Questions state before validation:", questions); // Add this for debugging
             const questionErrors = validateAdditionalQuestions(
                 questions,
                 selectedPosition?.title,
@@ -111,77 +134,279 @@ const ApplicantPortal = () => {
 
         setErrors(validationErrors);
 
-        // Proceed to next step only if no errors
         if (Object.keys(validationErrors).length === 0) {
             setStep(step + 1);
         }
     };
+
     const handlePrevStep = () => {
         if (step > 1) {
             setStep(step - 1);
         }
     };
-    // useEffect(() => {
-    //    if (hasUploaded) {
-    //        localStorage.setItem("hasUploaded", JSON.stringify(hasUploaded));
-    //    }
-    //}, [hasUploaded]);
-    const handleRemoveFile = (index) => {
-        setRemove((prevFiles) => prevFiles.filter((_, i) => i !== index));
-        setSelectedFiles((prevFilenames) =>
-            prevFilenames.filter((_, i) => i !== index),
-        );
-    };
 
     const handleFileChange = (event) => {
-        const files = Array.from(event.target.files); // Get the selected files
-        setSelectedFiles(files); // Update the state with the selected files
+        const files = Array.from(event.target.files);
+        setSelectedFiles(files);
         setResume(event.target.files[0]);
     };
 
-    const handleUpload = async () => {
-        if (selectedFiles.length === 0) {
-            setErrorMessage(
-                "Please choose at least one file before submitting.",
-            );
-            if (!isChecked) {
-                setErrorMessage(
-                    "You must agree to the Terms and Conditions before submitting.",
-                );
-                return;
+    const extractTextFromPdf = async (file) => {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let text = "";
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            text += content.items.map((item) => item.str).join(" ");
+        }
+        return text;
+    };
+
+    const extractEmail = (text) => {
+        // Split text into lines and process each line
+        const lines = text.split("\n");
+
+        // Common email labels that might precede the address
+        const emailLabels = ["email", "e-mail", "mail", "contact", "address"];
+
+        // More comprehensive email pattern
+        const emailPattern =
+            /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/;
+
+        for (const line of lines) {
+            // Skip empty lines
+            if (!line.trim()) continue;
+
+            // First try to find email in lines that contain email labels
+            const lowerLine = line.toLowerCase();
+            if (emailLabels.some((label) => lowerLine.includes(label))) {
+                const match = line.match(emailPattern);
+                if (match) return match[0];
             }
-            setTimeout(() => setErrorMessage(""), 4000);
+
+            // If no labeled email found, look for email pattern in the line
+            const match = line.match(emailPattern);
+            if (match) {
+                // Additional validation to avoid false positives
+                const email = match[0];
+
+                // Skip common false positives
+                if (email.includes("example.com")) continue;
+                if (email.includes("domain.com")) continue;
+
+                // Basic validation
+                if (
+                    email.length > 5 && // Minimum length check
+                    email.length < 255 && // Maximum length check
+                    email.includes("@") && // Must contain @
+                    email.split("@")[0].length > 0 && // Local part must not be empty
+                    email.split("@")[1].length > 3 // Domain must be reasonable length
+                ) {
+                    return email;
+                }
+            }
+        }
+
+        // If no email found in the regular text, try looking for encoded characters
+        const encodedMatch = text.match(
+            /[A-Za-z0-9._%+-]+\s*[@\[at\]]\s*[A-Za-z0-9.-]+\s*\.[A-Z|a-z]{2,}/,
+        );
+        if (encodedMatch) {
+            return encodedMatch[0].replace(/\s+/g, "").replace(/\[at\]/i, "@");
+        }
+
+        return null;
+    };
+
+    const extractName = (text) => {
+        // Handle empty input
+        if (!text) return null;
+
+        // Clean and normalize the text
+        const cleanText = text.replace(/\s+/g, " ").trim();
+        const lines = cleanText.split("\n");
+
+        // Clean up the first line by removing any unwanted characters
+        const firstLine = lines[0]
+            .replace(/[^a-zA-Z\s\.]/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+
+        // More comprehensive name pattern to handle:
+        // - One or more first names (e.g., "Kynth Anthony")
+        // - Optional middle initial with period (e.g., "P.")
+        // - Last name (e.g., "Marcaida")
+        const namePattern =
+            /^([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)\s+(?:([A-Z]\.)\s+)?([A-Z][a-zA-Z]+)$/;
+
+        // First try to match the complete name pattern in the first line
+        const match = firstLine.match(namePattern);
+        if (match) {
+            // match[1] = first name(s)
+            // match[2] = middle initial (if present)
+            // match[3] = last name
+            const firstNames = match[1];
+            const middleInitial = match[2] || "";
+            const lastName = match[3];
+
+            // Construct the full name with proper spacing
+            const fullName = [firstNames, middleInitial, lastName]
+                .filter(Boolean) // Remove empty parts
+                .join(" ")
+                .replace(/\s+/g, " ") // Normalize spaces
+                .trim();
+
+            if (isValidName(fullName)) {
+                return fullName;
+            }
+        }
+
+        // If the above didn't work, try to find the name in a more lenient way
+        for (const line of lines) {
+            if (!line.trim() || line.length > 100) continue;
+
+            const cleanLine = line
+                .replace(/[^a-zA-Z\s\.]/g, " ")
+                .replace(/\s+/g, " ")
+                .trim();
+            const lenientMatch = cleanLine.match(
+                /([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*(?:\s+[A-Z]\.)?(?:\s+[A-Z][a-zA-Z]+)+)/,
+            );
+
+            if (lenientMatch) {
+                const potentialName = lenientMatch[0].trim();
+                if (isValidName(potentialName)) {
+                    return potentialName;
+                }
+            }
+        }
+
+        return null;
+    };
+
+    // Update isValidName to handle the new name structure
+    const isValidName = (name) => {
+        // Clean the name first
+        const cleanName = name.replace(/\s+/g, " ").trim();
+
+        // Must be at least 5 characters
+        if (cleanName.length < 5) return false;
+
+        // Should not contain common document words
+        if (
+            cleanName.includes("RESUME") ||
+            cleanName.includes("CURRICULUM") ||
+            cleanName.includes("VITAE")
+        )
+            return false;
+
+        // Split the name into parts
+        const parts = cleanName.split(/\s+/);
+
+        // Should have at least 2 parts (first and last name)
+        if (parts.length < 2) return false;
+
+        // Check if each part starts with uppercase
+        if (!parts.every((part) => /^[A-Z]/.test(part))) return false;
+
+        // Check for middle initial format if present
+        const middleInitialIndex = parts.findIndex((part) =>
+            /^[A-Z]\.$/.test(part),
+        );
+        if (middleInitialIndex !== -1 && middleInitialIndex === 0) return false; // Middle initial shouldn't be first
+
+        // Should not be too long
+        if (cleanName.length > 50) return false;
+
+        return true;
+    };
+
+    const handleUpload = async () => {
+        if (selectedFiles.length === 0 || !isChecked) {
+            setErrorMessage(
+                "Please select a file and agree to the terms before submitting.",
+            );
             return;
         }
-        setSelectedFiles([]); // Clear the state
-        if (fileInputRef.current) {
-            fileInputRef.current.value = ""; // Reset the input field itself
-        }
-        //  if (hasUploaded) {
-        //    setErrorMessage(
-        //       "You have already submitted your resume. You can only upload once.",
-        //   );
 
-        //    setTimeout(() => setErrorMessage(""), 4000);
-        //    return;
-        // }
-        //if (hasUploaded[selectedPosition.position_id]) {
-        //   setErrorMessage(
-        //       "You have already submitted your resume. You can only upload once.",
-        //   );
-
-        //     setTimeout(() => setErrorMessage(""), 4000);
-        //    return;
-        // }
+        setSelectedFiles([]);
+        if (fileInputRef.current) fileInputRef.current.value = "";
         setErrorMessage("");
         setLoading(true);
+
         const formData = new FormData();
-        selectedFiles.forEach((file) => formData.append("files", file));
+        const file = selectedFiles[0];
+        formData.append("files", file);
         formData.append("position_id", selectedPosition.position_id);
 
         try {
-            const uploadResponse = await axios.post(
-                "http://127.0.0.1:5000/upload",
+            // Extract text from PDF
+            const text = await extractTextFromPdf(file);
+            console.log("Raw extracted text:", text);
+
+            // Clean up the text
+            const cleanedText = text
+                .replace(/\s+/g, " ") // Replace multiple spaces with single space
+                .replace(/\s*-\s*/g, "") // Remove hyphens and surrounding spaces
+                .replace(/\s*\|\s*/g, "|") // Normalize spaces around pipes
+                .trim();
+            console.log("Cleaned text:", cleanedText);
+
+            // Get first line and extract name
+            const firstLine = cleanedText.split("\n")[0];
+            console.log("First line:", firstLine);
+
+            // Extract name up to the first known delimiter
+            const nameMatch = firstLine.split(
+                /Contact:|Email:|Phone:|Location:|Tel:|Mobile:/,
+            )[0];
+            let extractedName = nameMatch ? nameMatch.trim() : "";
+            console.log("Extracted raw name:", extractedName);
+
+            // Clean up the extracted name
+            extractedName = extractedName
+                .replace(/Kynt\s*h/, "Kynth") // Fix specific known formatting issue
+                .replace(/\s+/g, " ") // Normalize spaces
+                .trim();
+
+            // Only use name if it matches our expected format
+            const namePattern =
+                /^[A-Z][a-zA-Z]+(\s+[A-Z][a-zA-Z]+)*(\s+[A-Z]\.)?(\s+[A-Z][a-zA-Z]+)+$/;
+            const finalName = namePattern.test(extractedName)
+                ? extractedName
+                : "";
+
+            console.log("Final cleaned name:", finalName);
+
+            const email = extractEmail(text);
+            console.log("Extracted email:", email);
+
+            formData.append("filename", file.name);
+            formData.append("email", email || contactInfo.email);
+            formData.append("position_name", selectedPosition.title);
+            formData.append("name", finalName);
+            formData.append("mobileNumber", contactInfo.mobileNumber);
+            formData.append("question1_response", questions.question1 || "");
+            formData.append("question2_response", questions.question2 || "");
+            formData.append("question3_response", questions.question3 || "");
+            formData.append("question4_response", questions.question4 || "");
+            formData.append("question5_response", questions.question5 || "");
+            formData.append("question6_response", questions.question6 || "");
+            formData.append("question7_response", questions.question7 || "");
+            formData.append("question8_response", questions.question8 || "");
+            formData.append("question9_response", questions.question9 || "");
+            formData.append("question10_response", questions.question10 || "");
+            formData.append("resume_text", cleanedText);
+            formData.append("hr_tags", selectedPosition.hr_tags);
+
+            // For debugging, log what's being sent
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}:`, value);
+            }
+
+            const uploadResponse = await axiosClient.post(
+                "/applicants/upload-and-rank",
                 formData,
                 {
                     headers: {
@@ -190,153 +415,82 @@ const ApplicantPortal = () => {
                 },
             );
 
-            const rankResponse = await axios.post(
-                "http://127.0.0.1:5000/rank",
-                {
-                    position_id: selectedPosition.position_id,
-                    resumes: uploadResponse.data.resume_texts,
-                    filenames: uploadResponse.data.filenames,
-                    question1: questions.question1,
-                    question2: questions.question2,
-                    question3: questions.question3,
-                    question4: questions.question4,
-                    question5: questions.question5,
-                    question6: questions.question6,
-                    question7: questions.question7,
-                    question8: questions.question8,
-                    question9: questions.question9,
-                    question10: questions.question10,
-                    mobileNumber: contactInfo.mobileNumber,
-                },
-            );
-
-            console.log("Ranked resumes:", rankResponse.data.ranked_resumes);
-
-            // Set `hasUploaded` to true immediately after successful upload
-            //setHasUploaded(true); // Set the state to true after upload
-
             setShowSuccessPopup("You successfully submitted your resume!");
+            setTimeout(() => setShowSuccessPopup(""), 4000);
 
-            setTimeout(() => {
-                setShowSuccessPopup("");
-                //setIsTakeTestModalOpen(true);
-            }, 4000);
+            closeModal();
+            closeViewAllModal();
+            setShowSuccessMessage("Application submitted successfully!");
+            setTimeout(() => setShowSuccessMessage(""), 5000);
 
-            await axios.post(
-                "http://127.0.0.1:5000/update-upload-status",
-                {
-                    google_id: userData?.sub, // Make sure `userData?.sub` contains the correct ID
-                    google_name: userData?.name, // Ensure this field is correct
-                    google_email: userData?.email, // Ensure this field is correct
-                    has_uploaded: true,
-                },
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Access-Control-Allow-Origin": "*",
-                    },
-                },
-            );
-            //setHasUploaded((prevState) => ({
-            //   ...prevState,
-            //   [selectedPosition.position_id]: true,
-            // }));
+            await axiosClient.post("/applicants/update-upload-status", {
+                google_id: userData?.sub,
+                google_name: userData?.name,
+                google_email: userData?.email,
+                has_uploaded: true,
+            });
         } catch (error) {
-            console.error("Error uploading or ranking files:", error);
-            setErrorMessage("Failed to submit your resume!");
-            // setHasUploaded(false); // Set the state to true after upload
-            setTimeout(() => {
-                setErrorMessage("");
-            }, 2000);
+            console.error("Error uploading resume:", error);
+            console.error("Error details:", error.response?.data);
+            setErrorMessage(
+                "Failed to submit your resume: " +
+                    (error.response?.data?.error || error.message),
+            );
+            setTimeout(() => setErrorMessage(""), 5000);
         } finally {
             setLoading(false);
         }
     };
 
-    const checkUploadStatus = async (userId) => {
-        try {
-            const response = await axiosClient.get(
-                `/check-upload-status/${userId}`,
-            );
-            //setHasUploaded(response.data.has_uploaded); // Ensure the backend returns the correct field
-        } catch (error) {
-            console.error("Error checking upload status:", error);
-        }
-    };
     const handleLoginSuccess = (response) => {
         const token = response.credential;
-        console.log("Login Success:", token);
-
         const decodedData = jwtDecode(token);
-        console.log("Decoded Data:", decodedData);
-
-        // Store Google token and user data in localStorage
         localStorage.setItem("googleToken", token);
         localStorage.setItem("googleUserData", JSON.stringify(decodedData));
 
         setLoggedIn(true);
         setUserData(decodedData);
     };
+
     const handleCheckboxChange = () => {
         setIsChecked(!isChecked);
     };
+
     const handleLogout = () => {
-        // Remove Google token and user data from localStorage
         localStorage.removeItem("googleToken");
         localStorage.removeItem("googleUserData");
-
         setLoggedIn(false);
         setUserData(null);
     };
 
     useEffect(() => {
-        // Check if there's a stored token in localStorage
         const storedToken = localStorage.getItem("googleToken");
         const storedUserData = localStorage.getItem("googleUserData");
 
         if (storedToken && storedUserData) {
-            // Set user as logged in based on stored session
             setLoggedIn(true);
             setUserData(JSON.parse(storedUserData));
         }
     }, []);
 
-    const handleLoginError = (error) => {
-        console.error("Google login failed", error);
-    };
-
     const openModal = async (position) => {
         setSelectedPosition(position);
-        const tags = await fetchHrTags(position.position_id);
-        setHrTags(tags);
         setIsModalOpen(true);
     };
-
     const openViewAllModal = (position) => {
         setSelectedPosition(position);
         setIsViewAllModalOpen(true);
     };
 
-    const closeViewAllModal = () => {
-        setIsViewAllModalOpen(false);
-    };
-
     const fetchPositions = async () => {
         try {
             const response = await axiosClient.get("/open-positions");
-            setPositions(response.data);
+            const data = response.data;
+            // Check if data is an array; if not, default to an empty array
+            setPositions(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error("Error fetching positions:", error);
-        }
-    };
-
-    const fetchHrTags = async (positionId) => {
-        try {
-            const response = await axiosClient.get(`/hr-tags/${positionId}`);
-            return response.data.hr_tags;
-        } catch (error) {
-            console.error("Error fetching HR tags:", error);
-            return "";
+            setPositions([]); // Set to an empty array on error
         }
     };
 
@@ -346,51 +500,46 @@ const ApplicantPortal = () => {
         }
     }, [loggedIn]);
 
-    useEffect(() => {
-        const script = document.createElement("script");
-        script.src = "https://apis.google.com/js/platform.js";
-        script.async = true;
-        document.body.appendChild(script);
-
-        script.onload = () => {
-            window.gapi.load("auth2", () => {
-                window.gapi.auth2.init({
-                    client_id:
-                        "912434838916-ps2f2pjs1q5k31lkbecjvd8sc4gi93ss.apps.googleusercontent.com",
-                });
-            });
-        };
-    }, []);
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setContactInfo({ ...contactInfo, [name]: value });
-    };
-    const [errors, setErrors] = useState({
-        email: "",
-        mobileNumber: "",
-    });
-
-    //Position Container
-    const PositionsList = ({ positions, openModal, openViewAllModal }) => {
-        return (
-            <div className="position-container px-2 py-2 flex flex-col gap-4 items-center md:grid md:grid-cols-2 md:place-items-center  ">
-                {positions.length > 0 ? (
-                    positions.map((position) => (
-                        <PositionCard
-                            key={position.position_id}
-                            position={position}
-                            openModal={openModal}
-                            openViewAllModal={openViewAllModal}
-                        />
-                    ))
-                ) : (
-                    <p>No open positions available.</p>
-                )}
-            </div>
-        );
+    const handleLoginError = (error) => {
+        console.error("Google login error:", error);
+        setErrorMessage("Failed to log in with Google. Please try again.");
+        setTimeout(() => setErrorMessage(""), 4000); // Optional: Clear the message after a few seconds
     };
 
+    const handleInputChange = (event) => {
+        const { name, value } = event.target;
+
+        // If the name exists in contactInfo, update that part of the state
+        if (contactInfo.hasOwnProperty(name)) {
+            setContactInfo((prevState) => ({
+                ...prevState,
+                [name]: value,
+            }));
+        } else {
+            // Otherwise, it updates the questions state
+            setQuestions((prevState) => ({
+                ...prevState,
+                [name]: value,
+            }));
+        }
+    };
+
+    const PositionsList = ({ positions, openModal, openViewAllModal }) => (
+        <div className="position-container px-2 py-2 flex flex-col gap-4 items-center md:grid md:grid-cols-2 md:place-items-center">
+            {positions.length > 0 ? (
+                positions.map((position) => (
+                    <PositionCard
+                        key={position.position_id}
+                        position={position}
+                        openModal={openModal}
+                        openViewAllModal={openViewAllModal}
+                    />
+                ))
+            ) : (
+                <p>No open positions available.</p>
+            )}
+        </div>
+    );
     //Position Card
     const PositionCard = ({ position, openModal, openViewAllModal }) => {
         return (
@@ -415,7 +564,7 @@ const ApplicantPortal = () => {
                         </span>
                     </div>
                     <strong className="text-base font-semibold">
-                        Skills:{" "}
+                        Job Criteria:{" "}
                     </strong>
                     <div className="h-full flex flex-col items-start w-full text-black">
                         {position.hr_tags.split(", ").map((tag, index) => (
@@ -462,6 +611,12 @@ const ApplicantPortal = () => {
                         <div className="w-40"></div>
                     )}
                 </div>
+
+                {showSuccessMessage && (
+                    <div className="success-message bg-green-100 text-green-700 p-4 rounded mb-4 text-center">
+                        {showSuccessMessage}
+                    </div>
+                )}
 
                 {!loggedIn && (
                     <div className="h-[600px] w-full flex items-center justify-center">
@@ -539,7 +694,9 @@ const ApplicantPortal = () => {
 
                                     <div className="border border-green-800 w-full" />
                                     <div className="h-full flex flex-col items-start w-full">
-                                        Skills:
+                                        <span className="mb-2">
+                                            Job Criteria:
+                                        </span>
                                         {selectedPosition.hr_tags
                                             .split(", ")
                                             .map((tag, index) => (
@@ -556,7 +713,7 @@ const ApplicantPortal = () => {
 
                                     <div className="flex flex-col gap-4 items-center">
                                         <strong>Job Description</strong>
-                                        <div className="border-2 h-fit w-56 md:w-[550px] lg:w-[900px] overflow-auto border-green-900 px-4 py-4 rounded-lg">
+                                        <div className="border-2 h-fit w-fit md:w-[550px] lg:w-[900px] overflow-auto border-green-900 px-4 py-4 rounded-lg">
                                             <p
                                                 style={{
                                                     whiteSpace: "pre-wrap",
@@ -569,7 +726,7 @@ const ApplicantPortal = () => {
                                     </div>
                                     <div className="flex flex-col gap-4 items-center">
                                         <strong>Qualifications</strong>
-                                        <div className="border-2 h-fit w-56 md:w-[550px] lg:w-[900px] overflow-auto border-green-900 px-4 py-4 rounded-lg">
+                                        <div className="border-2 h-fit w-auto md:w-[550px] lg:w-[900px] overflow-auto border-green-900 px-4 py-4 rounded-lg">
                                             <p
                                                 style={{
                                                     whiteSpace: "pre-wrap",
@@ -769,7 +926,7 @@ const ApplicantPortal = () => {
                                             <AccountingQuestions
                                                 questions={questions}
                                                 setQuestions={setQuestions}
-                                                errors={errors}
+                                                // errors={errors}
                                             />
                                         )}
                                     {selectedPosition &&
@@ -901,7 +1058,6 @@ const ApplicantPortal = () => {
                                                 {selectedPosition.title}{" "}
                                                 Specific Questions
                                             </h3>
-
                                             {selectedPosition.title.toLowerCase() ===
                                                 "accounting" && (
                                                 <>
@@ -975,7 +1131,6 @@ const ApplicantPortal = () => {
                                                     </p>
                                                 </>
                                             )}
-
                                             {selectedPosition.title.toLowerCase() ===
                                                 "maintenance" && (
                                                 <>
@@ -1005,7 +1160,6 @@ const ApplicantPortal = () => {
                                                     </p>
                                                 </>
                                             )}
-
                                             {selectedPosition.title.toLowerCase() ===
                                                 "rmt" && (
                                                 <>
@@ -1036,7 +1190,6 @@ const ApplicantPortal = () => {
                                                     </p>
                                                 </>
                                             )}
-
                                             {selectedPosition.title.toLowerCase() ===
                                                 "rider" && (
                                                 <>
@@ -1066,7 +1219,6 @@ const ApplicantPortal = () => {
                                                     </p>
                                                 </>
                                             )}
-
                                             {selectedPosition.title.toLowerCase() ===
                                                 "x-ray technician" && (
                                                 <>
@@ -1103,7 +1255,6 @@ const ApplicantPortal = () => {
                                                     </p>
                                                 </>
                                             )}
-
                                             {selectedPosition.title.toLowerCase() ===
                                                 "security" && (
                                                 <>
@@ -1133,7 +1284,6 @@ const ApplicantPortal = () => {
                                                     </p>
                                                 </>
                                             )}
-
                                             {selectedPosition.title.toLowerCase() ===
                                                 "anatomical" && (
                                                 <>
@@ -1180,7 +1330,6 @@ const ApplicantPortal = () => {
                                                     </p>
                                                 </>
                                             )}
-
                                             {selectedPosition.title.toLowerCase() ===
                                                 "ultrasound technician" && (
                                                 <>
@@ -1242,10 +1391,12 @@ const ApplicantPortal = () => {
                                                     </p>
                                                 </>
                                             )}
-                                            <label
-                                                htmlFor="terms"
-                                                className="ml-2"
-                                            >
+                                            <div className="flex items-center pt-10">
+                                                {" "}
+                                                <label
+                                                    htmlFor="terms"
+                                                    className="ml-2 pt-10"
+                                                ></label>
                                                 <input
                                                     type="checkbox"
                                                     id="terms"
@@ -1253,30 +1404,34 @@ const ApplicantPortal = () => {
                                                     onChange={
                                                         handleCheckboxChange
                                                     }
-                                                    className="mr-2"
+                                                    className="w-10 mt-4"
                                                 />
-                                                I agree to the{" "}
+                                                <p className="text-nowrap">
+                                                    I have read and agree to the
+                                                </p>
                                                 <button
                                                     onClick={openTermsModal}
-                                                    className="underline text-blue-500"
+                                                    className="underline text-blue-500 ml-1 mt-1 mr-1"
                                                 >
                                                     Terms
-                                                </button>{" "}
-                                                and{" "}
+                                                </button>
+                                                <span className="mt-1">
+                                                    and
+                                                </span>
                                                 <button
                                                     onClick={
                                                         openConditionsModal
                                                     }
-                                                    className="underline text-blue-500"
+                                                    className="underline text-blue-500 ml-1 mt-1"
                                                 >
                                                     Conditions
                                                 </button>
-                                            </label>
+                                            </div>
 
                                             {/* Terms Modal */}
                                             {isTermsOpen && (
-                                                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                                                    <div className="bg-white p-4 rounded shadow-lg max-w-lg w-full">
+                                                <div className="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                                    <div className="bg-white max-w-[1200px] max-h-[600px] overflow-auto text-base p-4 rounded w-full">
                                                         <button
                                                             onClick={
                                                                 closeTermsModal
@@ -1289,11 +1444,10 @@ const ApplicantPortal = () => {
                                                     </div>
                                                 </div>
                                             )}
-
                                             {/* Conditions Modal */}
                                             {isConditionsOpen && (
-                                                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                                                    <div className="bg-white p-4 rounded shadow-lg max-w-lg w-full">
+                                                <div className="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                                    <div className="bg-white max-w-[1200px] max-h-[600px] overflow-auto text-base p-4 rounded w-full">
                                                         <button
                                                             onClick={
                                                                 closeConditionsModal
@@ -1331,10 +1485,37 @@ const ApplicantPortal = () => {
                                 </button>
                             ) : (
                                 <button
-                                    className="px-4 py-2 bg-green-600 text-white rounded-lg"
+                                    className={`px-4 py-2 rounded-lg text-white flex items-center justify-center ${loading ? "bg-gray-400" : "bg-green-600"}`}
                                     onClick={handleUpload}
+                                    disabled={loading}
                                 >
-                                    Submit Application
+                                    {loading ? (
+                                        <>
+                                            <svg
+                                                className="animate-spin h-5 w-5 mr-3 text-white"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <circle
+                                                    className="opacity-25"
+                                                    cx="12"
+                                                    cy="12"
+                                                    r="10"
+                                                    stroke="currentColor"
+                                                    strokeWidth="4"
+                                                ></circle>
+                                                <path
+                                                    className="opacity-75"
+                                                    fill="currentColor"
+                                                    d="M4 12a8 8 0 018-8v8H4z"
+                                                ></path>
+                                            </svg>
+                                            Submitting...
+                                        </>
+                                    ) : (
+                                        "Submit Application"
+                                    )}
                                 </button>
                             )}
                         </div>

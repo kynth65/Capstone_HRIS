@@ -66,7 +66,14 @@ function AdminLayout() {
         };
 
         fetchUser();
-    }, [navigate, refresh, setUser]);
+    }, [navigate, token]);
+
+    useEffect(() => {
+        const token = localStorage.getItem("access_token");
+        if (!token) {
+            navigate("/login");
+        }
+    }, [navigate]);
 
     const onLogout = (ev) => {
         ev.preventDefault();
@@ -154,28 +161,30 @@ function AdminLayout() {
                 {" "}
                 <header className="flex justify-between">
                     <button
-                        className="hamburger xl:hidden "
+                        className="text-xl md:hamburger xl:hidden "
                         onClick={toggleSidebar}
                     >
                         &#9776;
                     </button>
-                    <div className="headerText">{headerText}</div>
+                    <div className="text-base md:text-2xl md:ml-16 xl:ml-0">
+                        {headerText}
+                    </div>
                     <div
                         className="flex items-center cursor-pointer font-kodchasan"
                         onClick={toggleModal}
                     >
-                        <button className="btn-profile-icon">
+                        <button className="btn-profile-icon ">
                             <img
                                 src={
                                     user.profile
-                                        ? `http://127.0.0.1:8000/storage/images/${user.profile}`
+                                        ? `${import.meta.env.VITE_BASE_URL}/storage/images/${user.profile}`
                                         : defaultAvatar
                                 }
                                 alt="Profile"
                                 className="w-10 h-10 mr-4 rounded-full object-cover"
                             />
                         </button>
-                        <span>{user.position}</span>
+                        <span className="hidden xl:block">{user.position}</span>
                     </div>
                 </header>
                 <main>
@@ -183,8 +192,11 @@ function AdminLayout() {
                 </main>
             </div>
             {showModal && (
-                <div className="modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white p-6 rounded shadow-md text-center text-black">
+                <div
+                    className="modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+                    onClick={() => setShowModal(false)}
+                >
+                    <div className="bg-white p-6 rounded-2xl shadow-md text-center text-black">
                         <h2 className="text-lg mb-4">Profile Options</h2>
                         <div className="flex  justify-between space-x-4 rounded-xl">
                             <button

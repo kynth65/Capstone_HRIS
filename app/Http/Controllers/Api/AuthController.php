@@ -46,7 +46,7 @@ class AuthController extends Controller
         $cookie = cookie('token', $token, 60 * 24); // 1 day
 
         return response()->json([
-            'user' => new UserResource($user),
+            'user' => $user,
             'token' => $token,
         ])->withCookie($cookie);
 
@@ -60,67 +60,123 @@ class AuthController extends Controller
         $data = $request->validated();
 
         try {
+            // Combine first and last name
             $fullName = trim($data['first_name'] . ' ' . ($data['middle_name'] ?? '') . ' ' . $data['last_name']);
 
+            // Only create fields based on requiredFields list
             $user = User::create([
                 'rfid' => $data['rfid'],
                 'name' => $fullName,
                 'first_name' => $data['first_name'],
                 'last_name' => $data['last_name'],
-                'middle_name' => $data['middle_name'] ?? null,
-                'suffix' => $data['suffix'] ?? null,
+                'department' => $data['department'],
+                'employment_status' => $data['employment_status'],
+                'employee_type' =>  $data['employee_type'],
+                'position' => $data['position'],
+                'hire_date' => $data['hire_date'],
+                'reporting_manager' =>  $data['reporting_manager'],
+                'department' => $data['department'],
+                'gender' => $data['gender'],
+                'contact_number' =>  $data['contact_number'],
+                'pay_frequency' =>  $data['pay_frequency'],
+                'probation_end_date' =>  $data['probation_end_date'],
                 'email' => $data['email'],
                 'password' => bcrypt($data['password']),
-                'date_of_birth' => $data['date_of_birth'],
-                'gender' => $data['gender'],
-                'marital_status' => $data['marital_status'] ?? null,
-                'nationality' => $data['nationality'] ?? null,
-                'mothers_maiden_name' => $data['mothers_maiden_name'] ?? null,
-                'fathers_name' => $data['fathers_name'] ?? null,
-                'address' => $data['address'] ?? null,
-                'city' => $data['city'] ?? null,
-                'province' => $data['province'] ?? null,
-                'postal_code' => $data['postal_code'] ?? null,
-                'country' => $data['country'] ?? null,
-                'personal_email' => $data['personal_email'] ?? null,
-                'work_email' => $data['work_email'] ?? null,
-                'home_phone' => $data['home_phone'] ?? null,
-                'contact_number' => $data['contact_number'] ?? null,
-                'emergency_contact_name' => $data['emergency_contact_name'] ?? null,
-                'emergency_contact_relationship' => $data['emergency_contact_relationship'] ?? null,
-                'emergency_contact_phone' => $data['emergency_contact_phone'] ?? null,
-                'hire_date' => $data['hire_date'],
-                'employment_status' => $data['employment_status'],
-                'position' => $data['position'],
-                'department' => $data['department'],
-                'reporting_manager' => $data['reporting_manager'] ?? null,
-                'work_location' => $data['work_location'] ?? null,
-                'employee_type' => $data['employee_type'],
-                'probation_end_date' => $data['probation_end_date'] ?? null,
-                'current_salary' => $data['current_salary'] ?? 0,
-                'pay_frequency' => $data['pay_frequency'] ?? null,
-                'highest_degree_earned' => $data['highest_degree_earned'] ?? null,
-                'field_of_study' => $data['field_of_study'] ?? null,
-                'institution_name' => $data['institution_name'] ?? null,
-                'graduation_year' => $data['graduation_year'] ?? null,
-                'work_history' => $data['work_history'] ?? null,
-                'health_insurance_plan' => $data['health_insurance_plan'] ?? null,
-                'sick_leave_balance' => $data['sick_leave_balance'] ?? 0,
-                'completed_training_programs' => $data['completed_training_programs'] ?? null,
-                'work_permit_expiry_date' => $data['work_permit_expiry_date'] ?? null,
-                'notes' => $data['notes'] ?? null,
             ]);
+
+            // Create token for the user
             $token = $user->createToken('auth_token')->plainTextToken;
 
-            $cookie = cookie('token', $token, 60 * 24);
+            // Set token as a cookie
+            $cookie = cookie('token', $token, 60 * 24); // token valid for 1 day
+
+            // Return response with token and user resource
             return response()->json([
-                'user' => new UserResource($user),
+                'user' => $user,
                 'token' => $token
             ])->withCookie($cookie);
         } catch (\Exception $e) {
             Log::error('Registration failed: ' . $e->getMessage());
-            return response()->json(['error' => 'Registration failed. Please try again.', 'exception' => $e->getMessage()], 500);
+            return response()->json([
+                'error' => 'Registration failed. Please try again.',
+                'exception' => $e->getMessage()
+            ], 500);
         }
+    }
+
+    public function completeProfile(Request $request)
+    {
+        $user = User::where('user_id', $request->user_id)->first();
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found',
+                'received_user_id' => $request->user_id
+            ], 404);
+        }
+        $request->validate([
+            'user_id' => 'required|exists:users,user_id', // Validate using user_id
+            'date_of_birth' => 'required|date',
+            'marital_status' => 'required|string',
+            'nationality' => 'nullable|string',
+            'mothers_maiden_name' => 'nullable|string',
+            'fathers_name' => 'nullable|string',
+            'address' => 'nullable|string',
+            'city' => 'nullable|string',
+            'province' => 'nullable|string',
+            'postal_code' => 'nullable|string',
+            'country' => 'nullable|string',
+            'personal_email' => 'nullable|email',
+            'work_email' => 'nullable|email',
+            'home_phone' => 'nullable|string',
+            'emergency_contact_name' => 'nullable|string',
+            'emergency_contact_relationship' => 'nullable|string',
+            'emergency_contact_phone' => 'nullable|string',
+            'work_location' => 'nullable|string',
+            'highest_degree_earned' => 'nullable|string',
+            'field_of_study' => 'nullable|string',
+            'institution_name' => 'nullable|string',
+            'graduation_year' => 'nullable|integer',
+            'work_history' => 'nullable|string',
+            'health_insurance_plan' => 'nullable|string',
+            'suffix' => 'nullable|string',
+            'completed_training_programs' => 'nullable|string',
+            // 'work_permit_expiry_date' => 'nullable|date',
+            'profile' => 'nullable|string',
+            'notes' => 'nullable|string',
+        ]);
+
+        $user->date_of_birth = $request->input('date_of_birth');
+        $user->marital_status = $request->input('marital_status');
+        $user->nationality = $request->input('nationality');
+        $user->mothers_maiden_name = $request->input('mothers_maiden_name');
+        $user->fathers_name = $request->input('fathers_name');
+        $user->address = $request->input('address');
+        $user->city = $request->input('city');
+        $user->province = $request->input('province');
+        $user->postal_code = $request->input('postal_code');
+        $user->country = $request->input('country');
+        $user->personal_email = $request->input('personal_email');
+        $user->work_email = $request->input('work_email');
+        $user->home_phone = $request->input('home_phone');
+        $user->emergency_contact_name = $request->input('emergency_contact_name');
+        $user->emergency_contact_relationship = $request->input('emergency_contact_relationship');
+        $user->emergency_contact_phone = $request->input('emergency_contact_phone');
+        $user->work_location = $request->input('work_location');
+        $user->highest_degree_earned = $request->input('highest_degree_earned');
+        $user->field_of_study = $request->input('field_of_study');
+        $user->institution_name = $request->input('institution_name');
+        $user->graduation_year = $request->input('graduation_year');
+        $user->work_history = $request->input('work_history');
+        $user->health_insurance_plan = $request->input('health_insurance_plan');
+        $user->suffix = $request->input('suffix');
+        $user->completed_training_programs = $request->input('completed_training_programs');
+        //$user->work_permit_expiry_date = $request->input('work_permit_expiry_date');
+        $user->profile = $request->input('profile');
+        $user->notes = $request->input('notes');
+
+        $user->save();
+
+        return response()->json(['message' => 'Profile completed successfully.']);
     }
 
     public function forgotPassword(Request $request)
@@ -201,21 +257,31 @@ class AuthController extends Controller
 
     public function refresh(Request $request)
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::guard('sanctum')->user();
+        try {
+            /** @var User $user */
+            $user = Auth::guard('sanctum')->user();
 
-        if (!$user) {
+            if (!$user) {
+                return response()->json([
+                    'message' => 'Unauthenticated user'
+                ], 401);
+            }
+
+            // Revoke current token
+            $request->user()->currentAccessToken()->delete();
+
+            // Create new token
+            $token = $user->createToken('auth_token')->plainTextToken;
+
             return response()->json([
-                'message' => 'Unauthenticated.'
+                'access_token' => $token,
+                'user' => $user
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Token refresh failed'
             ], 401);
         }
-
-        // Create a new access token
-        $token = $user->createToken('auth-token')->plainTextToken;
-
-        return response()->json([
-            'accessToken' => $token,
-        ]);
     }
 
     public function getEmployees()

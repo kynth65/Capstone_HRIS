@@ -42,6 +42,7 @@ class User extends Authenticatable
     }
 
     protected $fillable = [
+        "user_id",
         'rfid',
         'name',
         'email',
@@ -75,7 +76,7 @@ class User extends Authenticatable
         'reporting_manager',
         'work_location',
         'employee_type',
-        'probation_end_date',
+        'probationary_end_date',
         'current_salary',
         'pay_frequency',
         'highest_degree_earned',
@@ -89,6 +90,7 @@ class User extends Authenticatable
         'work_permit_expiry_date',
         'profile',
         'notes',
+        'schedule',
     ];
 
     protected $hidden = [

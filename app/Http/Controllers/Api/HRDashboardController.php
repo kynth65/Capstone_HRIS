@@ -22,11 +22,16 @@ class HRDashboardController extends Controller
             $today = Carbon::now()->toDateString();
 
             Log::info('Fetching present count for today.');
-            $presentCount = DB::connection('mysql_second')
-                ->table('test')
-                ->whereNotNull('time_in')
+
+            // Set the timezone to Asia/Manila
+            $today = Carbon::now('Asia/Manila')->toDateString();  // Get today’s date in Philippine Time
+            $presentCount = DB::table('attendances')
+                ->where('status', 'present')
+                ->whereDate('date', $today)
                 ->count();
-            Log::info('Present records for today:', ['presentRecords' => $presentCount]);;
+
+            Log::info('Present count fetched with Philippine Time:', ['date' => $today, 'count' => $presentCount]);
+
 
             Log::info('Fetching leave count.');
             $leaveCount = DB::table('leave_requests')->where('statuses', 'approved')->count();
@@ -92,7 +97,8 @@ class HRDashboardController extends Controller
                 'leave_requests.statuses', // Match the frontend field name
                 'leave_requests.start_date', // Include start date
                 'leave_requests.end_date',   // Include end date
-                'leave_requests.days_requested' // Include days requested
+                'leave_requests.days_requested', // Include days requested
+                'leave_requests.created_at'
             )
             ->get();
 

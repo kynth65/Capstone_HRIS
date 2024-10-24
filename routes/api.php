@@ -26,7 +26,12 @@ use App\Http\Controllers\Api\EmployeeNotificationController;
 use App\Http\Controllers\TrackingAttendanceController;
 use App\Http\Controllers\EmployeeAttendanceController;
 use App\Http\Controllers\IncidentController;
-use App\Http\Controllers\callOpenAi; //Controller for OpenAi
+use App\Http\Controllers\callOpenAi;
+use App\Http\Controllers\RegularEmployeeController;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Api\CertificateRequestController;
+use App\Http\Controllers\NotificationController;
+
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
@@ -38,6 +43,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/onboarding/steps', [OnboardingController::class, 'index']);
     Route::post('/onboarding/complete', [OnboardingController::class, 'complete']);
 });
+Route::post('/complete-info', [AuthController::class, 'completeProfile']);
 Route::middleware('auth:sanctum')->post('/leave', [SubmitLeaveRequest::class, 'submitLeaveRequest']);
 Route::post('/refresh', [AuthController::class, 'refresh']);
 Route::post('/login', [AuthController::class, 'login'])->name('login');
@@ -53,6 +59,8 @@ Route::get('/data', [AuthController::class, 'getData']);
 Route::post('/positions', [OpenPositionController::class, 'store']);
 Route::get('/open-positions', [OpenPositionController::class, 'index']);
 Route::get('/hr-tags/{id}', [OpenPositionController::class, 'getHrTags']);
+Route::post('/storeTag', [AdminTagsController::class, 'storeTag']);
+Route::post('/deleteTag', [AdminTagsController::class, 'deleteTag']);
 Route::get('/applicants/{positionId}', [OpenPositionController::class, 'getApplicants']);
 Route::get('/open-files/{filename}', [OpenFileController::class, 'openFile']);
 Route::get('/record-attendance', [AttendanceController::class, 'recordAttendance']);
@@ -72,7 +80,6 @@ Route::post('/forgot-password', [PasswordResetController::class, 'forgotPassword
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
 Route::post('/saveTags', [AdminTagsController::class, 'storeTags']);
 Route::get('/tags/{position}', [AdminTagsController::class, 'getTagsByPosition']);
-
 Route::get('/allCertificates', [CertificateController::class, 'allCertificates']);
 Route::get('/certificates/{userId}', [CertificateController::class, 'index']);
 Route::get('/certificates/download/{id}', [CertificateController::class, 'download']);
@@ -91,10 +98,20 @@ Route::get('/certificate-update-requests', [CertificateController::class, 'getCe
 Route::post('/certificate-update-requests/{id}/approve', [CertificateController::class, 'approveUpdateRequest']);
 Route::post('/certificate-update-requests/{id}/reject', [CertificateController::class, 'rejectUpdateRequest']);
 Route::post('/certificates/revoke-access/{id}', [CertificateController::class, 'revokeAccessToCertificate']);
-Route::middleware('auth:sanctum')->get('/employee-notifications', [EmployeeNotificationController::class, 'index']);
+Route::post('/certificates/{id}/recover', [CertificateController::class, 'recover']);
+Route::delete('/certificates/{id}/permanent', [CertificateController::class, 'permanentDelete']);
 Route::middleware('api')->group(function () {
     Route::get('/certificates/archived', [CertificateController::class, 'getArchivedCertificates']);
 });
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/certificate-requests', [CertificateRequestController::class, 'store']);
+    Route::get('/certificate-requests', [CertificateRequestController::class, 'index']);
+    Route::get('/user-certificate-requests', [CertificateRequestController::class, 'getUserRequests']);
+    Route::post('/certificate-requests/{id}/approve', [CertificateRequestController::class, 'approve']);
+    Route::post('/certificate-requests/{id}/reject', [CertificateRequestController::class, 'reject']);
+});
+
 Route::post('/candidate', [CandidateController::class, 'store']);
 Route::post('/candidates', [CandidateController::class, 'getCandidate']);
 Route::post('/trigger-onboarding/{id}', [CandidateController::class, 'triggerOnboarding']);
@@ -119,7 +136,6 @@ Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']
 Route::post('/onboarding/{ranking_id}', [OnboardingController::class, 'toOnboarding']);
 Route::delete('/candidate/{ranking_id}', [OnboardingController::class, 'removeCandidate']);
 Route::get('payroll/net-salary/{userId}', [PayrollController::class, 'getNetSalary']);
-Route::get('/record-attendance', [AttendanceController::class, 'getAttendanceRecords']);
 Route::get('/decline', function () {
     return view('declined_invitation');
 })->name('declined.page');
@@ -131,6 +147,8 @@ Route::get('/csrf-token', function () {
 });
 
 Route::get('/sync-attendance', [AttendanceController::class, 'getAttendanceRecords']);
+Route::get('/monthly-attendance', [AttendanceController::class, 'getMonthlyAttendanceRecords']);
+
 Route::post('/attendance', [TrackingAttendanceController::class, 'recordAttendance']);
 Route::patch('/attendance/{id}', [TrackingAttendanceController::class, 'updateTimeOut']);
 Route::get('/attendance/averages', [TrackingAttendanceController::class, 'getDailyAverage']);
@@ -149,10 +167,61 @@ Route::prefix('incidents')->group(function () {
     Route::put('/{id}', [IncidentController::class, 'update']);
     Route::delete('/{id}', [IncidentController::class, 'destroy']);
 });
-
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/employee/incidents/{userId}', [IncidentController::class, 'getEmployeeIncidents']);
+    Route::get('/incidents/{incidentId}/compliance-reports', [IncidentController::class, 'getComplianceReports']);
+    Route::post('/reported-incidents/{reportedIncidentId}/compliance-reports', [IncidentController::class, 'submitComplianceReport']);
+    Route::post('/incidents/{id}/send-compliance-request', [IncidentController::class, 'sendComplianceRequest']);
+    Route::get('/reported-incidents', [IncidentController::class, 'getReportedIncidents']);
+});
 
 //Post OpenAi
 Route::post('/generate-document', [callOpenAi::class, 'generateDocument']);
 
+Route::post('/applicants/upload', [ApplicantController::class, 'upload']);
+Route::post('/rank-resume', [ApplicantController::class, 'rankResume']);
+Route::post('/applicants/upload-and-rank', [ApplicantController::class, 'uploadAndRank']);
+Route::post('/applicants/update-upload-status', [ApplicantController::class, 'updateUploadStatus']);
 
+Route::prefix('applicants')->group(function () {
+    Route::get('/', [ApplicantController::class, 'index']);
+    Route::get('/{id}', [ApplicantController::class, 'show']);
+    Route::post('/upload', [ApplicantController::class, 'store']);
+    Route::put('/{id}', [ApplicantController::class, 'update']);
+    Route::delete('/{id}', [ApplicantController::class, 'destroy']);
+
+    // Routes for upload status
+    Route::get('/check-upload-status/{google_id}', [ApplicantController::class, 'checkUploadStatus']);
+    Route::post('/update-upload-status', [ApplicantController::class, 'updateUploadStatus']);
+});
+
+
+Route::post('/suggestTag', [AdminTagsController::class, 'suggestTag']);
+Route::get('/getSuggestedTags', [AdminTagsController::class, 'getSuggestedTags']);
+Route::post('/reviewSuggestedTag', [AdminTagsController::class, 'reviewSuggestedTag']);
+
+Route::post('/candidates/{candidateId}/notify-regular', [RegularEmployeeController::class, 'notifyRegularEmployee']);
 //->middleware('auth:sanctum');
+
+Route::get('/archived-certificates', function () {
+    $certificates = DB::table('archived_certificates')->get();
+    return response()->json([
+        'count' => $certificates->count(),
+        'data' => $certificates
+    ]);
+});
+
+
+//Notifications for Human Resource Manager
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead']);
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+});
+
+//Notifications for Employee
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/employee-notifications', [EmployeeNotificationController::class, 'index']);
+    Route::post('/employee-notifications/{id}/mark-as-read', [EmployeeNotificationController::class, 'markAsRead']);
+    Route::get('/employee-notifications/unread-count', [EmployeeNotificationController::class, 'unreadCount']);
+});

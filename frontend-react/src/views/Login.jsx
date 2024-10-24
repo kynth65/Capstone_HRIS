@@ -6,7 +6,7 @@ import { useStateContext } from "../contexts/ContextProvider";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import wideBackground from "../assets/images/gammacare short front background.jpeg";
 import LogoImage from "../assets/images/GMSI Logo.png";
-
+import CompleteProfileModal from "./CompleteProfileModal";
 function Login() {
     const { setUser, setToken } = useStateContext(); // Use setUser and setToken from context
     const loggedIn = window.localStorage.getItem("isLoggedIn");
@@ -15,6 +15,9 @@ function Login() {
     const [errors, setError] = useState(null);
     const navigate = useNavigate();
     const errorTimeoutRef = useRef(null);
+    const [showCompleteProfile, setShowCompleteProfile] = useState(false);
+    const [tempToken, setTempToken] = useState(null);
+    const [tempUser, setTempUser] = useState(null);
 
     useEffect(() => {
         const token = localStorage.getItem("access_token");
@@ -29,14 +32,10 @@ function Login() {
     const navigateBasedOnRole = (user) => {
         const hrPositions = [
             "Human Resource Manager",
-            "HR Manager",
             "Human Resource Assistant",
-            "Accountant",
-            "Marketing",
-            "Book Keeper",
         ];
 
-        const adminPositions = ["Purchasing", "Admin"];
+        const adminPositions = ["Admin"];
 
         if (hrPositions.includes(user.position)) {
             navigate("/dashboard");
@@ -45,6 +44,47 @@ function Login() {
         } else {
             navigate("/employee-dashboard");
         }
+    };
+
+    const checkMissingFields = (user) => {
+        const requiredFields = [
+            "date_of_birth",
+            "marital_status",
+            "nationality",
+            "mothers_maiden_name",
+            "fathers_name",
+            "address",
+            "city",
+            "province",
+            "postal_code",
+            "country",
+            "personal_email",
+            "work_email",
+            "home_phone",
+            "emergency_contact_name",
+            "emergency_contact_relationship",
+            "emergency_contact_phone",
+            "work_location",
+            "highest_degree_earned",
+            "field_of_study",
+            "institution_name",
+            "graduation_year",
+            "work_history",
+            "health_insurance_plan",
+            "completed_training_programs",
+            "profile",
+            "notes",
+        ];
+
+        const missingFields = requiredFields.filter(
+            (field) =>
+                user[field] === null ||
+                user[field] === undefined ||
+                user[field] === "",
+        );
+        console.log("Missing fields:", missingFields); // Log the missing fields to verify
+
+        return missingFields.length > 0;
     };
 
     const onSubmit = (event) => {
@@ -57,33 +97,37 @@ function Login() {
         axiosClient
             .post("/login", payload)
             .then(({ data }) => {
-                setToken(data.token);
-                setUser(data.user);
-
-                // Store token and user data in localStorage
-                localStorage.setItem("access_token", data.token);
-                localStorage.setItem("user", JSON.stringify(data.user));
-                localStorage.setItem("isLoggedIn", true);
-
-                navigateBasedOnRole(data.user); // Navigate based on role
-                clearTimeout(errorTimeoutRef.current);
+                console.log("Login response user data:", data.user); // Log response to check
+                if (checkMissingFields(data.user)) {
+                    setTempUser(data.user); // Store user temporarily for profile completion
+                    setShowCompleteProfile(true); // Show the modal
+                } else {
+                    handleLoginSuccess(data.token, data.user); // Log in directly if profile is complete
+                }
             })
             .catch((err) => {
                 const response = err.response;
                 if (response && response.status === 422) {
-                    if (response.data.errors) {
-                        setError(response.data.errors);
-                        errorTimeoutRef.current = setTimeout(() => {
-                            setError(null);
-                        }, 4000);
-                    } else {
-                        setError({ email: [response.data.message] });
-                        errorTimeoutRef.current = setTimeout(() => {
-                            setError(null);
-                        }, 4000);
-                    }
+                    setError(
+                        response.data.errors || {
+                            email: [response.data.message],
+                        },
+                    );
+                    errorTimeoutRef.current = setTimeout(
+                        () => setError(null),
+                        4000,
+                    );
                 }
             });
+    };
+
+    const handleLoginSuccess = (token, user) => {
+        setToken(token);
+        setUser(user);
+        localStorage.setItem("access_token", token);
+        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("isLoggedIn", true);
+        navigateBasedOnRole(user); // Navigate to the correct dashboard immediately
     };
 
     return (
@@ -157,6 +201,12 @@ function Login() {
                     </form>
                 </div>
             </div>
+            <CompleteProfileModal
+                show={showCompleteProfile}
+                onClose={() => setShowCompleteProfile(false)}
+                onComplete={() => handleLoginSuccess(tempToken, tempUser)} // Log in immediately after completing the profile
+                tempUser={tempUser} // Pass tempUser to the modal
+            />
         </div>
     );
 }

@@ -8,7 +8,7 @@ use Carbon\Carbon;
 
 class Attendance extends Model
 {
-    protected $fillable = ['user_id', 'rfid_id', 'time_in', 'position', 'time_out', 'date', 'status', 'accumulated_work_time'];
+    protected $fillable = ['user_id', 'rfid_id', 'time_in', 'position', 'time_out', 'date', 'status', 'accumulated_work_time', 'late'];
 
     public function user()
     {

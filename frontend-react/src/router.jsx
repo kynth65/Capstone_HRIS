@@ -174,6 +174,7 @@ const router = createBrowserRouter([
                 path: "employee-attendance",
                 element: <EmployeeAttendance />,
             },
+
             {
                 path: "incident-form",
                 element: <IncidentReportForm />,

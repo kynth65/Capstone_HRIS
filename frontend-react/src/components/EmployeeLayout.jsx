@@ -5,19 +5,63 @@ import useRefreshToken from "../hooks/useRefreshToken";
 import axiosClient from "../axiosClient";
 import defaultAvatar from "../assets/default-avatar.png";
 import "../styles/defaultLayout.css";
+import { IoNotificationsOutline } from "react-icons/io5";
 
 function EmployeeLayout() {
     const { user, token, setToken, setUser } = useStateContext();
     const refresh = useRefreshToken();
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
-
     const [headerText, setHeaderText] = useState(
         localStorage.getItem("headerText") || "Employee Dashboard",
     );
     const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [showNotificationDropdown, setShowNotificationDropdown] =
+        useState(false);
 
-    // Effect to handle initial header text and navigation on token change
+    const getRelativeTime = (date) => {
+        const now = new Date();
+        const notificationDate = new Date(date);
+        const diffTime = Math.abs(now - notificationDate);
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 0) {
+            return "Today";
+        } else if (diffDays === 1) {
+            return "Yesterday";
+        } else if (diffDays < 7) {
+            return `${diffDays} days ago`;
+        } else {
+            return notificationDate.toLocaleDateString();
+        }
+    };
+
+    useEffect(() => {
+        axiosClient
+            .get("/employee-notifications")
+            .then((response) => {
+                console.log("Employee notifications response:", response.data);
+                // Map notifications using the direct isRead field from database
+                const notificationsWithReadStatus = response.data.map(
+                    (notification) => ({
+                        ...notification,
+                        isRead: Boolean(notification.isRead), // Convert to boolean to ensure proper type
+                    }),
+                );
+                setNotifications(notificationsWithReadStatus);
+                // Count unread using the isRead field directly
+                const unread = notificationsWithReadStatus.filter(
+                    (n) => !n.isRead,
+                ).length;
+                setUnreadCount(unread);
+            })
+            .catch((error) =>
+                console.error("Error fetching employee notifications:", error),
+            );
+    }, []);
+
     useEffect(() => {
         localStorage.setItem("headerText", headerText);
     }, [headerText]);
@@ -33,6 +77,7 @@ function EmployeeLayout() {
             window.removeEventListener("beforeunload", handleBeforeUnload);
         };
     }, []);
+
     useEffect(() => {
         if (!token) {
             if (token === null || token === undefined) return;
@@ -45,17 +90,13 @@ function EmployeeLayout() {
             try {
                 const { data } = await axiosClient.get("/user");
                 setUser(data);
-                // console.log("User fetched successfully:", data); // Debugging line
             } catch (error) {
-                // console.error("Error fetching user:", error.response); // Debugging line
                 if (error.response && error.response.status === 401) {
                     try {
                         await refresh();
                         const { data } = await axiosClient.get("/user");
                         setUser(data);
-                        //   console.log("User fetched after refresh:", data); // Debugging line
                     } catch (refreshError) {
-                        //    console.error("Error refreshing token:", refreshError); // Debugging line
                         navigate("/login");
                     }
                 } else {
@@ -67,11 +108,43 @@ function EmployeeLayout() {
         fetchUser();
     }, [navigate, refresh, setUser]);
 
+    const handleNotificationClick = (notification) => {
+        console.log("Clicked notification:", notification);
+
+        if (!notification.isRead) {
+            axiosClient
+                .post(`/employee-notifications/${notification.id}/mark-as-read`)
+                .then((response) => {
+                    console.log("Mark as read response:", response.data);
+                    if (response.data.success) {
+                        // Update notifications state using the isRead field
+                        setNotifications(
+                            notifications.map((n) =>
+                                n.id === notification.id
+                                    ? {
+                                          ...n,
+                                          isRead: true,
+                                      }
+                                    : n,
+                            ),
+                        );
+                        setUnreadCount((prevCount) => prevCount - 1);
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error marking notification as read:", error);
+                });
+        }
+    };
+    const toggleNotificationDropdown = () => {
+        setShowNotificationDropdown(!showNotificationDropdown);
+    };
+
     const onLogout = (ev) => {
         ev.preventDefault();
         setUser({});
-        setToken(null); // Ensure setToken updates the context correctly
-        window.localStorage.removeIteme("isLoggedIn");
+        setToken(null);
+        window.localStorage.removeItem("isLoggedIn");
         localStorage.removeItem("headerText");
         navigate("/");
     };
@@ -79,15 +152,18 @@ function EmployeeLayout() {
     const handleHeaderChange = (text) => {
         setHeaderText(text);
     };
+
     const toggleSidebar = () => {
         setIsSidebarVisible(!isSidebarVisible);
     };
 
     const handleViewProfile = () => {
-        navigate("/profile-admin");
+        navigate("/employee-profile");
         setShowModal(false);
     };
+
     const toggleModal = () => setShowModal(!showModal);
+
     return (
         <div id="defaultLayout">
             <div className="bg-transparent xl:w-72 relative"></div>
@@ -166,28 +242,182 @@ function EmployeeLayout() {
             <div className="content">
                 <header className="flex justify-between">
                     <button
-                        className="hamburger xl:hidden "
+                        className="hamburger xl:hidden"
                         onClick={toggleSidebar}
                     >
                         &#9776;
                     </button>
                     <div className="headerText">{headerText}</div>
-                    <div
-                        className="flex items-center cursor-pointer font-kodchasan"
-                        onClick={toggleModal}
-                    >
-                        <button className="btn-profile-icon">
-                            <img
-                                src={
-                                    user.profile
-                                        ? `http://127.0.0.1:8000/storage/images/${user.profile}`
-                                        : defaultAvatar
-                                }
-                                alt="Profile"
-                                className="w-10 h-10 mr-4 rounded-full object-cover"
-                            />
-                        </button>
-                        <span>{user.position}</span>
+                    <div className="flex items-center gap-4">
+                        <div
+                            className="relative cursor-pointer"
+                            onClick={toggleNotificationDropdown}
+                        >
+                            <div className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200">
+                                <IoNotificationsOutline size={24} />
+                                {unreadCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 min-w-[20px] h-5 flex items-center justify-center bg-red-500 text-white text-xs rounded-full px-1">
+                                        {unreadCount}
+                                    </span>
+                                )}
+                            </div>
+
+                            {showNotificationDropdown && (
+                                <div className="absolute right-0 mt-2 h-96 overflow-auto w-70 bg-white shadow-lg rounded-lg border border-gray-100 z-50">
+                                    {notifications.length > 0 ? (
+                                        Object.entries(
+                                            notifications.reduce(
+                                                (groups, notification) => {
+                                                    const timeGroup =
+                                                        getRelativeTime(
+                                                            notification.created_at,
+                                                        );
+                                                    if (!groups[timeGroup]) {
+                                                        groups[timeGroup] = [];
+                                                    }
+                                                    groups[timeGroup].push(
+                                                        notification,
+                                                    );
+                                                    return groups;
+                                                },
+                                                {},
+                                            ),
+                                        ).map(
+                                            ([
+                                                timeGroup,
+                                                groupNotifications,
+                                            ]) => (
+                                                <div key={timeGroup}>
+                                                    <div className="px-4 py-2 text-sm font-medium text-gray-800 border-b border-gray-100">
+                                                        {timeGroup}
+                                                    </div>
+                                                    {groupNotifications.map(
+                                                        (notification) => {
+                                                            const routes = {
+                                                                leave_response:
+                                                                    {
+                                                                        path: "/leave-management",
+                                                                        text: "Leave",
+                                                                    },
+                                                                salary_update: {
+                                                                    path: "/salary-history",
+                                                                    text: "Salary History",
+                                                                },
+                                                                certificate_response:
+                                                                    {
+                                                                        path: "/employee-certificate",
+                                                                        text: "Employee Certificate",
+                                                                    },
+                                                                certificate_update_access:
+                                                                    {
+                                                                        path: "/employee-certificate",
+                                                                        text: "Employee Certificate",
+                                                                    },
+                                                                incident_update:
+                                                                    {
+                                                                        path: "/incident-form",
+                                                                        text: "Incident Form",
+                                                                    },
+                                                                compliance_report:
+                                                                    {
+                                                                        path: "/incident-form",
+                                                                        text: "Incident Form",
+                                                                    },
+                                                                attendance_notification:
+                                                                    {
+                                                                        path: "/employee-attendance",
+                                                                        text: "Employee Attendance",
+                                                                    },
+                                                            };
+
+                                                            const {
+                                                                path = "/employee-dashboard",
+                                                                text = "Employee Dashboard",
+                                                            } =
+                                                                routes[
+                                                                    notification
+                                                                        .type
+                                                                ] || {};
+
+                                                            return (
+                                                                <Link
+                                                                    key={
+                                                                        notification.id
+                                                                    }
+                                                                    to={path}
+                                                                    className="block px-4 py-3 hover:bg-gray-50 transition-colors duration-200 border-b border-gray-100"
+                                                                    onClick={(
+                                                                        e,
+                                                                    ) => {
+                                                                        e.stopPropagation();
+                                                                        handleNotificationClick(
+                                                                            notification,
+                                                                        );
+                                                                        handleHeaderChange(
+                                                                            text,
+                                                                        );
+                                                                        setShowNotificationDropdown(
+                                                                            false,
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    <div className="flex items-start justify-between">
+                                                                        <div className="flex-1">
+                                                                            <p className="text-sm text-gray-800 leading-snug">
+                                                                                {notification
+                                                                                    .message
+                                                                                    .length >
+                                                                                90
+                                                                                    ? `${notification.message.substring(0, 90)}...`
+                                                                                    : notification.message}
+                                                                            </p>
+                                                                            <span className="text-xs text-gray-500 mt-1 block">
+                                                                                {new Date(
+                                                                                    notification.created_at,
+                                                                                ).toLocaleTimeString(
+                                                                                    [],
+                                                                                    {
+                                                                                        hour: "2-digit",
+                                                                                        minute: "2-digit",
+                                                                                    },
+                                                                                )}
+                                                                            </span>
+                                                                        </div>
+                                                                        {!notification.isRead && (
+                                                                            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 ml-2 flex-shrink-0" />
+                                                                        )}
+                                                                    </div>
+                                                                </Link>
+                                                            );
+                                                        },
+                                                    )}
+                                                </div>
+                                            ),
+                                        )
+                                    ) : (
+                                        <div className="px-4 py-6 text-sm text-gray-500 text-center">
+                                            No notifications
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        <div
+                            className="flex items-center cursor-pointer font-kodchasan"
+                            onClick={toggleModal}
+                        >
+                            <button className="btn-profile-icon">
+                                <img
+                                    src={
+                                        user.profile
+                                            ? `${import.meta.env.VITE_BASE_URL}/storage/images/${user.profile}`
+                                            : defaultAvatar
+                                    }
+                                    alt="Profile"
+                                    className="w-10 h-10 mr-4 rounded-full object-cover"
+                                />
+                            </button>
+                        </div>
                     </div>
                 </header>
                 <main>
@@ -198,7 +428,7 @@ function EmployeeLayout() {
                 <div className="modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="bg-white p-6 rounded shadow-md text-center text-black">
                         <h2 className="text-lg mb-4">Profile Options</h2>
-                        <div className="flex  justify-between space-x-4 rounded-xl">
+                        <div className="flex justify-between space-x-4 rounded-xl">
                             <button
                                 onClick={handleViewProfile}
                                 className="btn-modal px-4 bg-green-900 py-4 border-2 border-green-900 rounded-xl font-kodchasan text-white hover:bg-white hover:text-green-900 transition"

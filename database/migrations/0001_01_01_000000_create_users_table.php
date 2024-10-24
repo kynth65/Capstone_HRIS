@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('first_name');
             $table->string('last_name');
             $table->string('middle_name')->nullable();
-            $table->date('date_of_birth');
+            $table->date('date_of_birth')->nullable();
             $table->enum('gender', ['Male', 'Female', 'Other'])->nullable();
             $table->enum('marital_status', ['Single', 'Married', 'Divorced', 'Widowed'])->nullable();
             $table->string('nationality')->nullable();
@@ -61,6 +61,7 @@ return new class extends Migration
             $table->string('profile', 300)->nullable();
             $table->text('notes')->nullable();
             $table->timestamp('email_verified_at')->nullable();
+            $table->string('schedule');
             $table->rememberToken();
             $table->timestamps();
         });

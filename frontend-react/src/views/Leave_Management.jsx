@@ -9,9 +9,12 @@ import useRefreshToken from "../hooks/useRefreshToken";
 import useDocument from "../hooks/useDocuments";
 import { MdDelete, MdEdit } from "react-icons/md";
 import { jsPDF } from "jspdf";
+import { RiFileDownloadFill } from "react-icons/ri";
+
 function Leave_Management() {
     const [activeButton, setActiveButton] = useState("documentGenerator");
     const refresh = useRefreshToken();
+    const [loading, setLoading] = useState(false);
     const [documentType, setDocumentType] = useState("leaveLetter");
     const [documentContent, setDocumentContent] = useState("");
     const [formData, setFormData] = useState({
@@ -31,6 +34,9 @@ function Leave_Management() {
     const [pdfUrl, setPdfUrl] = useState(null); // State to hold the selected PDF URL
     const [reason, setReason] = useState("");
     const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedRequest, setSelectedRequest] = useState(null); // Track selected request
+
     // For Leave Form
     const handleChange = (e) => {
         const { name, value, files } = e.target;
@@ -159,35 +165,25 @@ function Leave_Management() {
 
     const handleGenerate = () => {
         if (documentType && reason) {
+            setLoading(true);
             generateDocumentContent();
         } else {
             alert("Please select a document type and provide a reason.");
         }
     };
 
-    const handleDownloadPdf = () => {
-        const doc = new jsPDF();
+    const handleDownloadPdf = (filePath) => {
+        if (filePath) {
+            const baseUrl = import.meta.env.VITE_BASE_URL;
+            const fullUrl = filePath.startsWith("http")
+                ? filePath // Use the URL as is if it's already a full URL
+                : `${baseUrl}/storage/${filePath}`; // Construct the URL based on the base URL
 
-        // Set font style and size
-        doc.setFont("times", "normal"); // or "bold" / "italic" etc.
-        doc.setFontSize(12);
-
-        // Define margins and content
-        const leftMargin = 8;
-        const topMargin = 10;
-        const lineHeight = 5;
-
-        // Split text into lines to handle multi-line content
-        const lines = doc.splitTextToSize(documentContent, 200); // Adjust width as needed
-        let verticalOffset = topMargin;
-
-        lines.forEach((line) => {
-            doc.text(line, leftMargin, verticalOffset);
-            verticalOffset += lineHeight;
-        });
-
-        // Save and download the PDF
-        doc.save("generated_document.pdf");
+            console.log(fullUrl); // Log the full URL to ensure it's being passed correctly
+            window.open(fullUrl, "_blank"); // Open the PDF in a new browser tab
+        } else {
+            alert("No PDF available for this file.");
+        }
     };
 
     return (
@@ -284,7 +280,6 @@ function Leave_Management() {
                         </button>
                     </div>
                 )}
-
                 {/* PDF Modal */}
                 {isPdfModalOpen && pdfUrl && (
                     <div
@@ -309,7 +304,6 @@ function Leave_Management() {
                         </div>
                     </div>
                 )}
-
                 {activeButton === "leaveRequest" && (
                     <div className="leave-request-form bg-white p-6 rounded-xl text-black max-w-4xl mx-auto">
                         <h2 className="text-2xl font-bold mb-4 text-center">
@@ -374,7 +368,7 @@ function Leave_Management() {
                             )}
                             <button
                                 type="submit"
-                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full max-w-md mx-auto"
+                                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-600 w-full max-w-md mx-auto"
                             >
                                 Submit Leave Request
                             </button>
@@ -400,10 +394,7 @@ function Leave_Management() {
                                 <div className="overflow-y-auto max-h-64">
                                     <table className="min-w-full divide-y divide-gray-200">
                                         <thead className="bg-gray-50 sticky top-0 z-10">
-                                            <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    File
-                                                </th>
+                                            <tr className="text-center">
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                     Start Date
                                                 </th>
@@ -415,6 +406,12 @@ function Leave_Management() {
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                     Status
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Remarks
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Actions
                                                 </th>
                                             </tr>
                                         </thead>
@@ -445,18 +442,6 @@ function Leave_Management() {
                                                                     className={`${rowClass}`} // Apply the dynamic class here
                                                                 >
                                                                     <td className="px-6 py-4 whitespace-nowrap">
-                                                                        <a
-                                                                            href={`http://localhost:8000/storage/${request.file_path}`}
-                                                                            target="_blank"
-                                                                            rel="noopener noreferrer"
-                                                                            className="text-blue-600 hover:underline"
-                                                                        >
-                                                                            {
-                                                                                request.file_name
-                                                                            }
-                                                                        </a>
-                                                                    </td>
-                                                                    <td className="px-6 py-4 whitespace-nowrap">
                                                                         {new Date(
                                                                             request.start_date,
                                                                         ).toLocaleDateString()}
@@ -476,6 +461,41 @@ function Leave_Management() {
                                                                             request.statuses
                                                                         }
                                                                     </td>
+                                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                                        {request.remarks ||
+                                                                            "No remarks"}
+                                                                    </td>
+                                                                    <td className="px-6 py-4 whitespace-nowrap lg:flex lg:space-x-2">
+                                                                        <button
+                                                                            onClick={() =>
+                                                                                handleDownloadPdf(
+                                                                                    request.file_path,
+                                                                                )
+                                                                            }
+                                                                            className="text-red-600 hover:underline"
+                                                                            title="Download PDF"
+                                                                        >
+                                                                            <RiFileDownloadFill
+                                                                                size={
+                                                                                    20
+                                                                                }
+                                                                            />
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                setSelectedRequest(
+                                                                                    request,
+                                                                                );
+                                                                                setIsModalOpen(
+                                                                                    true,
+                                                                                );
+                                                                            }}
+                                                                            className="text-blue-600 hover:underline"
+                                                                        >
+                                                                            Show
+                                                                            Details
+                                                                        </button>
+                                                                    </td>
                                                                 </tr>
                                                             );
                                                         },
@@ -484,6 +504,58 @@ function Leave_Management() {
                                         </tbody>
                                     </table>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                )}{" "}
+                {isModalOpen && selectedRequest && (
+                    <div className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                        <div className="bg-white p-6 rounded-xl w-3/4 lg:w-1/2 shadow-lg text-black text-base max-h-96 overflow-auto">
+                            <h2 className="text-xl font-bold mb-4">
+                                Leave Request Details
+                            </h2>
+                            <p>
+                                <strong>Start Date:</strong>{" "}
+                                {new Date(
+                                    selectedRequest.start_date,
+                                ).toLocaleDateString()}
+                            </p>
+                            <p>
+                                <strong>End Date:</strong>{" "}
+                                {new Date(
+                                    selectedRequest.end_date,
+                                ).toLocaleDateString()}
+                            </p>
+                            <p>
+                                <strong>Days Requested:</strong>{" "}
+                                {selectedRequest.days_requested}
+                            </p>
+                            <p>
+                                <strong>Status:</strong>{" "}
+                                {selectedRequest.statuses}
+                            </p>
+                            <p>
+                                <strong>Remarks:</strong>{" "}
+                                {selectedRequest.remarks || "No remarks"}
+                            </p>
+                            <p>
+                                <strong>File:</strong>{" "}
+                                <a
+                                    href={`${import.meta.env.VITE_BASE_URL}/storage/${selectedRequest.file_path}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline"
+                                >
+                                    View File
+                                </a>
+                            </p>
+                            <div className="mt-4 flex justify-end">
+                                <button
+                                    onClick={() => setIsModalOpen(false)}
+                                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                                >
+                                    Close
+                                </button>
                             </div>
                         </div>
                     </div>

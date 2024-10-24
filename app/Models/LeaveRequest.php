@@ -18,9 +18,9 @@ class LeaveRequest extends Model
         'days_requested',
         'statuses',
         'file_path',
-        'file_name'
+        'file_name',
+        'remarks' // Add remarks to the fillable array
     ];
-
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',

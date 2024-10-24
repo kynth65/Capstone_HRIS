@@ -1,25 +1,41 @@
-import { useContext } from "react";
+import { useStateContext } from "../contexts/ContextProvider";
 import axiosClient from "../axiosClient";
 
-import { useStateContext } from "../contexts/ContextProvider";
-
 const useRefreshToken = () => {
-    const { setToken } = useStateContext();
+    const { setToken, setUser } = useStateContext();
 
     const refresh = async () => {
         try {
-            const response = await axios.post(
+            const response = await axiosClient.post(
                 "/refresh",
                 {},
                 {
                     withCredentials: true,
-                }
+                },
             );
-            setToken(response.data.accessToken);
-            localStorage.setItem("ACCESS_TOKEN", response.data.accessToken);
-            return response.data.accessToken;
+
+            if (response.data.access_token && response.data.user) {
+                setToken(response.data.access_token);
+                setUser(response.data.user);
+
+                // Update localStorage
+                localStorage.setItem(
+                    "access_token",
+                    response.data.access_token,
+                );
+                localStorage.setItem(
+                    "user",
+                    JSON.stringify(response.data.user),
+                );
+
+                return response.data.access_token;
+            }
+            throw new Error("Invalid refresh token response");
         } catch (error) {
-            console.error("Error refreshing token:", error);
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("user");
+            setToken(null);
+            setUser(null);
             throw error;
         }
     };

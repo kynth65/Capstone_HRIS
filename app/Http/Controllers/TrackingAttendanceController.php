@@ -8,24 +8,6 @@ use Carbon\Carbon;
 
 class TrackingAttendanceController extends Controller
 {
-    // Method to record attendance (directly from test table)
-    public function recordAttendance(Request $request)
-    {
-        $request->validate([
-            'rfid' => 'required|string',
-            'date' => 'required|date',
-            'time_in' => 'required|date_format:H:i',
-        ]);
-
-        // Directly insert or update into the test table in attendance_system
-        DB::connection('mysql_second')->table('test')->insert([
-            'rfid' => $request->rfid,
-            'date' => $request->date,
-            'time_in' => $request->time_in,
-        ]);
-
-        return response()->json(['message' => 'Attendance recorded successfully'], 201);
-    }
 
     // Method to update time_out and calculate total_hours
     public function updateTimeOut(Request $request, $id)

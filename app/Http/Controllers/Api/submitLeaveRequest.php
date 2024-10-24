@@ -12,8 +12,10 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
+use Illuminate\Support\Str;
 
-class submitLeaveRequest extends Controller
+
+class SubmitLeaveRequest extends Controller
 {
     public function submitLeaveRequest(Request $request)
     {
@@ -24,20 +26,13 @@ class submitLeaveRequest extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
         ]);
 
-        $userId = $request->user()->user_id;
+        $user = $request->user();
+        $userId = $user->user_id;
         $startDate = Carbon::parse($request->start_date);
         $endDate = Carbon::parse($request->end_date);
 
         // Calculate the number of days, including the start and end date
-        $daysRequested = $endDate->diffInDays($startDate) * -1;
-
-        // Check if the user has enough sick leave balance
-        $user = User::find($userId);
-        if ($user->sick_leave_balance < $daysRequested) {
-            return response()->json([
-                'error' => 'Insufficient sick leave balance. You have ' . $user->sick_leave_balance . ' days available.'
-            ], 400);
-        }
+        $daysRequested = $endDate->diffInDays($startDate) + 1;
 
         $originalFileNameWithExt = $request->file('file')->getClientOriginalName();
         $originalFileName = pathinfo($originalFileNameWithExt, PATHINFO_FILENAME);
@@ -51,7 +46,26 @@ class submitLeaveRequest extends Controller
             'days_requested' => $daysRequested,
             'statuses' => 'pending',
             'file_path' => $filePath,
-            'file_name' => $originalFileName
+            'file_name' => $originalFileName,
+            'remarks' => $request->input('remarks') ?? null,
+        ]);
+
+        // Create notification for HR
+        Notification::create([
+            'type' => 'new_leave_request',
+            'notifiable_id' => $leaveRequest->id, // Assuming you want to associate this with the leave request
+            'notifiable_type' => LeaveRequest::class,
+            'user_id' => null, // This can be null if it's not specific to a user
+            'message' => "New leave request from {$user->name}",
+            'data' => json_encode([
+                'employee_name' => $user->name,
+                'employee_id' => $userId,
+                'start_date' => $startDate->toDateString(),
+                'end_date' => $endDate->toDateString(),
+                'days_requested' => $daysRequested,
+                'leave_request_id' => $leaveRequest->id,
+            ]),
+            'isRead' => false,
         ]);
 
         return response()->json(['message' => 'Leave request submitted successfully']);
@@ -97,18 +111,38 @@ class submitLeaveRequest extends Controller
             $leaveRequest = LeaveRequest::findOrFail($requestId);
             $user = User::findOrFail($leaveRequest->user_id);
 
-            // Check if the user has sufficient sick leave balance
-            if ($user->sick_leave_balance < $leaveRequest->days_requested) {
-                return response()->json(['error' => 'Insufficient sick leave balance.'], 400);
+            // Check if the requested days exceed the available leave balance
+            if ($user->sick_leave_balance >= $leaveRequest->days_requested) {
+                // Deduct the requested days from the balance
+                $user->sick_leave_balance -= $leaveRequest->days_requested;
+            } else {
+                // Set the leave balance to 0 if the requested days exceed available balance
+                $user->sick_leave_balance = 0;
             }
 
-            // Update the leave request status
+            // Update the leave request status to 'approved'
             $leaveRequest->statuses = 'approved';
             $leaveRequest->save();
 
-            // Update the user's sick leave balance
-            $user->sick_leave_balance -= $leaveRequest->days_requested;
+            // Save the updated user balance
             $user->save();
+
+            EmployeeNotification::create([
+                'id' => Str::uuid(),
+                'user_id' => $leaveRequest->user_id,
+                'type' => 'leave_response',
+                'message' => "Your leave request for {$leaveRequest->days_requested} day(s) has been approved.",
+                'data' => json_encode([
+                    'leave_request_id' => $leaveRequest->id,
+                    'days_requested' => $leaveRequest->days_requested,
+                    'status' => 'approved',
+                    'remaining_balance' => $user->sick_leave_balance,
+                    'start_date' => $leaveRequest->start_date,
+                    'end_date' => $leaveRequest->end_date
+                ]),
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
 
             return response()->json(['message' => 'Leave request approved successfully']);
         } catch (\Exception $e) {
@@ -117,14 +151,38 @@ class submitLeaveRequest extends Controller
         }
     }
 
-    public function declineLeave($requestId)
+
+    public function declineLeave($requestId, Request $request)
     {
+        if (!$requestId) {
+            Log::error('Request ID is null.');
+            return response()->json(['error' => 'Invalid request ID.'], 400);
+        }
+
         try {
             $leaveRequest = LeaveRequest::findOrFail($requestId);
-
-            // Update the leave request status
+            // Update the leave request status and remarks
             $leaveRequest->statuses = 'declined';
+            $leaveRequest->remarks = $request->input('remarks'); // Save the remarks
             $leaveRequest->save();
+
+            EmployeeNotification::create([
+                'id' => Str::uuid(),
+                'user_id' => $leaveRequest->user_id,
+                'type' => 'leave_response',
+                'message' => "Your leave request has been declined." .
+                    ($request->input('remarks') ? " Reason: " . $request->input('remarks') : ""),
+                'data' => json_encode([
+                    'leave_request_id' => $leaveRequest->id,
+                    'days_requested' => $leaveRequest->days_requested,
+                    'status' => 'declined',
+                    'remarks' => $request->input('remarks'),
+                    'start_date' => $leaveRequest->start_date,
+                    'end_date' => $leaveRequest->end_date
+                ]),
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
 
             return response()->json(['message' => 'Leave request declined successfully']);
         } catch (\Exception $e) {
@@ -137,8 +195,9 @@ class submitLeaveRequest extends Controller
     {
         try {
             $userId = Auth::id();
+            // Include the 'remarks' field in the select query
             $leaveRequests = LeaveRequest::where('user_id', $userId)
-                ->select('file_name', 'statuses', 'file_path', 'start_date', 'end_date', 'days_requested')
+                ->select('file_name', 'statuses', 'file_path', 'start_date', 'end_date', 'days_requested', 'remarks')
                 ->get();
 
             $approvedLeaveRequests = $leaveRequests->where('statuses', 'approved');

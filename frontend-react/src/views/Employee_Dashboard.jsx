@@ -157,39 +157,12 @@ const EmployeeDashboard = () => {
 
                         {/* Leave Balance */}
                         <div className="flex py-2 lg items-center font-semibold text-black text-start">
-                            <div className="font-bold mr-5">Leave Balance:</div>
+                            <div className="font-bold mr-5">Leave Credits:</div>
                             <div className="">
                                 {employee.sick_leave_balance} days
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            {/* Notifications Section */}
-            <div className="flex flex-col bg-white text-black p-6 rounded-xl mb-4">
-                <h2 className="font-bold text-lg mb-4">Notifications</h2>
-                <div className="max-h-40 overflow-y-auto">
-                    {Array.isArray(notifications) &&
-                    notifications.length > 0 ? (
-                        notifications.map((notification, index) => (
-                            <div
-                                className={`border-2 rounded-lg p-2 mb-2 w-full ${
-                                    notification.type === "expired"
-                                        ? "bg-red-100 text-red-900 border-red-500"
-                                        : "bg-white text-green-900 border-green-900"
-                                }`}
-                                key={index}
-                            >
-                                <p>{notification.message}</p>
-                                <span className="text-sm text-gray-500">
-                                    {formatSentDate(notification.created_at)}
-                                </span>
-                            </div>
-                        ))
-                    ) : (
-                        <p>No notifications found.</p>
-                    )}
                 </div>
             </div>
 

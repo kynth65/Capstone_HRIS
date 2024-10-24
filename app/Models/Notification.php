@@ -9,9 +9,27 @@ use Laravel\Sanctum\HasApiTokens;
 
 class Notification extends Model
 {
-    protected $table = 'employee_notifications';
+    use HasFactory, Notifiable, HasApiTokens;
 
-    use  HasApiTokens, HasFactory, Notifiable;
+    protected $fillable = [
+        'type',
+        'data',
+        'notifiable_id',
+        'notifiable_type',
+        'read_at',
+        'user_id',
+        'message',
+        'isRead',
+    ];
 
-    protected $fillable = ['user_id, message'];
+    protected $casts = [
+        'data' => 'array',
+        'read_at' => 'datetime',
+        'isRead' => 'boolean',
+    ];
+
+    public function notifiable()
+    {
+        return $this->morphTo();
+    }
 }

@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('category')->nullable();
             $table->boolean('is_archived')->default(false);
             $table->boolean('can_update')->default(false);
-            $table->string('created_by')->nullable();   
+            $table->string('created_by')->nullable();
             $table->string('updated_by')->nullable();
             $table->timestamps();
         });

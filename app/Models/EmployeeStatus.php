@@ -12,5 +12,4 @@ class EmployeeStatus extends Model
     use  HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = ['name', 'full_time', 'part_time', 'student'];
-
 }

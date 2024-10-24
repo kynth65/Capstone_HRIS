@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Certificate;
 use App\Models\ArchivedCertificate;
+use App\Models\CertificateRequest;
+use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -13,6 +15,7 @@ use App\Notifications\CertificateUpdateAccessGranted;
 use App\Notifications\CertificateUpdateRequestStatus;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+
 
 
 class CertificateController extends Controller
@@ -77,7 +80,7 @@ class CertificateController extends Controller
             'certificate_name' => 'required|string|max:255',
             'type' => 'required|string',
             'category' => 'required|string|max:255',
-            'certificate_file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'certificate_file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         if ($request->hasFile('certificate_file')) {
@@ -176,27 +179,7 @@ class CertificateController extends Controller
         return response()->json($certificates);
     }
 
-    // Archive a certificate by moving it to the ArchivedCertificate table
 
-    public function getArchivedCertificates()
-    {
-        try {
-            $archivedCertificates = ArchivedCertificate::all();
-
-            Log::info('Fetched archived certificates:', ['count' => $archivedCertificates->count()]);
-
-            foreach ($archivedCertificates as $cert) {
-                if ($cert->certificate_file_path) {
-                    $cert->file_url = asset('storage/' . $cert->certificate_file_path);
-                }
-            }
-
-            return response()->json($archivedCertificates, 200);
-        } catch (\Exception $e) {
-            Log::error('Error fetching archived certificates:', ['error' => $e->getMessage()]);
-            return response()->json(['message' => 'Error fetching archived certificates'], 500);
-        }
-    }
 
     public function archiveCertificate($id)
     {
@@ -324,6 +307,38 @@ class CertificateController extends Controller
             'requested_at' => now(),
         ]);
 
+        $certificateRequest = DB::table('certificate_update_requests')->insertGetId([
+            'user_id' => $userId,
+            'certificate_id' => $validatedData['certificate_id'],
+            'status' => 'pending',
+            'requested_at' => now(),
+        ]);
+
+        $certificate = Certificate::find($validatedData['certificate_id']);
+        $user = Auth::user();
+
+        // Prepare file path (assuming you handle file uploads)
+        $filePath = ''; // Replace with logic to handle uploaded certificate file
+
+        Notification::create([
+            'type' => 'certificate_update_request',
+            'notifiable_id' => $certificateRequest, // Associate with the certificate request
+            'notifiable_type' => CertificateRequest::class, // Related to the CertificateRequest model
+            'user_id' => null, // Can be null if not specific to a user
+            'message' => "Update request for expiring certificates: {$certificate->certificate_name}. From: {$user->name}", // Updated message
+            'data' => json_encode([
+                'certificate_name' => $certificate->certificate_name,
+                'issued_date' => $certificate->issued_date,
+                'expiring_date' => $certificate->expiring_date,
+                'certificate_file' => $filePath, // Path to the uploaded file
+                'requester_name' => $user->name, // Name of the person making the request
+                'certificate_request_id' => $certificateRequest, // ID of the certificate request
+            ]),
+            'isRead' => false, // Mark notification as unread by default
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         return response()->json(['message' => 'Certificate update request submitted successfully.']);
     }
 
@@ -393,6 +408,7 @@ class CertificateController extends Controller
         $certificate->can_update = false;
         return response()->json(['message' => 'Update request rejected and notification sent.']);
     }
+
     public function getCertificateUpdateRequests()
     {
         $updateRequests = DB::table('certificate_update_requests')
@@ -439,6 +455,49 @@ class CertificateController extends Controller
             return response()->json($certificate);
         } else {
             return response()->json(['error' => 'Certificate not found'], 404);
+        }
+    }
+    public function recover($id)
+    {
+        try {
+            $archivedCertificate = ArchivedCertificate::findOrFail($id);
+
+            // Create a new Certificate from the ArchivedCertificate data
+            $certificate = new Certificate();
+            $certificate->fill($archivedCertificate->toArray());
+            $certificate->is_archived = false;
+            $certificate->save();
+
+            // Delete the ArchivedCertificate
+            $archivedCertificate->delete();
+
+            return response()->json(['message' => 'Certificate recovered successfully.']);
+        } catch (\Exception $e) {
+            Log::error('Error recovering certificate:', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Error recovering certificate'], 500);
+        }
+    }
+
+    public function permanentDelete($id)
+    {
+        try {
+            $archivedCertificate = ArchivedCertificate::findOrFail($id);
+
+            // Delete the associated file if it exists
+            if ($archivedCertificate->certificate_file_path) {
+                Storage::disk('public')->delete($archivedCertificate->certificate_file_path);
+            }
+
+            // Delete the ArchivedCertificate
+            $archivedCertificate->delete();
+
+            return response()->json(['message' => 'Certificate permanently deleted.']);
+        } catch (\Exception $e) {
+            Log::error(
+                'Error permanently deleting certificate:',
+                ['error' => $e->getMessage()]
+            );
+            return response()->json(['message' => 'Error permanently deleting certificate'], 500);
         }
     }
 }

@@ -12,25 +12,23 @@ class EmployeeAttendanceController extends Controller
     /**
      * Fetch attendance records from the secondary database's 'test' table
      * where 'rfid' matches the provided RFID.
-     */
-    public function getAttendanceRecordsByRFID($rfid)
+     */ public function getAttendanceRecordsByRFID($rfid)
     {
         try {
             Log::info('Fetching attendance records for specified RFID', ['rfid' => $rfid]);
 
-            // Query the test table in the secondary database
-            $attendanceRecords = DB::connection('mysql_second')
-                ->table('test')
-                ->join('gammacare_db.users', 'test.rfid', '=', 'users.rfid')
-                ->where('test.rfid', $rfid)
+            // Query the attendances table in the main database
+            $attendanceRecords = DB::table('attendances')
+                ->join('users', 'attendances.user_id', '=', 'users.user_id')
+                ->where('users.rfid', $rfid)
                 ->select(
-                    'test.id',
+                    'attendances.id',
                     'users.user_id',
-                    'test.date',
-                    'test.time_in',
-                    'test.time_out'
+                    'attendances.date',
+                    'attendances.time_in',
+                    'attendances.time_out'
                 )
-                ->orderBy('test.date', 'desc')
+                ->orderBy('attendances.date', 'desc')
                 ->get();
 
             // Calculate accumulated time for each record
@@ -62,18 +60,17 @@ class EmployeeAttendanceController extends Controller
         }
     }
 
+
     /**
      * Get daily average time in, time out, and hours worked for an employee by RFID.
-     */
-    public function getEmployeeDailyAverage($rfid)
+     */ public function getEmployeeDailyAverage($rfid)
     {
         try {
             Log::info('Calculating daily average for specified RFID', ['rfid' => $rfid]);
 
-            $average = DB::connection('mysql_second')
-                ->table('test')
-                ->join('gammacare_db.users', 'test.rfid', '=', 'users.rfid')
-                ->where('test.rfid', $rfid)
+            $average = DB::table('attendances')
+                ->join('users', 'attendances.user_id', '=', 'users.user_id')
+                ->where('users.rfid', $rfid)
                 ->selectRaw('TIME_FORMAT(SEC_TO_TIME(AVG(TIME_TO_SEC(time_in))), "%H:%i:%s") as avg_time_in')
                 ->selectRaw('TIME_FORMAT(SEC_TO_TIME(AVG(TIME_TO_SEC(time_out))), "%H:%i:%s") as avg_time_out')
                 ->selectRaw('ROUND(AVG(TIME_TO_SEC(time_out) - TIME_TO_SEC(time_in)) / 3600, 2) as avg_hours')

@@ -13,6 +13,7 @@ class Incident extends Model
 
     protected $fillable = [
         'user_id',
+        'reported_employee_ids',
         'title',
         'description',
         'status',
@@ -22,8 +23,27 @@ class Incident extends Model
         'file_path'
     ];
 
+    protected $casts = [
+        'reported_employee_ids' => 'array',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function reportedEmployees()
+    {
+        return $this->belongsToMany(User::class, 'user_id', 'reported_employee_ids');
+    }
+
+    public function reportedIncidents()
+    {
+        return $this->hasMany(ReportedIncident::class);
+    }
+
+    public function complianceReports()
+    {
+        return $this->hasManyThrough(ComplianceReport::class, ReportedIncident::class);
     }
 }

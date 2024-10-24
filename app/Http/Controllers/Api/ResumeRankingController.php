@@ -7,7 +7,4 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
 
-class ResumeRanking extends Controller{
-
-    
-}
+class ResumeRanking extends Controller {}

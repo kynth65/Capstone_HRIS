@@ -31,46 +31,81 @@ export const validateFileUpload = (file) => {
 };
 
 export const validateAdditionalQuestions = (questions, positionTitle) => {
-    let errors = {};
-
+    // let errors = {};
     // Assuming position title "Accounting"
-    if (positionTitle.toLowerCase() === "accounting") {
-        if (!questions.bachelorDegree) {
-            errors.bachelorDegree =
-                "Please indicate if you have a Bachelor's Degree.";
-        }
-        if (!questions.backgroundCheck) {
-            errors.backgroundCheck =
-                "Please indicate if you're willing to undergo a background check.";
-        }
-        // if (!questions.commute) {
-        //     errors.commute = "Please indicate if you're comfortable commuting.";
-        // }
-        // if (!questions.onsite) {
-        //     errors.onsite =
-        //           "Please indicate if you're comfortable working onsite.";
-        // }
-        // if (!questions.workSaturdays) {
-        //    errors.workSaturdays =
-        //        "Please select your willingness to work on Saturdays.";
-        // }
-        // if (!questions.accountancyGraduate) {
-        //    errors.accountancyGraduate =
-        //        "Please indicate if you're an Accountancy graduate.";
-        // }
-        // if (!questions.englishProficiency) {
-        //     errors.englishProficiency =
-        //          "Please select your English proficiency level.";
-        //  }
-        //  if (!questions.accountingExperience) {
-        //     errors.accountingExperience =
-        //         "Please specify your Accounting experience.";
-        //  }
-        // if (!questions.softwareExperience) {
-        //     errors.softwareExperience =
-        //        "Please specify your experience with Accounting Software.";
-        // }
-    }
-
-    return errors;
+    //  if (positionTitle.toLowerCase() === "accounting") {
+    //  if (!questions.question1) {
+    //     errors.question1 =
+    //          "Please indicate if you have a Bachelor's Degree.";
+    //   }
+    //   if (!questions.question2) {
+    //      errors.question2 =
+    //          "Please indicate if you're willing to undergo a background check.";
+    //  }
+    // if (!questions.commute) {
+    //     errors.commute = "Please indicate if you're comfortable commuting.";
+    // }
+    // if (!questions.onsite) {
+    //     errors.onsite =
+    //           "Please indicate if you're comfortable working onsite.";
+    // }
+    // if (!questions.workSaturdays) {
+    //    errors.workSaturdays =
+    //        "Please select your willingness to work on Saturdays.";
+    // }
+    // if (!questions.accountancyGraduate) {
+    //    errors.accountancyGraduate =
+    //        "Please indicate if you're an Accountancy graduate.";
+    // }
+    // if (!questions.englishProficiency) {
+    //     errors.englishProficiency =
+    //          "Please select your English proficiency level.";
+    //  }
+    //  if (!questions.accountingExperience) {
+    //     errors.accountingExperience =
+    //         "Please specify your Accounting experience.";
+    //  }
+    // if (!questions.softwareExperience) {
+    //     errors.softwareExperience =
+    //        "Please specify your experience with Accounting Software.";
+    // }
+    // }
+    // if (positionTitle.toLowerCase() === "accounting") {
+    //     if (!questions.bachelorDegree) {
+    //         errors.bachelorDegree =
+    //             "Please indicate if you have a Bachelor's Degree.";
+    //     }
+    //     if (!questions.backgroundCheck) {
+    //         errors.backgroundCheck =
+    //             "Please indicate if you're willing to undergo a background check.";
+    //     }
+    // if (!questions.commute) {
+    //     errors.commute = "Please indicate if you're comfortable commuting.";
+    // }
+    // if (!questions.onsite) {
+    //     errors.onsite =
+    //           "Please indicate if you're comfortable working onsite.";
+    // }
+    // if (!questions.workSaturdays) {
+    //    errors.workSaturdays =
+    //        "Please select your willingness to work on Saturdays.";
+    // }
+    // if (!questions.accountancyGraduate) {
+    //    errors.accountancyGraduate =
+    //        "Please indicate if you're an Accountancy graduate.";
+    // }
+    // if (!questions.englishProficiency) {
+    //     errors.englishProficiency =
+    //          "Please select your English proficiency level.";
+    //  }
+    //  if (!questions.accountingExperience) {
+    //     errors.accountingExperience =
+    //         "Please specify your Accounting experience.";
+    //  }
+    // if (!questions.softwareExperience) {
+    //     errors.softwareExperience =
+    //        "Please specify your experience with Accounting Software.";
+    // }
+    // }
+    // return errors;
 };

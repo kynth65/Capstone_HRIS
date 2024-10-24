@@ -12,7 +12,7 @@ export const CertificateProvider = ({ children }) => {
         try {
             if (userId) {
                 const response = await axiosClient.get(
-                    `/certificates/${userId}`
+                    `/certificates/${userId}`,
                 );
                 setCertificates(response.data); // Set certificates for the logged-in user
             }

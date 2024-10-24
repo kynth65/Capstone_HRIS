@@ -10,10 +10,19 @@ export default function Register() {
     const [formData, setFormData] = useState({});
     const [positions, setPositions] = useState([]); // Store positions based on department
     const formRef = useRef(null);
-
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [passwordError, setPasswordError] = useState("");
     // Define department to position mappings
     const departmentPositions = {
-        Admin: ["Accountant", "Marketing", "Purchasing", "Book Keeper"],
+        Admin: ["Admin", "Purchasing"],
+        HR: [
+            "Human Resource Manager",
+            "HR Manager",
+            "Human Resource Assistant",
+            "Accountant",
+            "Marketing",
+            "Book Keeper",
+        ],
         Diagnostics: [
             "Medtech",
             "X-ray Tech",
@@ -33,76 +42,21 @@ export default function Register() {
                 "first_name",
                 "last_name",
                 "middle_name",
-                "suffix",
-                "date_of_birth",
-                "gender",
-                "marital_status",
-                "nationality",
-                "mothers_maiden_name",
-                "fathers_name",
-            ],
-        },
-        {
-            title: "Contact Information",
-            fields: [
-                "address",
-                "city",
-                "province",
-                "postal_code",
-                "country",
-                "personal_email",
-                "work_email",
-                "home_phone",
-                "contact_number",
-            ],
-        },
-        {
-            title: "Emergency Contact",
-            fields: [
-                "emergency_contact_name",
-                "emergency_contact_relationship",
-                "emergency_contact_phone",
-            ],
-        },
-        {
-            title: "Employment Information",
-            fields: [
                 "email",
-                "hire_date",
-                "employment_status",
+                "contact_number",
+                "gender",
                 "department",
                 "position",
-                "reporting_manager",
-                "work_location",
+                "schedule",
+                "employment_status",
                 "employee_type",
+                "hire_date",
                 "probation_end_date",
-                "current_salary",
                 "pay_frequency",
+                "reporting_manager",
+                "password",
+                "confirm_password",
             ],
-        },
-        {
-            title: "Education and Work History",
-            fields: [
-                "highest_degree_earned",
-                "field_of_study",
-                "institution_name",
-                "graduation_year",
-                "work_history",
-            ],
-        },
-        {
-            title: "Additional Information",
-            fields: [
-                "health_insurance_plan",
-                "sick_leave_balance",
-                "completed_training_programs",
-                "work_permit_expiry_date",
-                "notes",
-            ],
-        },
-        {
-            title: "Security Information",
-            fields: ["password"],
         },
     ];
 
@@ -110,38 +64,58 @@ export default function Register() {
         "rfid",
         "first_name",
         "last_name",
-        "email",
-        "password",
-        "date_of_birth",
-        "gender",
-        "hire_date",
-        "employment_status",
-        "position",
+        "middle_name",
         "department",
-        "employee_type",
-        "current_salary",
+        "email",
+        "position",
+        "schedule",
         "contact_number",
+        "hire_date",
+        "probation_end_date",
+        "pay_frequency",
+        "employment_status",
+        "employee_type",
+        "reporting_manager",
+        "password",
+        "confirm_password",
     ];
 
     const onSubmit = async (e) => {
         e.preventDefault();
+        if (formData.password !== confirmPassword) {
+            setErrors({ password: ["Passwords do not match"] });
+            return;
+        }
         try {
             const { data } = await axiosClient.post("/register", formData);
-            setUser(data.user);
-            setToken(data.token);
-            setErrors(null);
-            setSuccess(data.message || "Registration successful!");
+            setSuccessMessage("Employee registered successfully!");
+            const successTimer = setTimeout(() => {
+                setSuccessMessage("");
+            }, 2000);
+
+            setFormData({});
+            setConfirmPassword("");
+            setCurrentStep(0);
+            return () => clearTimeout(successTimer);
         } catch (err) {
             const responseErrors = err.response?.data?.errors;
             setErrors(responseErrors);
-            setSuccess("");
+            setTimeout(() => {
+                setErrors(null);
+            }, 2000);
         }
     };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-
-        // Set positions based on the selected department
+        if (name === "confirm_password") {
+            setConfirmPassword(value);
+        } else {
+            setFormData((prevData) => ({
+                ...prevData,
+                [name]: value,
+            }));
+        }
         if (name === "department") {
             setPositions(departmentPositions[value] || []);
             setFormData((prevData) => ({
@@ -149,20 +123,14 @@ export default function Register() {
                 position: "", // Reset position when department changes
             }));
         }
-
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: value,
-        }));
     };
-
     const validateStep = () => {
         const currentFields = formSections[currentStep].fields;
         const requiredCurrentFields = currentFields.filter((field) =>
-            requiredFields.includes(field)
+            requiredFields.includes(field),
         );
         const isStepValid = requiredCurrentFields.every(
-            (field) => formData[field] && formData[field].trim() !== ""
+            (field) => formData[field] && formData[field].trim() !== "",
         );
         return isStepValid;
     };
@@ -175,12 +143,23 @@ export default function Register() {
             setErrors({ general: ["Please fill in all required fields."] });
         }
     };
-
-    const renderField = (fieldName) => {
+    const renderField = (label, value) => (
+        <>
+            <div className="flex h-full py-2 lg items-center font-semibold text-black text-start">
+                <div className="w-full font-bold">{label}:</div>
+                <div className="w-full">{value || "N/A"}</div>
+            </div>
+            <div className="w-full border-b-2 border-green-900"></div>
+        </>
+    );
+    const renderFormField = (fieldName) => {
         const commonProps = {
             id: fieldName,
             name: fieldName,
-            value: formData[fieldName] || "",
+            value:
+                fieldName === "confirm_password"
+                    ? confirmPassword
+                    : formData[fieldName] || "",
             onChange: handleInputChange,
             className:
                 "w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500",
@@ -188,6 +167,36 @@ export default function Register() {
         };
 
         switch (fieldName) {
+            case "rfid":
+                return (
+                    <select {...commonProps}>
+                        <option value="">Select RFID</option>
+                        <option value="A804A689">A804A689</option>
+                        <option value="12D8051E">12D8051E</option>
+                        <option value="EF4CAA1E">EF4CAA1E</option>
+                        <option value="B47B96B0">B47B96B0</option>
+                        <option value="RFID5">RFID5</option>
+                        <option value="RFID6">RFID6</option>
+                    </select>
+                );
+            case "gender":
+                return (
+                    <select {...commonProps}>
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                );
+            case "schedule":
+                return (
+                    <select {...commonProps}>
+                        <option value="">Select Schedule</option>
+                        <option value="7:00 - 16:00">7am - 4pm</option>
+                        <option value="8:00 - 17:00">8am - 5pm</option>
+                        <option value="12:00 - 21:00">12nn - 9pm</option>
+                    </select>
+                );
             case "department":
                 return (
                     <select {...commonProps}>
@@ -208,49 +217,6 @@ export default function Register() {
                                 {position}
                             </option>
                         ))}
-                    </select>
-                );
-            case "rfid":
-                return (
-                    <select {...commonProps}>
-                        <option value="">Select RFID</option>
-                        <option value="RFID1">RFID1</option>
-                        <option value="RFID2">RFID2</option>
-                        <option value="RFID3">RFID3</option>
-                        <option value="RFID4">RFID4</option>
-                        <option value="RFID5">RFID5</option>
-                        <option value="RFID6">RFID6</option>
-                    </select>
-                );
-            case "gender":
-                return (
-                    <select {...commonProps}>
-                        <option value="">Select Gender</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
-                    </select>
-                );
-            case "marital_status":
-                return (
-                    <select {...commonProps}>
-                        <option value="">Select Marital Status</option>
-                        <option value="Single">Single</option>
-                        <option value="Married">Married</option>
-                        <option value="Divorced">Divorced</option>
-                        <option value="Widowed">Widowed</option>
-                    </select>
-                );
-            case "suffix":
-                return (
-                    <select {...commonProps}>
-                        <option value="">Select Suffix</option>
-                        <option value="Jr.">Jr.</option>
-                        <option value="Sr.">Sr.</option>
-                        <option value="II">II</option>
-                        <option value="III">III</option>
-                        <option value="IV">IV</option>
-                        <option value="V">V</option>
                     </select>
                 );
             case "employment_status":
@@ -282,41 +248,15 @@ export default function Register() {
                 );
             case "password":
                 return <input type="password" {...commonProps} />;
-            case "date_of_birth":
+            case "confirm_password":
+                return <input type="password" {...commonProps} />;
             case "hire_date":
             case "probation_end_date":
-            case "work_permit_expiry_date":
                 return <input type="date" {...commonProps} />;
-            case "current_salary":
-                return (
-                    <input type="number" min="0" step="0.01" {...commonProps} />
-                );
             case "email":
-            case "personal_email":
-            case "work_email":
                 return <input type="email" {...commonProps} />;
-            case "home_phone":
             case "contact_number":
-            case "emergency_contact_phone":
-                return <input type="tel" {...commonProps} />;
-            case "graduation_year":
-                return (
-                    <input
-                        type="number"
-                        min="1900"
-                        max="2099"
-                        step="1"
-                        {...commonProps}
-                    />
-                );
-            case "sick_leave_balance":
-                return (
-                    <input type="number" min="0" step="1" {...commonProps} />
-                );
-            case "work_history":
-            case "completed_training_programs":
-            case "notes":
-                return <textarea rows="4" {...commonProps}></textarea>;
+                return <input type="text" {...commonProps} />;
             default:
                 return <input type="text" {...commonProps} />;
         }
@@ -342,35 +282,41 @@ export default function Register() {
                             ))}
                     </div>
                 )}
-                <form onSubmit={onSubmit} ref={formRef} className="space-y-4">
+                <form onSubmit={onSubmit} className="flex flex-col w-full">
                     {formSections[currentStep].fields.map((fieldName) => (
-                        <div className="form-group" key={fieldName}>
+                        <div
+                            className="form-group flex items-center mb-4"
+                            key={fieldName}
+                        >
                             <label
                                 htmlFor={fieldName}
-                                className="block mb-1 font-medium text-gray-700"
+                                className="block font-medium text-gray-700 w-1/3"
                             >
                                 {fieldName
                                     .split("_")
                                     .map(
                                         (word) =>
                                             word.charAt(0).toUpperCase() +
-                                            word.slice(1)
+                                            word.slice(1),
                                     )
                                     .join(" ")}
                                 {requiredFields.includes(fieldName) && (
                                     <span className="text-red-500">*</span>
                                 )}
                             </label>
-                            {renderField(fieldName)}
+                            <div className="w-2/3">
+                                {renderFormField(fieldName)}
+                            </div>
                         </div>
                     ))}
+                    {passwordError && (
+                        <div className="text-red-500 mb-4">{passwordError}</div>
+                    )}
                     <div className="form-navigation flex justify-between mt-6">
                         {currentStep > 0 && (
                             <button
                                 type="button"
-                                onClick={() =>
-                                    setCurrentStep((prevStep) => prevStep - 1)
-                                }
+                                onClick={goToPreviousStep}
                                 className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
                             >
                                 Previous
@@ -380,7 +326,7 @@ export default function Register() {
                             <button
                                 type="button"
                                 onClick={goToNextStep}
-                                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                className="px-4 py-2 bg-green-900 text-white rounded hover:opacity-85 "
                             >
                                 Next
                             </button>

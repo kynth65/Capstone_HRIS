@@ -29,7 +29,7 @@ function CompleteProfileModal({ show, onClose, onComplete, tempUser }) {
         health_insurance_plan: "",
         suffix: "",
         completed_training_programs: "",
-        work_permit_expiry_date: "",
+        // work_permit_expiry_date: "",
         profile: "",
         notes: "",
     });
@@ -544,7 +544,7 @@ function CompleteProfileModal({ show, onClose, onComplete, tempUser }) {
                             />
                         </div>
 
-                        <div className="mb-4">
+                        {/* <div className="mb-4">
                             <label
                                 htmlFor="work_permit_expiry_date"
                                 className="block text-sm font-medium text-gray-700 mb-1"
@@ -559,7 +559,7 @@ function CompleteProfileModal({ show, onClose, onComplete, tempUser }) {
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-black"
                             />
-                        </div>
+                        </div> */}
 
                         <div className="mb-4">
                             <label

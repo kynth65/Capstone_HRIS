@@ -21,7 +21,7 @@ const PersonalDetails = () => {
                 setCandidate(response.data);
             })
             .catch((error) =>
-                console.error("Error fetching candidate:", error)
+                console.error("Error fetching candidate:", error),
             );
     }, [token]);
 
@@ -31,14 +31,14 @@ const PersonalDetails = () => {
             axiosClient
                 .post(
                     `/onboarding/${candidate.id}/personal-details`,
-                    personalDetails
+                    personalDetails,
                 )
                 .then((response) => {
                     alert("Personal details submitted!");
                     // Move to next step
                 })
                 .catch((error) =>
-                    console.error("Error submitting personal details:", error)
+                    console.error("Error submitting personal details:", error),
                 );
         }
     };

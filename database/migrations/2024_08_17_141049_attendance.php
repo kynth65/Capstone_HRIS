@@ -18,8 +18,9 @@ return new class extends Migration
             $table->timestamp('time_in')->nullable();
             $table->timestamp('time_out')->nullable();
             $table->string('date');
+            $table->string('late')->nullable();
             $table->enum('status', ['present', 'absent', 'leave'])->default('absent');
-            $table->integer('accumulated_work_time')->default(160);
+            $table->integer('accumulated_work_time')->default(0);
 
             $table->timestamps();
         });
