@@ -45,7 +45,7 @@ function EmployeeManagement() {
                 "employment_status",
                 "employee_type",
                 "hire_date",
-                "probation_end_date",
+                "probationary_end_date",
                 "pay_frequency",
                 "reporting_manager",
                 "password",
@@ -65,7 +65,7 @@ function EmployeeManagement() {
         "schedule",
         "contact_number",
         "hire_date",
-        "probation_end_date",
+        "probationary_end_date",
         "pay_frequency",
         "employment_status",
         "employee_type",
@@ -317,7 +317,7 @@ function EmployeeManagement() {
             case "confirm_password":
                 return <input type="password" {...commonProps} />;
             case "hire_date":
-            case "probation_end_date":
+            case "probationary_end_date":
                 return <input type="date" {...commonProps} />;
             case "email":
                 return <input type="email" {...commonProps} />;

@@ -282,7 +282,7 @@ const HR_Leave_Management = () => {
                             <p className="text-red-600 mb-4">{errorMessage}</p>
                         )}
                         <table className="employee-table table-auto w-full border-collapse border border-gray-300">
-                            <thead className="bg-gray-100 text-black sticky top-[-1px] z-10">
+                            <thead className="bg-gray-100 text-black sticky top-[-1px] z-0">
                                 <tr>
                                     <th className="p-2 border-b border-gray-300">
                                         Employee Name
@@ -431,7 +431,7 @@ const HR_Leave_Management = () => {
                 )}
 
                 {showModal && selectedRequest && (
-                    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-20">
                         <div className="relative top-20 mx-auto p-5 border w-11/12 sm:w-96 md:w-[600px] shadow-lg rounded-md bg-white">
                             <div className="mt-3 text-center">
                                 <h3 className="text-lg leading-6 font-semibold text-gray-900">
@@ -671,16 +671,16 @@ const HR_Leave_Management = () => {
                 )}
 
                 {showDeclineModal && (
-                    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-                        <div className="relative top-20 mx-auto p-5 border w-11/12 sm:w-96 md:w-[600px] shadow-lg rounded-md bg-white">
-                            <h2 className="text-lg font-semibold mb-4">
+                    <div className="modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                        <div className="relative mx-auto p-5 border w-11/12 sm:w-96 md:w-[600px] shadow-lg rounded-md bg-white">
+                            <h2 className="text-lg font-semibold mb-4 text-black">
                                 Decline Leave Request
                             </h2>
                             <textarea
                                 value={remarks} // Bind value to remarks state
                                 onChange={(e) => setRemarks(e.target.value)} // Update remarks state
                                 placeholder="Enter remarks for declining the leave request"
-                                className="w-full p-2 border border-gray-300 rounded mb-4"
+                                className="w-full p-2 border border-gray-300 rounded mb-4 text-black"
                                 rows="5"
                             />
                             <div className="flex justify-end space-x-4">

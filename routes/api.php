@@ -61,6 +61,8 @@ Route::get('/open-positions', [OpenPositionController::class, 'index']);
 Route::get('/hr-tags/{id}', [OpenPositionController::class, 'getHrTags']);
 Route::post('/storeTag', [AdminTagsController::class, 'storeTag']);
 Route::post('/deleteTag', [AdminTagsController::class, 'deleteTag']);
+Route::post('/storeTag', [AdminTagsController::class, 'storeTag']);
+Route::post('/deleteTag', [AdminTagsController::class, 'deleteTag']);
 Route::get('/applicants/{positionId}', [OpenPositionController::class, 'getApplicants']);
 Route::get('/open-files/{filename}', [OpenFileController::class, 'openFile']);
 Route::get('/record-attendance', [AttendanceController::class, 'recordAttendance']);
@@ -147,6 +149,8 @@ Route::get('/csrf-token', function () {
 });
 
 Route::get('/sync-attendance', [AttendanceController::class, 'getAttendanceRecords']);
+Route::get('/monthly-attendance', [AttendanceController::class, 'getMonthlyAttendanceRecords']);
+
 Route::get('/monthly-attendance', [AttendanceController::class, 'getMonthlyAttendanceRecords']);
 
 Route::post('/attendance', [TrackingAttendanceController::class, 'recordAttendance']);

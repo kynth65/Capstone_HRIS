@@ -181,7 +181,7 @@ function AdminLayout() {
                                         : defaultAvatar
                                 }
                                 alt="Profile"
-                                className="w-10 h-10 mr-4 rounded-full object-cover"
+                                className="w-10 h-10 md:mr-4 rounded-full object-cover"
                             />
                         </button>
                         <span className="hidden xl:block">{user.position}</span>

@@ -52,13 +52,17 @@ function DefaultLayout() {
             try {
                 const { data } = await axiosClient.get("/user");
                 setUser(data);
+                // console.log("User fetched successfully:", data); // Debugging line
             } catch (error) {
+                // console.error("Error fetching user:", error.response); // Debugging line
                 if (error.response && error.response.status === 401) {
                     try {
                         await refresh();
                         const { data } = await axiosClient.get("/user");
                         setUser(data);
+                        //   console.log("User fetched after refresh:", data); // Debugging line
                     } catch (refreshError) {
+                        //    console.error("Error refreshing token:", refreshError); // Debugging line
                         navigate("/login");
                     }
                 } else {
@@ -68,7 +72,14 @@ function DefaultLayout() {
         };
 
         fetchUser();
-    }, [navigate, refresh, setUser]);
+    }, [navigate, token]);
+
+    useEffect(() => {
+        const token = localStorage.getItem("access_token");
+        if (!token) {
+            navigate("/login");
+        }
+    }, [navigate]);
 
     useEffect(() => {
         // Function to fetch notifications
@@ -340,10 +351,11 @@ function DefaultLayout() {
                                                     {groupNotifications.map(
                                                         (notification) => {
                                                             const routes = {
-                                                                leave_request: {
-                                                                    path: "/hr-leave-management",
-                                                                    text: "Leave Management",
-                                                                },
+                                                                new_leave_request:
+                                                                    {
+                                                                        path: "/hr-leave-management",
+                                                                        text: "Leave Management",
+                                                                    },
                                                                 new_employee: {
                                                                     path: "/employee_list",
                                                                     text: "Employee List",
@@ -379,6 +391,11 @@ function DefaultLayout() {
                                                                         text: "Certificate",
                                                                     },
                                                                 certificate_request:
+                                                                    {
+                                                                        path: "/certificate",
+                                                                        text: "Certificate",
+                                                                    },
+                                                                new_certificate_request:
                                                                     {
                                                                         path: "/certificate",
                                                                         text: "Certificate",

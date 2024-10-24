@@ -61,14 +61,17 @@ class AuthController extends Controller
 
         try {
             // Combine first and last name
+            // Combine first and last name
             $fullName = trim($data['first_name'] . ' ' . ($data['middle_name'] ?? '') . ' ' . $data['last_name']);
 
+            // Only create fields based on requiredFields list
             // Only create fields based on requiredFields list
             $user = User::create([
                 'rfid' => $data['rfid'],
                 'name' => $fullName,
                 'first_name' => $data['first_name'],
                 'last_name' => $data['last_name'],
+                'department' => $data['department'],
                 'department' => $data['department'],
                 'employment_status' => $data['employment_status'],
                 'employee_type' =>  $data['employee_type'],
@@ -91,12 +94,21 @@ class AuthController extends Controller
             $cookie = cookie('token', $token, 60 * 24); // token valid for 1 day
 
             // Return response with token and user resource
+            // Set token as a cookie
+            $cookie = cookie('token', $token, 60 * 24); // token valid for 1 day
+
+            // Return response with token and user resource
             return response()->json([
+                'user' => $user,
                 'user' => $user,
                 'token' => $token
             ])->withCookie($cookie);
         } catch (\Exception $e) {
             Log::error('Registration failed: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Registration failed. Please try again.',
+                'exception' => $e->getMessage()
+            ], 500);
             return response()->json([
                 'error' => 'Registration failed. Please try again.',
                 'exception' => $e->getMessage()

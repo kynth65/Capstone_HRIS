@@ -38,6 +38,36 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                         />
                         No
                     </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="bachelorDegree"
+                            value="Yes"
+                            checked={questions.question1 === "Yes"}
+                            onChange={(e) =>
+                                setQuestions({
+                                    ...questions,
+                                    question1: e.target.value,
+                                })
+                            }
+                        />
+                        Yes
+                    </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="bachelorDegree"
+                            value="No"
+                            checked={questions.question1 === "No"}
+                            onChange={(e) =>
+                                setQuestions({
+                                    ...questions,
+                                    question1: e.target.value,
+                                })
+                            }
+                        />
+                        No
+                    </label>
                 </div>
             </label>
 
@@ -75,12 +105,73 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                         />
                         No
                     </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="backgroundCheck"
+                            value="Yes"
+                            checked={questions.question2 === "Yes"}
+                            onChange={(e) =>
+                                setQuestions({
+                                    ...questions,
+                                    question2: e.target.value,
+                                })
+                            }
+                        />
+                        Yes
+                    </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="backgroundCheck"
+                            value="No"
+                            checked={questions.question2 === "No"}
+                            onChange={(e) =>
+                                setQuestions({
+                                    ...questions,
+                                    question2: e.target.value,
+                                })
+                            }
+                        />
+                        No
+                    </label>
                 </div>
             </label>
 
             <label>
-                Are you comfortable commuting to this job&apos;s location?*
+                Are you comfortable commuting to this job&apos;s location?* Are
+                you comfortable commuting to this job&apos;s location?*
                 <div>
+                    <label>
+                        <input
+                            type="radio"
+                            name="commute"
+                            value="Yes"
+                            checked={questions.question3 === "Yes"}
+                            onChange={(e) =>
+                                setQuestions({
+                                    ...questions,
+                                    question3: e.target.value,
+                                })
+                            }
+                        />
+                        Yes
+                    </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="commute"
+                            value="No"
+                            checked={questions.question3 === "No"}
+                            onChange={(e) =>
+                                setQuestions({
+                                    ...questions,
+                                    question3: e.target.value,
+                                })
+                            }
+                        />
+                        No
+                    </label>
                     <label>
                         <input
                             type="radio"
@@ -119,9 +210,11 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                 <div>
                     <select
                         value={questions.question4}
+                        value={questions.question4}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
+                                question4: e.target.value,
                                 question4: e.target.value,
                             })
                         }
@@ -138,9 +231,11 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                 <div>
                     <select
                         value={questions.question5}
+                        value={questions.question5}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
+                                question5: e.target.value,
                                 question5: e.target.value,
                             })
                         }
@@ -157,9 +252,11 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                 <div>
                     <select
                         value={questions.question6}
+                        value={questions.question6}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
+                                question6: e.target.value,
                                 question6: e.target.value,
                             })
                         }
@@ -182,9 +279,11 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                     <input
                         type="number"
                         value={questions.question7 || ""}
+                        value={questions.question7 || ""}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
+                                question7: e.target.value,
                                 question7: e.target.value,
                             })
                         }
@@ -200,9 +299,11 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                     <input
                         type="number"
                         value={questions.question8 || ""}
+                        value={questions.question8 || ""}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
+                                question8: e.target.value,
                                 question8: e.target.value,
                             })
                         }
@@ -218,9 +319,11 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                     <input
                         type="number"
                         value={questions.question9 || ""}
+                        value={questions.question9 || ""}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
+                                question9: e.target.value,
                                 question9: e.target.value,
                             })
                         }

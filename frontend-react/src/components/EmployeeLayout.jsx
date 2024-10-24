@@ -90,13 +90,17 @@ function EmployeeLayout() {
             try {
                 const { data } = await axiosClient.get("/user");
                 setUser(data);
+                // console.log("User fetched successfully:", data); // Debugging line
             } catch (error) {
+                // console.error("Error fetching user:", error.response); // Debugging line
                 if (error.response && error.response.status === 401) {
                     try {
                         await refresh();
                         const { data } = await axiosClient.get("/user");
                         setUser(data);
+                        //   console.log("User fetched after refresh:", data); // Debugging line
                     } catch (refreshError) {
+                        //    console.error("Error refreshing token:", refreshError); // Debugging line
                         navigate("/login");
                     }
                 } else {
@@ -106,7 +110,14 @@ function EmployeeLayout() {
         };
 
         fetchUser();
-    }, [navigate, refresh, setUser]);
+    }, [navigate, token]);
+
+    useEffect(() => {
+        const token = localStorage.getItem("access_token");
+        if (!token) {
+            navigate("/login");
+        }
+    }, [navigate]);
 
     const handleNotificationClick = (notification) => {
         console.log("Clicked notification:", notification);
@@ -158,6 +169,7 @@ function EmployeeLayout() {
     };
 
     const handleViewProfile = () => {
+        navigate("/employee-profile");
         navigate("/employee-profile");
         setShowModal(false);
     };

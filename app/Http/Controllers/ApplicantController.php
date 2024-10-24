@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Http;
 class ApplicantController extends Controller
 {
     // Get all applicants
+    // Get all applicants
     public function index()
     {
         return response()->json(Applicant::all(), 200);

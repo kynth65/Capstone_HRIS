@@ -13,10 +13,14 @@ class AttendanceController extends Controller
     {
         try {
             Log::info('Fetching attendance records directly from the attendance table');
+            Log::info('Fetching attendance records directly from the attendance table');
 
             $attendanceRecords = DB::table('attendances')
                 ->join('users', 'attendances.user_id', '=', 'users.user_id')
+            $attendanceRecords = DB::table('attendances')
+                ->join('users', 'attendances.user_id', '=', 'users.user_id')
                 ->select(
+                    'attendances.id',
                     'attendances.id',
                     'users.user_id',
                     'users.name',
@@ -28,6 +32,7 @@ class AttendanceController extends Controller
                     'attendances.accumulated_work_time',
                     'attendances.late'
                 )
+                ->orderBy('attendances.date', 'desc')
                 ->orderBy('attendances.date', 'desc')
                 ->get();
 
@@ -42,9 +47,12 @@ class AttendanceController extends Controller
 
                     // Calculate and assign accumulated work time
                     $record->accumulated_work_time = ($accumulatedMinutes < 60)
+                    // Calculate and assign accumulated work time
+                    $record->accumulated_work_time = ($accumulatedMinutes < 60)
                         ? $accumulatedMinutes . ' minutes'
                         : round($accumulatedMinutes / 60, 2) . ' hours';
                 } else {
+                    $record->accumulated_work_time = '0 minutes';
                     $record->accumulated_work_time = '0 minutes';
                 }
 
@@ -160,6 +168,7 @@ class AttendanceController extends Controller
         try {
             // Fetch today's attendance records from 'test' table
             $attendanceRecords = DB::table('attendances')
+            $attendanceRecords = DB::table('attendances')
                 ->whereDate('date', $today)
                 ->get();
 
@@ -178,6 +187,7 @@ class AttendanceController extends Controller
             }
 
             // Delete the records from 'test' table after moving them
+            DB::table('attendances')
             DB::table('attendances')
                 ->whereDate('date', $today)
                 ->delete();
