@@ -562,11 +562,11 @@ function EmployeeManagement() {
                                                     <img
                                                         src={
                                                             employee.profile
-                                                                ? `http://127.0.0.1:8000/storage/images/${employee.profile}`
+                                                                ? `${import.meta.env.VITE_BASE_URL}/storage/images/${employee.profile}`
                                                                 : defaultAvatar
                                                         }
                                                         alt="Profile"
-                                                        className="profile-icon"
+                                                        className="rounded-full h-10 w-10"
                                                     />
                                                 </td>
                                                 <td>{employee.user_id}</td>

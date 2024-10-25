@@ -12,6 +12,8 @@ function AdminLayout() {
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [showDropdown, setShowDropdown] = useState(false);
     const navigate = useNavigate();
+    const [imageError, setImageError] = useState(false);
+
     const [headerText, setHeaderText] = useState(
         localStorage.getItem("headerText") || "Admin Dashboard",
     );
@@ -173,15 +175,22 @@ function AdminLayout() {
                         className="flex items-center cursor-pointer font-kodchasan"
                         onClick={toggleModal}
                     >
-                        <button className="btn-profile-icon ">
+                        <button className="btn-profile-icon">
                             <img
                                 src={
-                                    user.profile
+                                    user.profile && !imageError
                                         ? `${import.meta.env.VITE_BASE_URL}/storage/images/${user.profile}`
                                         : defaultAvatar
                                 }
                                 alt="Profile"
-                                className="w-10 h-10 md:mr-4 rounded-full object-cover"
+                                className="w-10 h-10 mr-4 rounded-full object-cover"
+                                onError={() => {
+                                    setImageError(true);
+                                    console.log(
+                                        "Image failed to load:",
+                                        user.profile,
+                                    );
+                                }}
                             />
                         </button>
                         <span className="hidden xl:block">{user.position}</span>

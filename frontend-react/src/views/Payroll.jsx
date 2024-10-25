@@ -3,6 +3,7 @@ import axiosClient from "../axiosClient";
 import "../styles/payroll.css";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+
 const Payroll = () => {
     const [employees, setEmployees] = useState([]);
     const [userId, setUserId] = useState("");
@@ -13,6 +14,7 @@ const Payroll = () => {
     const [tax, setTax] = useState("");
     const [workingHours, setWorkingHours] = useState(0);
     const [grossSalary, setGrossSalary] = useState(0);
+
     useEffect(() => {
         fetchEmployees();
     }, []);
@@ -46,7 +48,6 @@ const Payroll = () => {
                 },
             );
 
-            // Assuming response data includes working_hours and net_salary
             const fetchedWorkingHours = response.data.working_hours || 0;
             setWorkingHours(fetchedWorkingHours);
 
@@ -68,7 +69,6 @@ const Payroll = () => {
 
     const generatePDF = () => {
         const doc = new jsPDF();
-
         doc.setFontSize(16);
         doc.text("Payslip", 20, 20);
         doc.setFontSize(12);
@@ -79,7 +79,6 @@ const Payroll = () => {
             head: [["Description", "Amount"]],
             body: [
                 ["Hourly Rate", `$${parseFloat(hourlyRate).toFixed(2)}`],
-                //["Working Hours", `${workingHours || 0}`], // Use a default value if undefined
                 ["Gross Salary", `$${grossSalary.toFixed(2)}`],
                 ["Tax", `${tax}%`],
                 ["Deductions", `$${parseFloat(deductions).toFixed(2)}`],
@@ -90,82 +89,135 @@ const Payroll = () => {
 
         doc.save(`payslip_${userId}.pdf`);
     };
+
     return (
-        <div className="payroll-container animated fadeInDown">
-            <h2>Compute Payroll</h2>
-            {error && <p className="error">{error}</p>}
-            <form onSubmit={calculatePayroll}>
-                <div className="form-group">
-                    <label htmlFor="employee">Select Employee:</label>
-                    <select
-                        id="employee"
-                        value={userId}
-                        onChange={(e) => setUserId(e.target.value)}
-                        required
-                    >
-                        <option value="">-- Select Employee --</option>
-                        {employees.map((employee) => (
-                            <option
-                                key={employee.user_id}
-                                value={employee.user_id}
-                            >
-                                {employee.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+        <div className="max-w-4xl mx-auto p-6 animated fadeInDown">
+            <h2 className="text-2xl text-white font-kodchasan mb-6">
+                Compute Payroll
+            </h2>
 
-                <div className="form-group">
-                    <label htmlFor="hourlyRate">Hourly Rate:</label>
-                    <input
-                        type="number"
-                        id="hourlyRate"
-                        value={hourlyRate}
-                        onChange={(e) => setHourlyRate(e.target.value)}
-                        placeholder="Enter hourly rate"
-                        required
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="tax">Tax (%):</label>
-                    <input
-                        type="number"
-                        id="tax"
-                        value={tax}
-                        onChange={(e) => setTax(e.target.value)}
-                        placeholder="Enter tax percentage"
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="deductions">Deductions:</label>
-                    <input
-                        type="number"
-                        id="deductions"
-                        value={deductions}
-                        onChange={(e) => setDeductions(e.target.value)}
-                        placeholder="Enter deduction amount"
-                    />
-                </div>
-
-                <button
-                    type="submit"
-                    className="px-4 py-4 w-full text-base font-kodchasan rounded-xl border-2 border-green-900 bg-green-900 hover:bg-white hover:text-green-900 transition active:bg-green-950 active:text-white"
-                >
-                    Calculate Salary
-                </button>
-            </form>
-
-            {netSalary !== null && !isNaN(netSalary) && (
-                <div className="payslip text-black flex flex-col space-y-3">
-                    <h3>Payslip</h3>
-                    <p>Net Salary: ${parseFloat(netSalary).toFixed(2)}</p>
-                    <button onClick={generatePDF} className="download-btn">
-                        Download Payslip
-                    </button>
+            {error && (
+                <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6">
+                    <p>{error}</p>
                 </div>
             )}
+
+            <div className="bg-white rounded-xl shadow-lg p-6">
+                <form onSubmit={calculatePayroll} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Employee Selection */}
+                        <div className="form-group text-black">
+                            <label className="block text-sm font-medium text-black mb-2">
+                                Select Employee
+                            </label>
+                            <select
+                                value={userId}
+                                onChange={(e) => setUserId(e.target.value)}
+                                required
+                                className="w-full text-black p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            >
+                                <option value="">-- Select Employee --</option>
+                                {employees.map((employee) => (
+                                    <option
+                                        key={employee.user_id}
+                                        value={employee.user_id}
+                                    >
+                                        {employee.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Hourly Rate */}
+                        <div className="form-group text-black">
+                            <label className="block  text-sm font-medium text-black mb-2">
+                                Hourly Rate
+                            </label>
+                            <input
+                                type="number"
+                                value={hourlyRate}
+                                onChange={(e) => setHourlyRate(e.target.value)}
+                                required
+                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                placeholder="Enter hourly rate"
+                            />
+                        </div>
+
+                        {/* Tax */}
+                        <div className="form-group">
+                            <label className="block text-sm font-medium text-black mb-2">
+                                Tax (%)
+                            </label>
+                            <input
+                                type="number"
+                                value={tax}
+                                onChange={(e) => setTax(e.target.value)}
+                                className="w-full text-black p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                placeholder="Enter tax percentage"
+                            />
+                        </div>
+
+                        {/* Deductions */}
+                        <div className="form-group">
+                            <label className="block text-sm font-medium text-black mb-2">
+                                Deductions
+                            </label>
+                            <input
+                                type="number"
+                                value={deductions}
+                                onChange={(e) => setDeductions(e.target.value)}
+                                className="w-full p-3 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                placeholder="Enter deduction amount"
+                            />
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="w-full bg-green-900 text-white py-3 px-6 rounded-lg hover:bg-green-800 transition duration-300 ease-in-out font-medium"
+                    >
+                        Calculate Salary
+                    </button>
+                </form>
+
+                {netSalary !== null && !isNaN(netSalary) && (
+                    <div className="mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
+                        <h3 className="text-xl font-semibold text-green-900 mb-4">
+                            Payslip Summary
+                        </h3>
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                                <span className="font-medium">
+                                    Gross Salary:
+                                </span>
+                                <span>${grossSalary.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                                <span className="font-medium">Tax Amount:</span>
+                                <span>
+                                    ${(grossSalary * (tax / 100)).toFixed(2)}
+                                </span>
+                            </div>
+                            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                                <span className="font-medium">Deductions:</span>
+                                <span>
+                                    ${parseFloat(deductions).toFixed(2)}
+                                </span>
+                            </div>
+                            <div className="flex justify-between items-center py-2 font-bold text-lg">
+                                <span>Net Salary:</span>
+                                <span>${parseFloat(netSalary).toFixed(2)}</span>
+                            </div>
+                        </div>
+                        <button
+                            onClick={generatePDF}
+                            className="mt-6 w-full bg-green-900 text-white py-3 px-6 rounded-lg hover:bg-green-800 transition duration-300 ease-in-out font-medium flex items-center justify-center gap-2"
+                        >
+                            Download Payslip
+                        </button>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

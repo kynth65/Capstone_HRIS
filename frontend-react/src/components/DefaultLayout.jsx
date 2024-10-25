@@ -18,6 +18,7 @@ function DefaultLayout() {
     const [showModal, setShowModal] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [imageError, setImageError] = useState(false);
     const [showNotificationDropdown, setShowNotificationDropdown] =
         useState(false);
 
@@ -481,12 +482,19 @@ function DefaultLayout() {
                             <button className="btn-profile-icon">
                                 <img
                                     src={
-                                        user.profile
+                                        user.profile && !imageError
                                             ? `${import.meta.env.VITE_BASE_URL}/storage/images/${user.profile}`
                                             : defaultAvatar
                                     }
                                     alt="Profile"
                                     className="w-10 h-10 mr-4 rounded-full object-cover"
+                                    onError={() => {
+                                        setImageError(true);
+                                        console.log(
+                                            "Image failed to load:",
+                                            user.profile,
+                                        );
+                                    }}
                                 />
                             </button>
                         </div>

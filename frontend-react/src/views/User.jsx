@@ -99,7 +99,7 @@ function Profile() {
                     className="w-20 h-20 md:w-40 md:h-40 rounded-md  object-cover"
                     src={
                         user.profile
-                            ? `http://127.0.0.1:8000/storage/images/${user.profile}`
+                            ? `${import.meta.env.VITE_BASE_URL}/storage/images/${user.profile}`
                             : defaultAvatar
                     }
                     alt={user.name}
