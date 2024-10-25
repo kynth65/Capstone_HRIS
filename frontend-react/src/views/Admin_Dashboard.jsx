@@ -21,6 +21,7 @@ import Calendar from "react-calendar";
 import axiosClient from "../axiosClient";
 import "react-calendar/dist/Calendar.css";
 import "../styles/hrDashboard.css";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const Dashboard = () => {
     const [data, setData] = useState({
@@ -35,7 +36,7 @@ const Dashboard = () => {
     const [showSuccessPopup, setSuccessPopup] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [highlightedDates, setHighlightedDates] = useState([]);
-
+    const [currentDate, setCurrentDate] = useState(new Date());
     // Fetch attendance records every 5 seconds
     useEffect(() => {
         const fetchAttendanceRecords = async () => {
@@ -109,83 +110,168 @@ const Dashboard = () => {
         fetchCertificates();
     }, []);
 
+    const months = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+    ];
+
+    const handlePreviousMonth = () => {
+        setCurrentDate(
+            new Date(currentDate.getFullYear(), currentDate.getMonth() - 1),
+        );
+    };
+
+    const handleNextMonth = () => {
+        setCurrentDate(
+            new Date(currentDate.getFullYear(), currentDate.getMonth() + 1),
+        );
+    };
+
+    const handleMonthChange = (e) => {
+        setCurrentDate(
+            new Date(currentDate.getFullYear(), parseInt(e.target.value)),
+        );
+    };
+
+    const handleYearChange = (e) => {
+        setCurrentDate(
+            new Date(parseInt(e.target.value), currentDate.getMonth()),
+        );
+    };
     useEffect(() => {
         axiosClient
             .get("/highlighted-dates")
             .then((response) => {
-                const dates = response.data.map((date) => new Date(date)); // Convert to JS Date objects
-                setHighlightedDates(dates);
-                console.log("Fetched and converted dates:", dates); // Log to verify dates
+                const highlightedDates = response.data.map((item) => ({
+                    date: new Date(item.date),
+                    recruitmentStage: item.recruitment_stage,
+                }));
+                setHighlightedDates(highlightedDates);
+                console.log("Highlighted dates:", highlightedDates);
             })
             .catch((error) => console.error("Error fetching dates:", error));
     }, []);
 
-    // Function to apply a custom class to specific days in the calendar
-    const tileClassName = ({ date, view }) => {
-        if (view === "month") {
-            // Only highlight in the 'month' view
-            const isHighlighted = highlightedDates.some((highlightDate) => {
-                console.log(
-                    "Comparing:",
-                    highlightDate.toDateString(),
-                    "with",
-                    date.toDateString(),
-                );
-                return highlightDate.toDateString() === date.toDateString();
-            });
-            if (isHighlighted) {
-                return "highlight"; // Return custom class for highlighted days
-            }
-        }
-        return null; // Return null for other days
-    };
+    // Updated Calendar Implementation
+    const renderCalendar = () => {
+        const startOfMonth = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            1,
+        );
+        const endOfMonth = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth() + 1,
+            0,
+        );
+        const daysInMonth = endOfMonth.getDate();
+        const firstDayOfMonth = startOfMonth.getDay();
+        const dates = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
-    const handleApprove = (requestId) => {
-        axiosClient
-            .post(`/leave-requests/${requestId}/approve`)
-            .then((response) => {
-                setSuccessPopup(response.data.message);
-                setTimeout(() => {
-                    setSuccessPopup(false);
-                }, 4000);
-                setData((prevData) => ({
-                    ...prevData,
-                    leaveRequests: prevData.leaveRequests.map((request) =>
-                        request.id === requestId
-                            ? { ...request, statuses: "approved" }
-                            : request,
-                    ),
-                    //disable the decline button when the statuses value is aprrove
-                }));
-            })
-            .catch((error) => {
-                console.error("Error approving leave request:", error);
-                setErrorMessage("Error approving request");
-            });
-    };
+        const isHighlighted = (date) => {
+            const highlight = highlightedDates.find((highlightDate) => {
+                const isSameDay = highlightDate.date.getDate() === date;
+                const isSameMonth =
+                    highlightDate.date.getMonth() === currentDate.getMonth();
+                const isSameYear =
+                    highlightDate.date.getFullYear() ===
+                    currentDate.getFullYear();
 
-    const handleDecline = (requestId) => {
-        axiosClient
-            .post(`/leave-requests/${requestId}/decline`)
-            .then((response) => {
-                setSuccessPopup(response.data.message);
-                setTimeout(() => {
-                    setSuccessPopup(false);
-                }, 4000);
-                setData((prevData) => ({
-                    ...prevData,
-                    leaveRequests: prevData.leaveRequests.map((request) =>
-                        request.id === requestId
-                            ? { ...request, statuses: "declined" }
-                            : request,
-                    ),
-                    //disable the approve button when statuses value is decline
-                }));
-            })
-            .catch((error) => {
-                console.error("Error declining leave request:", error);
-                setErrorMessage("Error declining request");
+                return isSameDay && isSameMonth && isSameYear;
             });
+            return highlight ? highlight.recruitmentStage : null;
+        };
+
+        return (
+            <div className="bg-white rounded-lg p-4 mb-4 mr-2 sm:mr-0">
+                <div className="mb-4 flex items-center justify-between text-black">
+                    <button
+                        onClick={handlePreviousMonth}
+                        className="p-2 hover:bg-gray-100 rounded"
+                    >
+                        <ChevronLeft className="w-5 h-5" />
+                    </button>
+
+                    <div className="flex gap-2 text-black w-50">
+                        <select
+                            value={currentDate.getMonth()}
+                            onChange={handleMonthChange}
+                            className="border rounded p-1"
+                        >
+                            {months.map((month, index) => (
+                                <option key={month} value={index}>
+                                    {month}
+                                </option>
+                            ))}
+                        </select>
+
+                        <select
+                            value={currentDate.getFullYear()}
+                            onChange={handleYearChange}
+                            className="border rounded p-1"
+                        >
+                            {Array.from(
+                                { length: 10 },
+                                (_, i) => currentDate.getFullYear() - 5 + i,
+                            ).map((year) => (
+                                <option key={year} value={year}>
+                                    {year}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <button
+                        onClick={handleNextMonth}
+                        className="p-2 hover:bg-gray-100 rounded"
+                    >
+                        <ChevronRight className="w-5 h-5" />
+                    </button>
+                </div>
+
+                <div className="custom-calendar">
+                    <div className="calendar-header">
+                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+                            (day) => (
+                                <div key={day}>{day}</div>
+                            ),
+                        )}
+                    </div>
+                    <div className="calendar-grid">
+                        {Array.from({ length: firstDayOfMonth }).map((_, i) => (
+                            <div
+                                key={`empty-${i}`}
+                                className="empty-date"
+                            ></div>
+                        ))}
+                        {dates.map((date) => (
+                            <div
+                                key={date}
+                                className={`calendar-date ${isHighlighted(date) ? "highlighted" : ""}`}
+                            >
+                                {date}
+                                {isHighlighted(date) && (
+                                    <div className="tooltip">
+                                        {isHighlighted(date)}{" "}
+                                        {/* Show recruitment stage */}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
     };
 
     const formatSentDate = (dateString) => {
@@ -268,11 +354,9 @@ const Dashboard = () => {
                                 </table>
                             </div>
                         </div>
-                        <div className="flex sm:hidden justify-center text-black  mr-2 sm:mr-0  pl-0 py-4 bg-white rounded-lg mb-4 lg:py-3 xl:py-6">
-                            <div className="w-[290px] p-2">
-                                <Calendar tileClassName={tileClassName} />
-                            </div>
-                        </div>
+
+                        <div>{renderCalendar()}</div>
+
                         <div className="flex space-x-8 mb-4 mr-2 sm:mr-0 justify-center items-center  xl:h-80 bg-white text-black rounded-lg">
                             <div>
                                 <h1 className="py-2 font-bold text-lg">
@@ -312,11 +396,6 @@ const Dashboard = () => {
                                         fill="#FFA500"
                                     />{" "}
                                 </BarChart>
-                            </div>
-                            <div className="hidden sm:block lg:hidden justify-center text-black  mr-2 sm:mr-0  pl-0 py-4 bg-white rounded-lg mb-4 lg:py-3 xl:py-6">
-                                <div className="w-[290px] p-2">
-                                    <Calendar tileClassName={tileClassName} />
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -360,11 +439,6 @@ const Dashboard = () => {
                                         <ListItemText primary="No notifications found" />
                                     </ListItem>
                                 )}
-                            </div>
-                        </div>
-                        <div className="hidden lg:flex justify-center text-black  mr-2 sm:mr-0  pl-0 py-4 bg-white rounded-lg mb-4 lg:py-3 xl:py-6">
-                            <div className="w-[290px] p-2">
-                                <Calendar tileClassName={tileClassName} />
                             </div>
                         </div>
                     </div>

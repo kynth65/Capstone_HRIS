@@ -177,24 +177,96 @@ h6 {
     background-color: #ccc;
     cursor: not-allowed;
 }
-
-/* Highlight specific calendar days */
-.highlight {
-    background-color: #f0f8ff !important;
-    color: rgb(6, 100, 163) !important;
-    font-weight: 900 !important;
+.custom-calendar {
+    display: grid;
+    width: 400px;
+    grid-template-rows: auto 1fr;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    color: #000;
 }
 
-/* Specificity for calendar tile class */
-.react-calendar__tile.highlight {
-    background-color: #f0f8ff !important;
-    color: rgb(6, 100, 163) !important;
-    font-weight: 900 !important;
+.calendar-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    font-weight: bold;
+    text-align: center;
 }
 
-/* Additional specificity for the month view */
-.react-calendar__month-view__days__day--highlight {
-    background-color: #f0f8ff !important;
-    color: rgb(6, 100, 163) !important;
-    font-weight: 900 !important;
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+}
+
+.calendar-date {
+    padding: 8px;
+    text-align: center;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    position: relative;
+}
+
+.highlighted {
+    background-color: #12518d; /* Gold color for visibility */
+    border-radius: 50%; /* To create a circle around the date */
+    color: white; /* White text for contrast */
+}
+
+.calendar-date {
+    padding: 10px;
+    text-align: center;
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+}
+
+.empty-date {
+    width: 40px;
+    height: 40px;
+}
+
+.event {
+    font-size: 0.8em;
+    margin-top: 5px;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    color: black;
+    margin-top: 5px;
+}
+
+.tooltip {
+    visibility: hidden;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%; /* Adjust this depending on your layout */
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 120px; /* Tooltip minimum width */
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%; /* Arrow on the bottom */
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}
+
+.calendar-date:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
 }

@@ -17,10 +17,9 @@ import {
     Tooltip,
     Legend,
 } from "recharts";
-import Calendar from "react-calendar";
 import axiosClient from "../axiosClient";
-import "react-calendar/dist/Calendar.css";
-import "../styles/hrDashboard.css";
+import "../styles/hrDashboard.css"; // Make sure you update your CSS here
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { IoNotificationsOutline } from "react-icons/io5";
 
@@ -37,38 +36,35 @@ const Dashboard = () => {
     const [showSuccessPopup, setSuccessPopup] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [highlightedDates, setHighlightedDates] = useState([]);
+    const [currentDate, setCurrentDate] = useState(new Date());
 
     // Fetch attendance records every 5 seconds
     useEffect(() => {
         const fetchAttendanceRecords = async () => {
             try {
                 const response = await axiosClient.get("/sync-attendance");
-                console.log("Attendance Records Response:", response.data); // Add this line to debug the response
                 setData((prevData) => ({
                     ...prevData,
                     attendanceRecords: Array.isArray(response.data)
                         ? response.data
-                        : [], // Ensure it's an array
+                        : [],
                 }));
             } catch (error) {
                 console.error("Error fetching attendance records:", error);
             }
         };
-        // Initial fetch
         fetchAttendanceRecords();
-
         const intervalId = setInterval(() => {
             fetchAttendanceRecords();
-        }, 5000); // Poll every 5 seconds
+        }, 5000);
 
-        return () => clearInterval(intervalId); // Clear interval on unmount
+        return () => clearInterval(intervalId);
     }, []);
 
     useEffect(() => {
         axiosClient
             .get("/dashboard")
             .then((response) => {
-                console.log("Dashboard data:", response.data); // Log the data to verify
                 setData((prevData) => ({
                     ...prevData,
                     ...response.data,
@@ -102,8 +98,8 @@ const Dashboard = () => {
                 );
                 setData((prevData) => ({
                     ...prevData,
-                    expiringCertificates: response.data.expiringCertificates, // Update expiring certificates
-                    expiredCertificates: response.data.expiredCertificates, // Update expired certificates
+                    expiringCertificates: response.data.expiringCertificates,
+                    expiredCertificates: response.data.expiredCertificates,
                 }));
             } catch (error) {
                 console.error("Error fetching certificates:", error);
@@ -113,83 +109,168 @@ const Dashboard = () => {
         fetchCertificates();
     }, []);
 
+    const months = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+    ];
+
+    const handlePreviousMonth = () => {
+        setCurrentDate(
+            new Date(currentDate.getFullYear(), currentDate.getMonth() - 1),
+        );
+    };
+
+    const handleNextMonth = () => {
+        setCurrentDate(
+            new Date(currentDate.getFullYear(), currentDate.getMonth() + 1),
+        );
+    };
+
+    const handleMonthChange = (e) => {
+        setCurrentDate(
+            new Date(currentDate.getFullYear(), parseInt(e.target.value)),
+        );
+    };
+
+    const handleYearChange = (e) => {
+        setCurrentDate(
+            new Date(parseInt(e.target.value), currentDate.getMonth()),
+        );
+    };
     useEffect(() => {
         axiosClient
             .get("/highlighted-dates")
             .then((response) => {
-                const dates = response.data.map((date) => new Date(date)); // Convert to JS Date objects
-                setHighlightedDates(dates);
-                console.log("Fetched and converted dates:", dates); // Log to verify dates
+                const highlightedDates = response.data.map((item) => ({
+                    date: new Date(item.date),
+                    recruitmentStage: item.recruitment_stage,
+                }));
+                setHighlightedDates(highlightedDates);
+                console.log("Highlighted dates:", highlightedDates);
             })
             .catch((error) => console.error("Error fetching dates:", error));
     }, []);
 
-    // Function to apply a custom class to specific days in the calendar
-    const tileClassName = ({ date, view }) => {
-        if (view === "month") {
-            // Only highlight in the 'month' view
-            const isHighlighted = highlightedDates.some((highlightDate) => {
-                console.log(
-                    "Comparing:",
-                    highlightDate.toDateString(),
-                    "with",
-                    date.toDateString(),
-                );
-                return highlightDate.toDateString() === date.toDateString();
-            });
-            if (isHighlighted) {
-                return "highlight"; // Return custom class for highlighted days
-            }
-        }
-        return null; // Return null for other days
-    };
+    // Updated Calendar Implementation
+    const renderCalendar = () => {
+        const startOfMonth = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            1,
+        );
+        const endOfMonth = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth() + 1,
+            0,
+        );
+        const daysInMonth = endOfMonth.getDate();
+        const firstDayOfMonth = startOfMonth.getDay();
+        const dates = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
-    const handleApprove = (requestId) => {
-        axiosClient
-            .post(`/leave-requests/${requestId}/approve`)
-            .then((response) => {
-                setSuccessPopup(response.data.message);
-                setTimeout(() => {
-                    setSuccessPopup(false);
-                }, 4000);
-                setData((prevData) => ({
-                    ...prevData,
-                    leaveRequests: prevData.leaveRequests.map((request) =>
-                        request.id === requestId
-                            ? { ...request, statuses: "approved" }
-                            : request,
-                    ),
-                    //disable the decline button when the statuses value is aprrove
-                }));
-            })
-            .catch((error) => {
-                console.error("Error approving leave request:", error);
-                setErrorMessage("Error approving request");
-            });
-    };
+        const isHighlighted = (date) => {
+            const highlight = highlightedDates.find((highlightDate) => {
+                const isSameDay = highlightDate.date.getDate() === date;
+                const isSameMonth =
+                    highlightDate.date.getMonth() === currentDate.getMonth();
+                const isSameYear =
+                    highlightDate.date.getFullYear() ===
+                    currentDate.getFullYear();
 
-    const handleDecline = (requestId) => {
-        axiosClient
-            .post(`/leave-requests/${requestId}/decline`)
-            .then((response) => {
-                setSuccessPopup(response.data.message);
-                setTimeout(() => {
-                    setSuccessPopup(false);
-                }, 4000);
-                setData((prevData) => ({
-                    ...prevData,
-                    leaveRequests: prevData.leaveRequests.map((request) =>
-                        request.id === requestId
-                            ? { ...request, statuses: "declined" }
-                            : request,
-                    ),
-                    //disable the approve button when statuses value is decline
-                }));
-            })
-            .catch((error) => {
-                console.error("Error declining leave request:", error);
-                setErrorMessage("Error declining request");
+                return isSameDay && isSameMonth && isSameYear;
             });
+            return highlight ? highlight.recruitmentStage : null;
+        };
+
+        return (
+            <div className="bg-white rounded-lg p-4 mb-4 mr-2 sm:mr-0">
+                <div className="mb-4 flex items-center justify-between text-black">
+                    <button
+                        onClick={handlePreviousMonth}
+                        className="p-2 hover:bg-gray-100 rounded"
+                    >
+                        <ChevronLeft className="w-5 h-5" />
+                    </button>
+
+                    <div className="flex gap-2 text-black w-50">
+                        <select
+                            value={currentDate.getMonth()}
+                            onChange={handleMonthChange}
+                            className="border rounded p-1"
+                        >
+                            {months.map((month, index) => (
+                                <option key={month} value={index}>
+                                    {month}
+                                </option>
+                            ))}
+                        </select>
+
+                        <select
+                            value={currentDate.getFullYear()}
+                            onChange={handleYearChange}
+                            className="border rounded p-1"
+                        >
+                            {Array.from(
+                                { length: 10 },
+                                (_, i) => currentDate.getFullYear() - 5 + i,
+                            ).map((year) => (
+                                <option key={year} value={year}>
+                                    {year}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <button
+                        onClick={handleNextMonth}
+                        className="p-2 hover:bg-gray-100 rounded"
+                    >
+                        <ChevronRight className="w-5 h-5" />
+                    </button>
+                </div>
+
+                <div className="custom-calendar">
+                    <div className="calendar-header">
+                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+                            (day) => (
+                                <div key={day}>{day}</div>
+                            ),
+                        )}
+                    </div>
+                    <div className="calendar-grid">
+                        {Array.from({ length: firstDayOfMonth }).map((_, i) => (
+                            <div
+                                key={`empty-${i}`}
+                                className="empty-date"
+                            ></div>
+                        ))}
+                        {dates.map((date) => (
+                            <div
+                                key={date}
+                                className={`calendar-date ${isHighlighted(date) ? "highlighted" : ""}`}
+                            >
+                                {date}
+                                {isHighlighted(date) && (
+                                    <div className="tooltip">
+                                        {isHighlighted(date)}{" "}
+                                        {/* Show recruitment stage */}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
     };
 
     const formatSentDate = (dateString) => {
@@ -198,9 +279,9 @@ const Dashboard = () => {
         const timeDiff = Math.abs(now - date);
         const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
 
-        if (daysDiff === 0) return "Sent today"; // If sent today
-        if (daysDiff === 1) return "Sent yesterday"; // If sent yesterday
-        return `Sent ${daysDiff} days ago`; // For any other day
+        if (daysDiff === 0) return "Sent today";
+        if (daysDiff === 1) return "Sent yesterday";
+        return `Sent ${daysDiff} days ago`;
     };
 
     const formatToHour = (timestamp) => {
@@ -208,7 +289,7 @@ const Dashboard = () => {
         const date = new Date(timestamp);
         const hours = date.getHours().toString().padStart(2, "0");
         const minutes = date.getMinutes().toString().padStart(2, "0");
-        return `${hours}:${minutes}`; // Format as "HH:MM"
+        return `${hours}:${minutes}`;
     };
 
     const formatDate = (dateString) => {
@@ -235,10 +316,11 @@ const Dashboard = () => {
                         <span className="font-bold"> {data.leave}</span>
                     </div>
                 </div>
+
                 <div className="lg:grid lg:grid-cols-2 lg:space-x-3">
-                    <div className="">
-                        <div className="flex flex-col mb-4 mr-2 sm:mr-0 justify-center items-center w-auto lg:h-[313px] xl:h-[334px] bg-white text-black rounded-lg  overflow-auto">
-                            <h1 className="font-bold text-lg">
+                    <div>
+                        <div className="flex flex-col mb-4 mr-2 sm:mr-0 justify-center items-center w-auto lg:h-[313px] xl:h-[334px] bg-white text-black rounded-lg overflow-auto">
+                            <h1 className="font-bold text-lg py-2">
                                 Attendance Records
                             </h1>
                             <div className="employee-list-container w-full h-72">
@@ -295,12 +377,10 @@ const Dashboard = () => {
                                 </table>
                             </div>
                         </div>
-                        <div className="flex sm:hidden justify-center text-black  mr-2 sm:mr-0  pl-0 py-4 bg-white rounded-lg mb-4 lg:py-3 xl:py-6">
-                            <div className="w-[290px] p-2">
-                                <Calendar tileClassName={tileClassName} />
-                            </div>
-                        </div>
-                        <div className="flex space-x-8 mb-4 mr-2 sm:mr-0 justify-center items-center  xl:h-80 bg-white text-black rounded-lg">
+
+                        <div>{renderCalendar()}</div>
+
+                        <div className="flex space-x-8 mb-4 mr-2 sm:mr-0 justify-center items-center xl:h-80 bg-white text-black rounded-lg">
                             <div>
                                 <h1 className="py-2 font-bold text-lg">
                                     Employee Status
@@ -327,26 +407,22 @@ const Dashboard = () => {
                                         dataKey="FullTime"
                                         name="Full Time"
                                         fill="#079dde"
-                                    />{" "}
+                                    />
                                     <Bar
                                         dataKey="PartTime"
                                         name="Part Time"
                                         fill="#82ca9d"
-                                    />{" "}
+                                    />
                                     <Bar
                                         dataKey="Student"
                                         name="Student"
                                         fill="#FFA500"
-                                    />{" "}
+                                    />
                                 </BarChart>
-                            </div>
-                            <div className="hidden sm:block lg:hidden justify-center text-black  mr-2 sm:mr-0  pl-0 py-4 bg-white rounded-lg mb-4 lg:py-3 xl:py-6">
-                                <div className="w-[290px] p-2">
-                                    <Calendar tileClassName={tileClassName} />
-                                </div>
                             </div>
                         </div>
                     </div>
+
                     <div>
                         <div className="flex flex-col items-center max-h-96 mr-2 sm:mr-0 h-auto lg:h-[313px] xl:h-[333px] bg-white rounded-lg mb-4">
                             <span className="font-bold text-black text-lg mb-2 pt-3">
@@ -387,11 +463,6 @@ const Dashboard = () => {
                                         <ListItemText primary="No notifications found" />
                                     </ListItem>
                                 )}
-                            </div>
-                        </div>
-                        <div className="hidden lg:flex justify-center text-black  mr-2 sm:mr-0  pl-0 py-4 bg-white rounded-lg mb-4 lg:py-3 xl:py-6">
-                            <div className="w-[290px] p-2">
-                                <Calendar tileClassName={tileClassName} />
                             </div>
                         </div>
                     </div>
