@@ -246,7 +246,7 @@ class IncidentController extends Controller
                 'id' => Str::uuid(),
                 'user_id' => $employeeId,
                 'type' => 'compliance_report', // Added type to match EmployeeLayout
-                'message' => 'You are being reported in the incident titled "' . $incident->title . '". Please submit your compliance report.',
+                'message' => 'You are being reported in the incident titled "' . $incident->title . '". Submit a written report within 5 days.',
                 'data' => json_encode([
                     'incident_id' => $incident->id,
                     'title' => $incident->title,
@@ -322,12 +322,39 @@ class IncidentController extends Controller
         ], 201);
     }
 
-    public function destroy($id)
+    public function destroy($id, Request $request)
     {
         $incident = Incident::findOrFail($id);
-        if ($incident->file_path) {
-            Storage::disk('public')->delete($incident->file_path);
+
+        // Get the delete remarks from the request
+        $deleteRemarks = $request->input('delete_remarks');
+
+        // Store file path before deletion
+        $filePath = $incident->file_path;
+
+        // Create notification for the employee who reported the incident
+        EmployeeNotification::create([
+            'id' => Str::uuid(),
+            'user_id' => $incident->user_id, // This is the reporter's ID
+            'type' => 'incident_deleted',
+            'message' => 'Your reported incident titled "' . $incident->title . '" has been deleted. Remarks: ' . $deleteRemarks,
+            'data' => json_encode([
+                'incident_title' => $incident->title,
+                'delete_remarks' => $deleteRemarks,
+                'deleted_at' => now()->toDateTimeString(),
+                'original_incident_date' => $incident->incident_date,
+                'severity' => $incident->severity
+            ]),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Delete the file if it exists
+        if ($filePath) {
+            Storage::disk('public')->delete($filePath);
         }
+
+        // Delete the incident
         $incident->delete();
 
         return response()->json(['message' => 'Incident deleted successfully'], 200);

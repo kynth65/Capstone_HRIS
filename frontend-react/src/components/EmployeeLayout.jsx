@@ -335,6 +335,11 @@ function EmployeeLayout() {
                                                                         path: "/incident-form",
                                                                         text: "Incident Form",
                                                                     },
+                                                                incident_deleted:
+                                                                    {
+                                                                        path: "/incident-form",
+                                                                        text: "Incident Form",
+                                                                    },
                                                                 compliance_report:
                                                                     {
                                                                         path: "/incident-form",

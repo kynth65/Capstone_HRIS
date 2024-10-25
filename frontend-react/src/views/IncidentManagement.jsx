@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axiosClient from "../axiosClient";
+import { MdDelete, MdEdit, MdExpandMore, MdExpandLess } from "react-icons/md";
+import { IoMdEye } from "react-icons/io";
+import { BsSendExclamationFill } from "react-icons/bs";
 
 const IncidentManagement = () => {
     const [pendingIncidents, setPendingIncidents] = useState([]);
@@ -16,7 +19,13 @@ const IncidentManagement = () => {
     const [employees, setEmployees] = useState([]);
     const [activeStatus, setActiveStatus] = useState("pending");
     const [complianceReports, setComplianceReports] = useState([]);
-
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [selectedIncidentForDelete, setSelectedIncidentForDelete] =
+        useState(null);
+    const [deleteRemarks, setDeleteRemarks] = useState("");
+    const [selectedIncidentForCompliance, setSelectedIncidentForCompliance] =
+        useState(null);
     useEffect(() => {
         fetchAllIncidents();
         fetchEmployees();
@@ -82,17 +91,28 @@ const IncidentManagement = () => {
         setViewMode(true);
     };
 
-    const handleDelete = async (id) => {
+    const handleDelete = async (id, remarks) => {
         try {
-            await axiosClient.delete(`/incidents/${id}`);
+            await axiosClient.delete(`/incidents/${id}`, {
+                data: { delete_remarks: remarks },
+            });
             setSuccessMessage("Incident deleted successfully.");
             setTimeout(() => setSuccessMessage(""), 3000);
+            setShowDeleteModal(false);
+            setSelectedIncidentForDelete(null);
+            setDeleteRemarks("");
             fetchAllIncidents();
         } catch (error) {
             console.error("Error deleting incident:", error);
             setErrorMessage("Failed to delete the incident. Please try again.");
             setTimeout(() => setErrorMessage(""), 3000);
         }
+    };
+
+    const handleDeleteClick = (incident) => {
+        setSelectedIncidentForDelete(incident);
+        setShowDeleteModal(true);
+        setDeleteRemarks("");
     };
 
     const handleSubmit = async (e) => {
@@ -145,6 +165,11 @@ const IncidentManagement = () => {
         }));
     };
 
+    const handleSendComplianceClick = (incident) => {
+        setSelectedIncidentForCompliance(incident);
+        setShowConfirmModal(true);
+    };
+
     const handleSendComplianceRequest = async (incidentId) => {
         try {
             await axiosClient.post(
@@ -167,9 +192,7 @@ const IncidentManagement = () => {
                     <th className="p-2 hidden md:table-cell">Name</th>
                     <th className="p-2">Title</th>
                     <th className="p-2 hidden md:table-cell">Description</th>
-                    <th className="p-2 hidden lg:table-cell">Date</th>
                     <th className="p-2 hidden md:table-cell">Severity</th>
-                    <th className="p-2 hidden md:table-cell">PDF</th>
                     <th className="p-2 hidden lg:table-cell">
                         Reported Employees
                     </th>
@@ -190,26 +213,11 @@ const IncidentManagement = () => {
                                     {incident.description}
                                 </span>
                             </td>
-                            <td className="p-2 hidden lg:table-cell">
-                                {incident.incident_date}
-                            </td>
+
                             <td className="p-2 hidden md:table-cell">
                                 {incident.severity}
                             </td>
-                            <td className="p-2 hidden md:table-cell">
-                                {incident.file_path ? (
-                                    <a
-                                        href={`${import.meta.env.VITE_BASE_URL.replace("/api", "")}/storage/${incident.file_path}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-500 hover:underline"
-                                    >
-                                        View PDF
-                                    </a>
-                                ) : (
-                                    "No PDF"
-                                )}
-                            </td>
+
                             <td className="p-2 hidden lg:table-cell">
                                 {incident.reported_employee_ids &&
                                 incident.reported_employee_ids.length > 0
@@ -245,33 +253,39 @@ const IncidentManagement = () => {
                                     </span>
                                 )}
                             </td>
-                            <td className="flex gap-3 justify-center">
-                                {incident.status === "investigating" &&
-                                    incident.reported_employee_ids.length >
-                                        0 && (
-                                        <button
-                                            onClick={() =>
-                                                handleSendComplianceRequest(
-                                                    incident.id,
-                                                )
-                                            }
-                                            className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                                        >
-                                            Send Compliance Request
-                                        </button>
-                                    )}
-                                <button
-                                    onClick={() => handleView(incident)}
-                                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                                >
-                                    View
-                                </button>
-                                <button
-                                    onClick={() => handleDelete(incident.id)}
-                                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                                >
-                                    Delete
-                                </button>
+                            <td>
+                                <div className="flex justify-center items-center space-x-2 ">
+                                    {incident.status === "investigating" &&
+                                        incident.reported_employee_ids.length >
+                                            0 && (
+                                            <button
+                                                onClick={() =>
+                                                    handleSendComplianceClick(
+                                                        incident,
+                                                    )
+                                                }
+                                                className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                                            >
+                                                <BsSendExclamationFill
+                                                    size={20}
+                                                />
+                                            </button>
+                                        )}
+                                    <button
+                                        onClick={() => handleView(incident)}
+                                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                    >
+                                        <IoMdEye size={20} />
+                                    </button>
+                                    <button
+                                        onClick={() =>
+                                            handleDeleteClick(incident)
+                                        }
+                                        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                                    >
+                                        <MdDelete size={20} />
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     ))
@@ -285,6 +299,15 @@ const IncidentManagement = () => {
             </tbody>
         </table>
     );
+
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+        });
+    };
 
     return (
         <>
@@ -340,7 +363,7 @@ const IncidentManagement = () => {
                             <h3 className="text-xl font-semibold mb-4 text-center">
                                 Incident Details
                             </h3>
-                            <div className="space-y-2 mb-4 text-base">
+                            <div className="space-y-2 mb-4 text-base text-start">
                                 <p>
                                     <strong>Name:</strong>{" "}
                                     {selectedIncident.name}
@@ -353,9 +376,38 @@ const IncidentManagement = () => {
                                     <strong>Description:</strong>{" "}
                                     {selectedIncident.description}
                                 </p>
+                                <p className="whitespace-pre-wrap break-words">
+                                    <strong>Reported Employees:</strong>{" "}
+                                    <span className="p-2">
+                                        {selectedIncident.reported_employee_ids &&
+                                        selectedIncident.reported_employee_ids
+                                            .length > 0
+                                            ? selectedIncident.reported_employee_ids.map(
+                                                  (employeeId, index) => (
+                                                      <span key={employeeId}>
+                                                          {
+                                                              employees.find(
+                                                                  (e) =>
+                                                                      e.user_id ===
+                                                                      employeeId,
+                                                              )?.name
+                                                          }
+                                                          {index <
+                                                          selectedIncident
+                                                              .reported_employee_ids
+                                                              .length -
+                                                              1
+                                                              ? ", "
+                                                              : ""}
+                                                      </span>
+                                                  ),
+                                              )
+                                            : "None"}
+                                    </span>
+                                </p>
                                 <p>
-                                    <strong>Date:</strong>{" "}
-                                    {selectedIncident.incident_date}
+                                    <strong>Incident Date:</strong>{" "}
+                                    {formatDate(selectedIncident.incident_date)}
                                 </p>
                                 <p>
                                     <strong>Severity:</strong>{" "}
@@ -458,7 +510,7 @@ const IncidentManagement = () => {
                                         name="status"
                                         value={form.status}
                                         onChange={handleChange}
-                                        className="w-2/3 p-2 border border-green-900 rounded"
+                                        className="w-2/3 p-2 mb-0 border border-green-900 rounded"
                                     >
                                         <option value="pending">Pending</option>
                                         <option value="investigating">
@@ -477,10 +529,10 @@ const IncidentManagement = () => {
                                         type="file"
                                         onChange={handleFileChange}
                                         accept="application/pdf"
-                                        className="w-2/3 p-2 border border-green-900 rounded"
+                                        className="w-2/3 p-2 mb-0 border border-green-900 rounded"
                                     />
                                 </div>
-                                <div className="flex justify-end space-x-2 mt-4">
+                                <div className="flex justify-center space-x-2 pt-4">
                                     <button
                                         type="button"
                                         onClick={() => setViewMode(false)}
@@ -496,6 +548,142 @@ const IncidentManagement = () => {
                                     </button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                )}
+                {showConfirmModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-md text-black">
+                            <h3 className="text-xl font-semibold mb-4 text-center">
+                                Send Compliance Request
+                            </h3>
+                            <p className="mb-6 text-center">
+                                Are you sure you want to send a compliance
+                                request?
+                            </p>
+                            <div className="space-y-4">
+                                <p className="text-sm text-gray-900">
+                                    <strong>Title:</strong>{" "}
+                                    {selectedIncidentForCompliance?.title}
+                                </p>
+                                <p className="text-sm text-gray-900">
+                                    <strong>Reported Employees:</strong>{" "}
+                                    {selectedIncidentForCompliance?.reported_employee_ids.map(
+                                        (employeeId, index) => (
+                                            <span key={employeeId}>
+                                                {
+                                                    employees.find(
+                                                        (e) =>
+                                                            e.user_id ===
+                                                            employeeId,
+                                                    )?.name
+                                                }
+                                                {index <
+                                                selectedIncidentForCompliance
+                                                    .reported_employee_ids
+                                                    .length -
+                                                    1
+                                                    ? ", "
+                                                    : ""}
+                                            </span>
+                                        ),
+                                    )}
+                                </p>
+                            </div>
+                            <div className="flex justify-center space-x-4 mt-6">
+                                <button
+                                    onClick={() => {
+                                        setShowConfirmModal(false);
+                                        setSelectedIncidentForCompliance(null);
+                                    }}
+                                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        handleSendComplianceRequest(
+                                            selectedIncidentForCompliance.id,
+                                        );
+                                        setShowConfirmModal(false);
+                                        setSelectedIncidentForCompliance(null);
+                                    }}
+                                    className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                                >
+                                    Send Request
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {showDeleteModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-md text-black">
+                            <h3 className="text-xl font-semibold mb-4 text-center">
+                                Delete Incident
+                            </h3>
+                            <p className="mb-4 text-center">
+                                Are you sure you want to delete this incident?
+                            </p>
+                            <div className="space-y-4">
+                                <p className="text-sm text-gray-900">
+                                    <strong>Title:</strong>{" "}
+                                    {selectedIncidentForDelete?.title}
+                                </p>
+                                <p className="text-sm text-gray-900">
+                                    <strong>Name:</strong>{" "}
+                                    {selectedIncidentForDelete?.name}
+                                </p>
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Remarks (Required)
+                                    </label>
+                                    <textarea
+                                        value={deleteRemarks}
+                                        onChange={(e) =>
+                                            setDeleteRemarks(e.target.value)
+                                        }
+                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                                        rows="3"
+                                        placeholder="Enter your remarks for deleting this incident..."
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex justify-center space-x-4 mt-6">
+                                <button
+                                    onClick={() => {
+                                        setShowDeleteModal(false);
+                                        setSelectedIncidentForDelete(null);
+                                        setDeleteRemarks("");
+                                    }}
+                                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        if (deleteRemarks.trim()) {
+                                            handleDelete(
+                                                selectedIncidentForDelete.id,
+                                                deleteRemarks,
+                                            );
+                                        } else {
+                                            setErrorMessage(
+                                                "Please enter remarks before deleting.",
+                                            );
+                                            setTimeout(
+                                                () => setErrorMessage(""),
+                                                3000,
+                                            );
+                                        }
+                                    }}
+                                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                    disabled={!deleteRemarks.trim()}
+                                >
+                                    Delete
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}
