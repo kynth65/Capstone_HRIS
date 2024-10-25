@@ -66,7 +66,14 @@ function Attendance() {
     }, [activeButton]);
 
     const handleSearch = () => {
-        const searchTerm = searchRef.current.value.trim().toLowerCase();
+        const searchTerm = searchRef.current?.value.trim().toLowerCase();
+        if (!searchTerm) {
+            // If search term is empty, reset the filtered data
+            setFilteredMonitoringEmployees(monitoringData);
+            setFilteredAllEmployeesData(allEmployeesData);
+            return;
+        }
+
         if (activeButton === "monitoring") {
             const filtered = monitoringData.filter(
                 (employee) =>
@@ -83,6 +90,19 @@ function Attendance() {
             setFilteredAllEmployeesData(filtered);
         }
     };
+
+    useEffect(() => {
+        const debounceTimeout = setTimeout(() => {
+            handleSearch();
+        }, 300); // Wait for 300ms before running the search
+
+        return () => clearTimeout(debounceTimeout); // Cleanup on each render
+    }, [
+        searchRef.current?.value,
+        activeButton,
+        monitoringData,
+        allEmployeesData,
+    ]);
 
     const formatToHour = (timestamp) => {
         if (!timestamp) return "N/A";
@@ -127,82 +147,102 @@ function Attendance() {
 
             <div className="animated fadeInDown">
                 {activeButton === "monitoring" && (
-                    <div className="employee-list">
+                    <div className="w-full max-w-7xl mx-auto px-4">
                         <input
+                            key={activeButton} // Key based on the active tab to reset state properly
                             type="text"
                             ref={searchRef}
                             placeholder="Search by name or ID..."
                             onChange={handleSearch}
-                            className="search-bar mt-10 text-black"
+                            className="w-full max-w-md text-black px-4 py-2 mb-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                         />
-                        <div className="employee-list-container">
-                            <table className="employee-table bg-white text-black rounded-xl overflow-hidden w-3/4">
-                                <thead>
-                                    <tr>
-                                        <th className="hidden md:table-cell">
-                                            User ID
-                                        </th>
-                                        <th>Name</th>
-                                        <th>Date</th>
-                                        <th className="hidden md:table-cell">
-                                            Time In
-                                        </th>
-                                        <th className="hidden md:table-cell">
-                                            Time Out
-                                        </th>
-                                        <th className="md:hidden">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredMonitoringEmployees.length > 0 ? (
-                                        filteredMonitoringEmployees.map(
-                                            (employee) => (
-                                                <tr
-                                                    key={`${employee.user_id}-${employee.date}`}
-                                                >
-                                                    <td className="hidden md:table-cell">
-                                                        {employee.user_id}
-                                                    </td>
-                                                    <td>{employee.name}</td>
-                                                    <td>
-                                                        {formatDate(
-                                                            employee.date,
-                                                        )}
-                                                    </td>
-                                                    <td className="hidden md:table-cell">
-                                                        {formatToHour(
-                                                            employee.time_in,
-                                                        )}
-                                                    </td>
-                                                    <td className="hidden md:table-cell">
-                                                        {formatToHour(
-                                                            employee.time_out,
-                                                        )}
-                                                    </td>
-                                                    <td className="md:hidden">
-                                                        <button
-                                                            className="view-btn bg-green-800 w-full py-2 px-4 rounded-md text-white hover:bg-green-900"
-                                                            onClick={() =>
-                                                                openModal(
-                                                                    employee,
-                                                                )
-                                                            }
-                                                        >
-                                                            View
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ),
-                                        )
-                                    ) : (
+                        <div className="relative rounded-xl overflow-hidden">
+                            {/* Table container with fixed height and scroll */}
+                            <div className="max-h-[500px] overflow-y-auto">
+                                <table className="w-full bg-white text-black">
+                                    {/* Fixed header */}
+                                    <thead className="sticky top-0 bg-white shadow-sm">
                                         <tr>
-                                            <td colSpan="5">
-                                                No employees found.
-                                            </td>
+                                            <th className="hidden md:table-cell px-6 py-3 text-left text-sm font-semibold border-b">
+                                                User ID
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-sm font-semibold border-b">
+                                                Name
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-sm font-semibold border-b">
+                                                Date
+                                            </th>
+                                            <th className="hidden md:table-cell px-6 py-3 text-left text-sm font-semibold border-b">
+                                                Time In
+                                            </th>
+                                            <th className="hidden md:table-cell px-6 py-3 text-left text-sm font-semibold border-b">
+                                                Time Out
+                                            </th>
+                                            <th className="md:hidden px-6 py-3 text-left text-sm font-semibold border-b">
+                                                Action
+                                            </th>
                                         </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                    </thead>
+
+                                    {/* Scrollable body */}
+                                    <tbody className="divide-y divide-gray-200">
+                                        {filteredMonitoringEmployees.length >
+                                        0 ? (
+                                            filteredMonitoringEmployees.map(
+                                                (employee, index) => (
+                                                    <tr
+                                                        key={`${employee.user_id}-${employee.date}-${index}`} // Add `index` to ensure uniqueness
+                                                        className="hover:bg-gray-50"
+                                                    >
+                                                        <td className="hidden md:table-cell px-6 py-4 text-sm">
+                                                            {employee.user_id}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-sm font-medium">
+                                                            {employee.name}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-sm">
+                                                            {formatDate(
+                                                                employee.date,
+                                                            )}
+                                                        </td>
+                                                        <td className="hidden md:table-cell px-6 py-4 text-sm">
+                                                            {formatToHour(
+                                                                employee.time_in,
+                                                            )}
+                                                        </td>
+                                                        <td className="hidden md:table-cell px-6 py-4 text-sm">
+                                                            {formatToHour(
+                                                                employee.time_out,
+                                                            )}
+                                                        </td>
+                                                        <td className="md:hidden px-6 py-4">
+                                                            <button
+                                                                className="w-full py-2 px-4 rounded-md text-white bg-green-800 hover:bg-green-900 transition-colors"
+                                                                onClick={() =>
+                                                                    openModal(
+                                                                        employee,
+                                                                    )
+                                                                }
+                                                            >
+                                                                View
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ),
+                                            )
+                                        ) : (
+                                            <tr>
+                                                <td
+                                                    colSpan="5"
+                                                    className="px-6 py-4 text-sm text-center text-gray-500"
+                                                >
+                                                    No employees found.
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 )}

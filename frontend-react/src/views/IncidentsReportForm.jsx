@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axiosClient from "../axiosClient";
 import { useStateContext } from "../contexts/ContextProvider";
 
@@ -22,7 +22,7 @@ const IncidentReportForm = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [reportToDelete, setReportToDelete] = useState(null);
     const [reportedIncidents, setReportedIncidents] = useState([]);
-
+    const [fetchInterval, setFetchInterval] = useState(null);
     const [complianceResponse, setComplianceResponse] = useState("");
 
     const openComplianceModal = (reportedIncident) => {
@@ -60,6 +60,34 @@ const IncidentReportForm = () => {
             console.error("Error fetching user incidents:", error);
         }
     };
+
+    const startFetching = useCallback(() => {
+        // Clear any existing interval
+        if (fetchInterval) {
+            clearInterval(fetchInterval);
+        }
+
+        // Start new interval
+        const interval = setInterval(() => {
+            if (user && user.user_id) {
+                fetchReports(user.user_id, setReports);
+                fetchReportedIncidents();
+            }
+        }, 3000); // Fetch every 3 seconds
+
+        setFetchInterval(interval);
+    }, [user]);
+
+    useEffect(() => {
+        startFetching();
+
+        // Cleanup on unmount
+        return () => {
+            if (fetchInterval) {
+                clearInterval(fetchInterval);
+            }
+        };
+    }, [startFetching]);
 
     useEffect(() => {
         if (user && user.user_id) {
@@ -139,7 +167,11 @@ const IncidentReportForm = () => {
             setStatus("Pending");
             setPdfFile(null);
             setRelatedEmployees([]);
-            fetchReports();
+            if (user && user.user_id) {
+                await fetchReports(user.user_id, setReports);
+                await fetchReportedIncidents();
+            }
+            startFetching();
         } catch (error) {
             console.error("Error submitting report:", error);
             setMessage("Failed to submit report");
@@ -153,6 +185,13 @@ const IncidentReportForm = () => {
             fetchReports();
             setIsDeleteModalOpen(false);
             setReportToDelete(null);
+            if (user && user.user_id) {
+                await fetchReports(user.user_id, setReports);
+                await fetchReportedIncidents();
+            }
+
+            // Restart the fetch interval
+            startFetching();
         } catch (error) {
             console.error("Error deleting report:", error);
             setMessage("Failed to delete report");
@@ -219,6 +258,25 @@ const IncidentReportForm = () => {
         }
     };
 
+    const formatIncidentDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+        });
+    };
+
+    const formatReportedDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    };
     return (
         <>
             <nav className="grid grid-cols-2 text-center">
@@ -445,12 +503,14 @@ const IncidentReportForm = () => {
                                                 {report.title}
                                             </td>
                                             <td className="p-2 border hidden lg:table-cell">
-                                                {report.incident_date}
+                                                {formatIncidentDate(
+                                                    report.incident_date,
+                                                )}
                                             </td>
                                             <td className="p-2 border hidden lg:table-cell">
-                                                {new Date(
+                                                {formatReportedDate(
                                                     report.created_at,
-                                                ).toLocaleString()}
+                                                )}
                                             </td>
                                             <td className="p-2 border">
                                                 {report.severity}
@@ -643,12 +703,14 @@ const IncidentReportForm = () => {
                                                 {report.title}
                                             </td>
                                             <td className="p-2 border border-green-900">
-                                                {report.incident_date}
+                                                {formatIncidentDate(
+                                                    report.incident_date,
+                                                )}
                                             </td>
                                             <td className="p-2 border border-green-900">
-                                                {new Date(
+                                                {formatReportedDate(
                                                     report.created_at,
-                                                ).toLocaleString()}
+                                                )}
                                             </td>
                                             <td className="p-2 border border-green-900">
                                                 {report.severity}
@@ -744,7 +806,7 @@ const IncidentReportForm = () => {
                                     ? "Respond to Incident"
                                     : "Incident Report Details"}
                             </h3>
-                            <div className="space-y-2 text-black">
+                            <div className="space-y-2 text-black text-start">
                                 <p>
                                     <strong>Title:</strong>{" "}
                                     {selectedReport.title}
@@ -755,13 +817,15 @@ const IncidentReportForm = () => {
                                 </p>
                                 <p>
                                     <strong>Incident Date:</strong>{" "}
-                                    {selectedReport.incident_date}
+                                    {formatIncidentDate(
+                                        selectedReport.incident_date,
+                                    )}
                                 </p>
                                 <p>
                                     <strong>Reported Date:</strong>{" "}
-                                    {new Date(
+                                    {formatReportedDate(
                                         selectedReport.created_at,
-                                    ).toLocaleString()}
+                                    )}
                                 </p>
                                 <p>
                                     <strong>Severity:</strong>{" "}
@@ -847,11 +911,13 @@ const IncidentReportForm = () => {
                 {isDeleteModalOpen && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                         <div className="bg-white p-6 rounded-lg shadow-lg">
-                            <h3 className="text-xl font-semibold mb-4">
+                            <h3 className="text-xl font-semibold mb-4 text-black">
                                 Confirm Deletion
                             </h3>
-                            <p>Are you sure you want to delete this report?</p>
-                            <div className="mt-4 flex justify-end space-x-2">
+                            <p className="text-black">
+                                Are you sure you want to delete this report?
+                            </p>
+                            <div className="mt-4 flex justify-center space-x-2 text-black">
                                 <button
                                     onClick={cancelDelete}
                                     className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
@@ -860,7 +926,7 @@ const IncidentReportForm = () => {
                                 </button>
                                 <button
                                     onClick={confirmDelete}
-                                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                    className="px-4 py-2 bg-red-700 text-white rounded hover:bg-red-900"
                                 >
                                     Delete
                                 </button>

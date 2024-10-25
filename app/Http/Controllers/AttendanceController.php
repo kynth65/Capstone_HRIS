@@ -15,8 +15,7 @@ class AttendanceController extends Controller
             Log::info('Fetching attendance records directly from the attendance table');
             Log::info('Fetching attendance records directly from the attendance table');
 
-            $attendanceRecords = DB::table('attendances')
-                ->join('users', 'attendances.user_id', '=', 'users.user_id')
+
             $attendanceRecords = DB::table('attendances')
                 ->join('users', 'attendances.user_id', '=', 'users.user_id')
                 ->select(
@@ -45,8 +44,7 @@ class AttendanceController extends Controller
                     $timeOut = Carbon::parse($record->time_out);
                     $accumulatedMinutes = $timeIn->diffInMinutes($timeOut);
 
-                    // Calculate and assign accumulated work time
-                    $record->accumulated_work_time = ($accumulatedMinutes < 60)
+
                     // Calculate and assign accumulated work time
                     $record->accumulated_work_time = ($accumulatedMinutes < 60)
                         ? $accumulatedMinutes . ' minutes'
@@ -167,7 +165,7 @@ class AttendanceController extends Controller
 
         try {
             // Fetch today's attendance records from 'test' table
-            $attendanceRecords = DB::table('attendances')
+
             $attendanceRecords = DB::table('attendances')
                 ->whereDate('date', $today)
                 ->get();
@@ -187,7 +185,7 @@ class AttendanceController extends Controller
             }
 
             // Delete the records from 'test' table after moving them
-            DB::table('attendances')
+
             DB::table('attendances')
                 ->whereDate('date', $today)
                 ->delete();

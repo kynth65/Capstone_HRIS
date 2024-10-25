@@ -305,7 +305,7 @@ function Leave_Management() {
                     </div>
                 )}
                 {activeButton === "leaveRequest" && (
-                    <div className="leave-request-form bg-white p-6 rounded-xl text-black max-w-4xl mx-auto">
+                    <div className="bg-white p-6 rounded-xl text-black max-w-4xl mx-auto">
                         <h2 className="text-2xl font-bold mb-4 text-center">
                             Submit Leave Request
                         </h2>
@@ -346,7 +346,7 @@ function Leave_Management() {
                                 />
                             </div>
                             {formData.filePreview && (
-                                <div className="file-preview mt-2 text-center">
+                                <div className="file-preview mt-2 flex justify-center">
                                     {formData.file?.type.startsWith(
                                         "image/",
                                     ) ? (
@@ -368,7 +368,7 @@ function Leave_Management() {
                             )}
                             <button
                                 type="submit"
-                                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-600 w-full max-w-md mx-auto"
+                                className=" bg-green-600 text-white px-4 py-2 rounded w-full max-w-md mx-auto hover:bg-green-800 transition"
                             >
                                 Submit Leave Request
                             </button>
@@ -395,22 +395,22 @@ function Leave_Management() {
                                     <table className="min-w-full divide-y divide-gray-200">
                                         <thead className="bg-gray-50 sticky top-0 z-10">
                                             <tr className="text-center">
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                <th className="px-6 py-3 text-xs font-medium text-black uppercase tracking-wider">
                                                     Start Date
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                <th className="px-6 py-3 text-xs font-medium text-black uppercase tracking-wider">
                                                     End Date
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                <th className="px-6 py-3 text-xs font-medium text-black uppercase tracking-wider">
                                                     Days
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                <th className="px-6 py-3 text-xs font-medium text-black uppercase tracking-wider">
                                                     Status
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                <th className="px-6 py-3 text-xs font-medium text-black uppercase tracking-wider">
                                                     Remarks
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                <th className="px-6 py-3 text-xs font-medium text-black uppercase tracking-wider">
                                                     Actions
                                                 </th>
                                             </tr>
@@ -472,7 +472,7 @@ function Leave_Management() {
                                                                                     request.file_path,
                                                                                 )
                                                                             }
-                                                                            className="text-red-600 hover:underline"
+                                                                            className="inline-flex items-center justify-center p-2 rounded-lg text-white bg-green-800 hover:bg-green-900 transition-colors duration-200 mx-1"
                                                                             title="Download PDF"
                                                                         >
                                                                             <RiFileDownloadFill
@@ -481,6 +481,7 @@ function Leave_Management() {
                                                                                 }
                                                                             />
                                                                         </button>
+
                                                                         <button
                                                                             onClick={() => {
                                                                                 setSelectedRequest(
@@ -490,7 +491,7 @@ function Leave_Management() {
                                                                                     true,
                                                                                 );
                                                                             }}
-                                                                            className="text-blue-600 hover:underline"
+                                                                            className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-white bg-green-800 hover:bg-green-900 transition-colors duration-200 text-sm font-medium mx-1"
                                                                         >
                                                                             Show
                                                                             Details
@@ -510,7 +511,7 @@ function Leave_Management() {
                 )}{" "}
                 {isModalOpen && selectedRequest && (
                     <div className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                        <div className="bg-white p-6 rounded-xl w-3/4 lg:w-1/2 shadow-lg text-black text-base max-h-96 overflow-auto">
+                        <div className="bg-white text-left text- p-6 rounded-xl w-3/4 lg:w-1/3 shadow-lg text-black text-base max-h-96 overflow-auto">
                             <h2 className="text-xl font-bold mb-4">
                                 Leave Request Details
                             </h2>
@@ -552,7 +553,7 @@ function Leave_Management() {
                             <div className="mt-4 flex justify-end">
                                 <button
                                     onClick={() => setIsModalOpen(false)}
-                                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                                    className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-700"
                                 >
                                     Close
                                 </button>
