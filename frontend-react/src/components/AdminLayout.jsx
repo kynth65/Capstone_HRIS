@@ -5,6 +5,7 @@ import useRefreshToken from "../hooks/useRefreshToken";
 import axiosClient from "../axiosClient";
 import defaultAvatar from "../assets/default-avatar.png";
 import "../styles/defaultLayout.css";
+import { IoNotificationsOutline } from "react-icons/io5"; // Add this import at the top
 
 function AdminLayout() {
     const { user, token, setToken, setUser } = useStateContext();
@@ -13,6 +14,10 @@ function AdminLayout() {
     const [showDropdown, setShowDropdown] = useState(false);
     const navigate = useNavigate();
     const [imageError, setImageError] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [showNotificationDropdown, setShowNotificationDropdown] =
+        useState(false);
 
     const [headerText, setHeaderText] = useState(
         localStorage.getItem("headerText") || "Admin Dashboard",
@@ -42,6 +47,70 @@ function AdminLayout() {
             window.removeEventListener("beforeunload", handleBeforeUnload);
         };
     }, []);
+    const getRelativeTime = (date) => {
+        const now = new Date();
+        const notificationDate = new Date(date);
+        const diffTime = Math.abs(now - notificationDate);
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 0) {
+            return "Today";
+        } else if (diffDays === 1) {
+            return "Yesterday";
+        } else if (diffDays < 7) {
+            return `${diffDays} days ago`;
+        } else {
+            return notificationDate.toLocaleDateString();
+        }
+    };
+
+    useEffect(() => {
+        axiosClient
+            .get("/admin-notifications")
+            .then((response) => {
+                console.log("Admin notifications response:", response.data);
+                const notificationsWithReadStatus = response.data.map(
+                    (notification) => ({
+                        ...notification,
+                        isRead: Boolean(notification.isRead),
+                    }),
+                );
+                setNotifications(notificationsWithReadStatus);
+                const unread = notificationsWithReadStatus.filter(
+                    (n) => !n.isRead,
+                ).length;
+                setUnreadCount(unread);
+            })
+            .catch((error) =>
+                console.error("Error fetching admin notifications:", error),
+            );
+    }, []);
+
+    const handleNotificationClick = (notification) => {
+        if (!notification.isRead) {
+            axiosClient
+                .post(`/admin-notifications/${notification.id}/mark-as-read`)
+                .then((response) => {
+                    if (response.data.success) {
+                        setNotifications(
+                            notifications.map((n) =>
+                                n.id === notification.id
+                                    ? { ...n, isRead: true }
+                                    : n,
+                            ),
+                        );
+                        setUnreadCount((prevCount) => prevCount - 1);
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error marking notification as read:", error);
+                });
+        }
+    };
+
+    const toggleNotificationDropdown = () => {
+        setShowNotificationDropdown(!showNotificationDropdown);
+    };
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -171,29 +240,160 @@ function AdminLayout() {
                     <div className="text-base md:text-2xl md:ml-16 xl:ml-0">
                         {headerText}
                     </div>
-                    <div
-                        className="flex items-center cursor-pointer font-kodchasan"
-                        onClick={toggleModal}
-                    >
-                        <button className="btn-profile-icon">
-                            <img
-                                src={
-                                    user.profile && !imageError
-                                        ? `${import.meta.env.VITE_BASE_URL}/storage/images/${user.profile}`
-                                        : defaultAvatar
-                                }
-                                alt="Profile"
-                                className="w-10 h-10 mr-4 rounded-full object-cover"
-                                onError={() => {
-                                    setImageError(true);
-                                    console.log(
-                                        "Image failed to load:",
-                                        user.profile,
-                                    );
-                                }}
-                            />
-                        </button>
-                        <span className="hidden xl:block">{user.position}</span>
+
+                    <div className="flex items-center gap-4">
+                        <div
+                            className="relative cursor-pointer"
+                            onClick={toggleNotificationDropdown}
+                        >
+                            <div className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200">
+                                <IoNotificationsOutline size={24} />
+                                {unreadCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 min-w-[20px] h-5 flex items-center justify-center bg-red-500 text-white text-xs rounded-full px-1">
+                                        {unreadCount}
+                                    </span>
+                                )}
+                            </div>
+
+                            {showNotificationDropdown && (
+                                <div className="absolute right-0 mt-2 h-96 overflow-auto w-[520px] bg-white shadow-lg rounded-lg border border-gray-100 z-50">
+                                    {notifications.length > 0 ? (
+                                        Object.entries(
+                                            notifications.reduce(
+                                                (groups, notification) => {
+                                                    const timeGroup =
+                                                        getRelativeTime(
+                                                            notification.created_at,
+                                                        );
+                                                    if (!groups[timeGroup]) {
+                                                        groups[timeGroup] = [];
+                                                    }
+                                                    groups[timeGroup].push(
+                                                        notification,
+                                                    );
+                                                    return groups;
+                                                },
+                                                {},
+                                            ),
+                                        ).map(
+                                            ([
+                                                timeGroup,
+                                                groupNotifications,
+                                            ]) => (
+                                                <div key={timeGroup}>
+                                                    <div className="px-4 py-2 text-sm font-medium text-gray-800 border-b border-gray-100">
+                                                        {timeGroup}
+                                                    </div>
+                                                    {groupNotifications.map(
+                                                        (notification) => {
+                                                            const routes = {
+                                                                tag_suggestion:
+                                                                    {
+                                                                        path: "/admin-tags",
+                                                                        text: "Admin Tags",
+                                                                    },
+                                                                leave_request: {
+                                                                    path: "/admin-leave-management",
+                                                                    text: "Leave Management",
+                                                                },
+                                                                // Add more notification types and their corresponding routes here
+                                                            };
+
+                                                            const {
+                                                                path = "/admin-dashboard",
+                                                                text = "Dashboard",
+                                                            } =
+                                                                routes[
+                                                                    notification
+                                                                        .type
+                                                                ] || {};
+
+                                                            return (
+                                                                <Link
+                                                                    key={
+                                                                        notification.id
+                                                                    }
+                                                                    to={path}
+                                                                    className="block px-4 py-3 hover:bg-gray-50 transition-colors duration-200 border-b border-gray-100"
+                                                                    onClick={(
+                                                                        e,
+                                                                    ) => {
+                                                                        e.stopPropagation();
+                                                                        handleNotificationClick(
+                                                                            notification,
+                                                                        );
+                                                                        handleHeaderChange(
+                                                                            text,
+                                                                        );
+                                                                        setShowNotificationDropdown(
+                                                                            false,
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    <div className="flex items-start justify-between">
+                                                                        <div className="flex-1">
+                                                                            <p className="text-sm text-gray-800 leading-snug">
+                                                                                {notification
+                                                                                    .message
+                                                                                    .length >
+                                                                                90
+                                                                                    ? `${notification.message.substring(0, 90)}...`
+                                                                                    : notification.message}
+                                                                            </p>
+                                                                            <span className="text-xs text-gray-500 mt-1 block">
+                                                                                {new Date(
+                                                                                    notification.created_at,
+                                                                                ).toLocaleTimeString(
+                                                                                    [],
+                                                                                    {
+                                                                                        hour: "2-digit",
+                                                                                        minute: "2-digit",
+                                                                                    },
+                                                                                )}
+                                                                            </span>
+                                                                        </div>
+                                                                        {!notification.isRead && (
+                                                                            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 ml-2 flex-shrink-0" />
+                                                                        )}
+                                                                    </div>
+                                                                </Link>
+                                                            );
+                                                        },
+                                                    )}
+                                                </div>
+                                            ),
+                                        )
+                                    ) : (
+                                        <div className="px-4 py-6 text-sm text-gray-500 text-center">
+                                            No notifications
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        <div
+                            className="flex items-center cursor-pointer font-kodchasan"
+                            onClick={toggleModal}
+                        >
+                            <button className="btn-profile-icon">
+                                <img
+                                    src={
+                                        user.profile && !imageError
+                                            ? `${import.meta.env.VITE_BASE_URL}/storage/images/${user.profile}`
+                                            : defaultAvatar
+                                    }
+                                    alt="Profile"
+                                    className="w-10 h-10 mr-4 rounded-full object-cover"
+                                    onError={() => {
+                                        setImageError(true);
+                                        console.log(
+                                            "Image failed to load:",
+                                            user.profile,
+                                        );
+                                    }}
+                                />
+                            </button>
+                        </div>
                     </div>
                 </header>
                 <main>

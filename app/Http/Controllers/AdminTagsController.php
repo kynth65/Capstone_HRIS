@@ -2,10 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdminNotification;
 use Illuminate\Http\Request;
 use App\Models\Tag;
 use Illuminate\Support\Facades\Log;
 use App\Models\SuggestedTag;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+
+
+
 
 class AdminTagsController extends Controller
 {
@@ -74,22 +80,86 @@ class AdminTagsController extends Controller
 
     public function suggestTag(Request $request)
     {
-        $position = $request->input('position');
-        $tag = $request->input('tag');
-
-        Log::info('Suggesting tag for position: ' . $position, ['tag' => $tag]);
-
         try {
-            SuggestedTag::create([
+            $user = Auth::user();
+
+            // Check if user is authenticated
+            if (!$user) {
+                Log::warning('Unauthenticated tag suggestion attempt', [
+                    'input' => $request->all(),
+                    'headers' => $request->headers->all()
+                ]);
+                return response()->json([
+                    'message' => 'Unauthorized - Please login first'
+                ], 401);
+            }
+
+            Log::info('Tag suggestion request received', [
+                'input' => $request->all(),
+                'user_id' => $user->id,
+                'headers' => $request->headers->all()
+            ]);
+
+            $position = $request->input('position');
+            $tag = $request->input('tag');
+
+            DB::beginTransaction();
+
+            // Insert the tag suggestion and get the ID
+            $suggestedTagId = DB::table('suggested_tags')->insertGetId([
                 'position' => $position,
                 'tag' => $tag,
-                'status' => 'pending'
+                'status' => 'pending',
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            // Create admin notification with null-safe operator
+            $notification = AdminNotification::create([
+                'type' => 'tag_suggestion',
+                'notifiable_id' => $suggestedTagId,
+                'notifiable_type' => SuggestedTag::class,
+                'user_id' => $user->id, // Store the user ID
+                'message' => "New tag '{$tag}' has been suggested for position: {$position}. From: {$user->name}",
+                'data' => json_encode([
+                    'tag_name' => $tag,
+                    'position' => $position,
+                    'status' => 'pending',
+                    'requester_name' => $user->name,
+                    'requester_id' => $user->id,
+                    'suggested_tag_id' => $suggestedTagId,
+                    'suggested_at' => now()->toDateTimeString()
+                ]),
+                'isRead' => false,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            DB::commit();
+
+            Log::info('Tag suggestion process completed successfully', [
+                'user_id' => $user->id,
+                'suggested_tag_id' => $suggestedTagId
             ]);
 
             return response()->json(['message' => 'Tag suggestion submitted successfully']);
         } catch (\Exception $e) {
-            Log::error('Error suggesting tag for position: ' . $position, ['error' => $e->getMessage()]);
-            return response()->json(['message' => 'Error suggesting tag'], 500);
+            DB::rollBack();
+
+            Log::error('Error in tag suggestion process', [
+                'error_message' => $e->getMessage(),
+                'error_code' => $e->getCode(),
+                'error_file' => $e->getFile(),
+                'error_line' => $e->getLine(),
+                'position' => $position ?? null,
+                'tag' => $tag ?? null,
+                'user_id' => Auth::id() // Safer way to get user ID
+            ]);
+
+            return response()->json([
+                'message' => 'Error suggesting tag',
+                'debug_message' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
         }
     }
 

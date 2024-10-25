@@ -31,6 +31,7 @@ use App\Http\Controllers\RegularEmployeeController;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\CertificateRequestController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\AdminNotificationController;
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -200,7 +201,9 @@ Route::prefix('applicants')->group(function () {
 });
 
 
-Route::post('/suggestTag', [AdminTagsController::class, 'suggestTag']);
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::post('/suggestTag', [AdminTagsController::class, 'suggestTag']);
+});
 Route::get('/getSuggestedTags', [AdminTagsController::class, 'getSuggestedTags']);
 Route::post('/reviewSuggestedTag', [AdminTagsController::class, 'reviewSuggestedTag']);
 
@@ -231,3 +234,10 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::get('/users', [AuthController::class, 'getUsers']);
+
+//Notifications for Admin
+Route::prefix('admin')->group(function () {
+    Route::get('/notifications', [AdminNotificationController::class, 'index']);
+    Route::patch('/notifications/{id}/mark-as-read', [AdminNotificationController::class, 'markAsRead']);
+    Route::get('/notifications/unread-count', [AdminNotificationController::class, 'unreadCount']);
+});
