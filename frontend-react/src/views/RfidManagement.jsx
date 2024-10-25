@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 const RfidManagement = () => {
     const [activeTab, setActiveTab] = useState("available");
@@ -6,18 +6,13 @@ const RfidManagement = () => {
     const [assignedCards, setAssignedCards] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [showNewCardModal, setShowNewCardModal] = useState(false);
+    const [newCard, setNewCard] = useState(null);
 
     const API_URL = `${import.meta.env.VITE_BASE_URL}/api`;
 
-    useEffect(() => {
-        fetchData();
-    }, []);
-
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
-            setLoading(true);
-            setError(null);
-
             const response = await fetch(`${API_URL}/rfid-cards`);
 
             if (!response.ok) {
@@ -25,16 +20,94 @@ const RfidManagement = () => {
             }
 
             const data = await response.json();
-            console.log("Fetched data:", data); // For debugging
 
-            setAvailableCards(data.available || []);
+            // Store current available cards
+            const currentAvailable = data.available || [];
+
+            // Compare with previous available cards to find new ones
+            const newCards = currentAvailable.filter(
+                (newCard) =>
+                    !availableCards.some(
+                        (existingCard) =>
+                            existingCard.rfid_uid === newCard.rfid_uid,
+                    ),
+            );
+
+            // If there are new cards and no modal is currently shown
+            if (newCards.length > 0 && !showNewCardModal) {
+                setNewCard(newCards[0]);
+                setShowNewCardModal(true);
+                // Optional: Play a sound or add other notification effects
+            }
+
+            // Update the state with all cards
+            setAvailableCards(currentAvailable);
             setAssignedCards(data.assigned || []);
+            setLoading(false);
         } catch (error) {
             console.error("Error fetching data:", error);
             setError("Failed to load RFID cards. Please try again later.");
-        } finally {
             setLoading(false);
         }
+    }, [availableCards, showNewCardModal]); // Add showNewCardModal to dependencies
+
+    useEffect(() => {
+        fetchData();
+        // Set up interval for periodic fetching
+        const interval = setInterval(fetchData, 3000);
+
+        // Cleanup interval on component unmount
+        return () => clearInterval(interval);
+    }, [fetchData]);
+
+    const NewCardModal = ({ card, onClose }) => {
+        // Play sound when modal opens
+        useEffect(() => {
+            // Create audio element
+            const audio = new Audio("/path/to/notification-sound.mp3"); // Add your notification sound
+            audio.play().catch((e) => console.log("Audio play failed:", e));
+        }, []);
+
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
+                <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 transform animate-slideIn">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-bold text-green-600">
+                            <span className="inline-block animate-bounce mr-2">
+                                🆕
+                            </span>
+                            New RFID Card Detected!
+                        </h2>
+                        <button
+                            onClick={onClose}
+                            className="text-gray-500 hover:text-gray-700 text-xl"
+                        >
+                            ×
+                        </button>
+                    </div>
+                    <div className="space-y-4">
+                        <div className="p-4 bg-green-50 rounded-lg border-2 border-green-200">
+                            <p className="text-lg font-semibold text-green-800 mb-2">
+                                RFID UID: {card.rfid_uid}
+                            </p>
+                            <p className="text-sm text-green-600">
+                                Status: {card.status}
+                            </p>
+                            <p className="text-sm text-green-600">
+                                Added:{" "}
+                                {new Date(card.created_at).toLocaleString()}
+                            </p>
+                        </div>
+                        <button
+                            onClick={onClose}
+                            className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors transform hover:scale-105 duration-200"
+                        >
+                            Acknowledge
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
     };
 
     const RfidTable = ({ cards, type }) => (
@@ -57,7 +130,14 @@ const RfidManagement = () => {
                     <tbody>
                         {cards && cards.length > 0 ? (
                             cards.map((card) => (
-                                <tr key={card.id} className="hover:bg-gray-50">
+                                <tr
+                                    key={card.id}
+                                    className={`hover:bg-gray-50 ${
+                                        newCard?.id === card.id
+                                            ? "bg-green-50"
+                                            : ""
+                                    }`}
+                                >
                                     <td className="border p-2">{card.id}</td>
                                     <td className="border p-2">
                                         {card.rfid_uid}
@@ -77,7 +157,7 @@ const RfidManagement = () => {
                                         {card.created_at
                                             ? new Date(
                                                   card.created_at,
-                                              ).toLocaleDateString()
+                                              ).toLocaleString()
                                             : "N/A"}
                                     </td>
                                 </tr>
@@ -98,7 +178,7 @@ const RfidManagement = () => {
         </div>
     );
 
-    if (loading) {
+    if (loading && availableCards.length === 0) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
                 Loading...
@@ -116,6 +196,16 @@ const RfidManagement = () => {
 
     return (
         <div className="p-6">
+            {showNewCardModal && newCard && (
+                <NewCardModal
+                    card={newCard}
+                    onClose={() => {
+                        setShowNewCardModal(false);
+                        setNewCard(null);
+                    }}
+                />
+            )}
+
             <div className="mb-6 border-b">
                 <div className="flex space-x-4">
                     <button

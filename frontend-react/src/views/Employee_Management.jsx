@@ -31,6 +31,7 @@ function EmployeeManagement() {
     const [filteredCandidates, setFilteredCandidates] = useState([]);
     const [showCreateAccountModal, setShowCreateAccountModal] = useState(false);
     const [existingUsers, setExistingUsers] = useState([]);
+    const [rfidCards, setRfidCards] = useState([]);
     const formSections = [
         {
             title: "Personal Information",
@@ -168,6 +169,23 @@ function EmployeeManagement() {
         </>
     );
 
+    useEffect(() => {
+        if (activeButton === "createAccount") {
+            const fetchRfidCards = async () => {
+                try {
+                    const response = await axiosClient.get("/rfid-cards");
+                    // Use the available cards from the response
+                    const availableCards = response.data.available || [];
+                    setRfidCards(availableCards);
+                } catch (error) {
+                    console.error("Error fetching RFID cards:", error);
+                }
+            };
+
+            fetchRfidCards();
+        }
+    }, [activeButton]);
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         if (name === "confirm_password") {
@@ -275,13 +293,13 @@ function EmployeeManagement() {
             case "rfid":
                 return (
                     <select {...commonProps}>
-                        <option value="">Select RFID</option>
-                        <option value="A804A689">A804A689</option>
-                        <option value="12D8051E">12D8051E</option>
-                        <option value="EF4CAA1E">EF4CAA1E</option>
-                        <option value="B47B96B0">B47B96B0</option>
-                        <option value="RFID5">RFID5</option>
-                        <option value="RFID6">RFID6</option>
+                        <option value="">Select available RFID</option>
+                        {Array.isArray(rfidCards) &&
+                            rfidCards.map((card) => (
+                                <option key={card.id} value={card.rfid_uid}>
+                                    {card.rfid_uid}
+                                </option>
+                            ))}
                     </select>
                 );
             case "gender":
