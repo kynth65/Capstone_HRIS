@@ -163,22 +163,22 @@ function Attendance() {
                                     {/* Fixed header */}
                                     <thead className="sticky top-0 bg-white shadow-sm">
                                         <tr>
-                                            <th className="hidden md:table-cell px-6 py-3 text-left text-sm font-semibold border-b">
+                                            <th className="hidden md:table-cell px-6 py-3 text-center text-sm font-semibold border-b">
                                                 User ID
                                             </th>
-                                            <th className="px-6 py-3 text-left text-sm font-semibold border-b">
+                                            <th className="px-6 py-3 text-center text-sm font-semibold border-b">
                                                 Name
                                             </th>
-                                            <th className="px-6 py-3 text-left text-sm font-semibold border-b">
+                                            <th className="px-6 py-3 text-center text-sm font-semibold border-b">
                                                 Date
                                             </th>
-                                            <th className="hidden md:table-cell px-6 py-3 text-left text-sm font-semibold border-b">
+                                            <th className="hidden md:table-cell px-6 py-3 text-center text-sm font-semibold border-b">
                                                 Time In
                                             </th>
-                                            <th className="hidden md:table-cell px-6 py-3 text-left text-sm font-semibold border-b">
+                                            <th className="hidden md:table-cell px-6 py-3 text-center text-sm font-semibold border-b">
                                                 Time Out
                                             </th>
-                                            <th className="md:hidden px-6 py-3 text-left text-sm font-semibold border-b">
+                                            <th className="md:hidden px-6 py-3 text-center text-sm font-semibold border-b">
                                                 Action
                                             </th>
                                         </tr>
@@ -248,8 +248,8 @@ function Attendance() {
                 )}
 
                 {activeButton === "allEmployees" && (
-                    <div className="all-employees-data">
-                        <div className="flex flex-col gap-2 md:grid md:grid-cols-3 md:justify-between  mt-5">
+                    <div className="w-full max-w-7xl mx-auto px-4">
+                        <div className="flex flex-col gap-2 md:grid md:grid-cols-3 md:justify-between mt-5">
                             <div className="flex flex-col items-center gap-1">
                                 <label>Select Month:</label>
                                 <select
@@ -288,7 +288,7 @@ function Attendance() {
                                 </select>
                             </div>
                             <div className="flex flex-col items-center gap-1">
-                                <label className="md:mr-2   md:mt-0">
+                                <label className="md:mr-2 md:mt-0">
                                     Search:
                                 </label>
                                 <input
@@ -296,75 +296,102 @@ function Attendance() {
                                     ref={searchRef}
                                     placeholder="Search by name or ID..."
                                     onChange={handleSearch}
-                                    className="rounded-lg mt-2 md:mt-0 mb-0 text-black"
+                                    className="w-full max-w-md text-black px-4 py-2 mb-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                                 />
                             </div>
                         </div>
 
-                        <table className="employee-table bg-white text-black rounded-xl overflow-hidden w-3/4">
-                            <thead>
-                                <tr>
-                                    <th className="hidden md:table-cell">
-                                        User ID
-                                    </th>
-                                    <th>Name</th>
-                                    <th className="hidden md:table-cell">
-                                        Average Time In
-                                    </th>
-                                    <th className="hidden md:table-cell">
-                                        Average Time Out
-                                    </th>
-                                    <th className="hidden md:table-cell">
-                                        Average Hours Per Day
-                                    </th>
-                                    <th>Total Hours This Month</th>
-                                    <th className="md:hidden">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredAllEmployeesData.length > 0 ? (
-                                    filteredAllEmployeesData.map((employee) => (
-                                        <tr key={employee.user_id}>
-                                            <td className="hidden md:table-cell">
-                                                {employee.user_id}
-                                            </td>
-                                            <td>{employee.name}</td>
-                                            <td className="hidden md:table-cell">
-                                                {employee.avg_time_in || "N/A"}
-                                            </td>
-                                            <td className="hidden md:table-cell">
-                                                {employee.avg_time_out || "N/A"}
-                                            </td>
-                                            <td className="hidden md:table-cell">
-                                                {employee.avg_hours || "N/A"}
-                                            </td>
-                                            <td>
-                                                {employee.total_hours ||
-                                                    "0 minutes"}
-                                            </td>
-                                            <td className="md:hidden">
-                                                <button
-                                                    className="view-btn bg-green-800 w-full py-2 px-4 rounded-md text-white hover:bg-green-900"
-                                                    onClick={() =>
-                                                        openModal(employee)
-                                                    }
-                                                >
-                                                    View
-                                                </button>
-                                            </td>
+                        <div className="relative rounded-xl overflow-hidden">
+                            <div className="max-h-[500px] overflow-y-auto">
+                                <table className="w-full bg-white text-black">
+                                    <thead className="sticky top-0 bg-white shadow-sm">
+                                        <tr>
+                                            <th className="hidden md:table-cell px-6 py-3 text-center text-sm  border-b">
+                                                User ID
+                                            </th>
+                                            <th className="px-6 py-3 text-center text-sm  border-b">
+                                                Name
+                                            </th>
+                                            <th className="px-6 py-3 text-center text-sm  border-b">
+                                                Average Time In
+                                            </th>
+                                            <th className="px-6 py-3 text-center text-sm  border-b">
+                                                Average Time Out
+                                            </th>
+                                            <th className="px-6 py-3 text-center text-sm  border-b">
+                                                Average Hours Per Day
+                                            </th>
+                                            <th className="px-6 py-3 text-center text-sm  border-b">
+                                                Total Hours This Month
+                                            </th>
+                                            <th className="md:hidden px-6 py-3 text-center text-sm  border-b">
+                                                Action
+                                            </th>
                                         </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan="7">
-                                            No employees data found.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
+                                    </thead>
+
+                                    <tbody className="divide-y divide-gray-200">
+                                        {filteredAllEmployeesData.length > 0 ? (
+                                            filteredAllEmployeesData.map(
+                                                (employee) => (
+                                                    <tr
+                                                        key={employee.user_id}
+                                                        className="hover:bg-gray-50"
+                                                    >
+                                                        <td className="hidden md:table-cell px-6 py-4 text-sm">
+                                                            {employee.user_id}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-sm font-medium">
+                                                            {employee.name}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-sm">
+                                                            {employee.avg_time_in ||
+                                                                "N/A"}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-sm">
+                                                            {employee.avg_time_out ||
+                                                                "N/A"}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-sm">
+                                                            {employee.avg_hours ||
+                                                                "N/A"}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-sm">
+                                                            {employee.total_hours ||
+                                                                "0 minutes"}
+                                                        </td>
+                                                        <td className="md:hidden px-6 py-4">
+                                                            <button
+                                                                className="w-full py-2 px-4 rounded-md text-white bg-green-800 hover:bg-green-900 transition-colors"
+                                                                onClick={() =>
+                                                                    openModal(
+                                                                        employee,
+                                                                    )
+                                                                }
+                                                            >
+                                                                View
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ),
+                                            )
+                                        ) : (
+                                            <tr>
+                                                <td
+                                                    colSpan="7"
+                                                    className="px-6 py-4 text-sm text-center text-gray-500"
+                                                >
+                                                    No employees found.
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 )}
+
                 <Modal
                     isOpen={isModalOpen}
                     onRequestClose={closeModal}
@@ -404,7 +431,7 @@ function Attendance() {
                                         "0 minutes"}
                                 </p>
                                 <button
-                                    className="close-btn bg-red-800 text-white w-full py-2 mt-3"
+                                    className="close-btn bg-gray-400 text-white w-full py-2 mt-3 hover:bg-gray-600 transition"
                                     onClick={closeModal}
                                 >
                                     close

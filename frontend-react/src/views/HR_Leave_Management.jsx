@@ -5,6 +5,8 @@ import { MdVisibility } from "react-icons/md";
 import { RiFileDownloadFill } from "react-icons/ri";
 import { useStateContext } from "../contexts/ContextProvider";
 import Spinner from "./SpinnerLoading";
+import { FaCheckCircle } from "react-icons/fa";
+import { RxCrossCircled } from "react-icons/rx";
 
 const HR_Leave_Management = () => {
     const { user } = useStateContext();
@@ -177,46 +179,6 @@ const HR_Leave_Management = () => {
         setActiveButton(view);
     };
 
-    const handleFormChange = (e) => {
-        const { name, value, files } = e.target;
-        if (files) {
-            setFormData((prev) => ({
-                ...prev,
-                file: files[0],
-                filePreview: URL.createObjectURL(files[0]),
-            }));
-        } else {
-            setFormData((prev) => ({
-                ...prev,
-                [name]: value,
-            }));
-        }
-    };
-
-    const handleFormSubmit = async (e) => {
-        e.preventDefault();
-        const formDataObj = new FormData();
-        formDataObj.append("start_date", formData.start_date);
-        formDataObj.append("end_date", formData.end_date);
-        if (formData.file) formDataObj.append("file", formData.file);
-
-        try {
-            const response = await axiosClient.post("/leave", formDataObj, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
-            setSuccessMessage(response.data.message);
-            setFormData({
-                start_date: "",
-                end_date: "",
-                file: null,
-                filePreview: null,
-            });
-        } catch (error) {
-            setErrorMessage("Failed to submit leave request.");
-            console.error("Error submitting leave request:", error);
-        }
-    };
-
     const formatDate = (dateString) => {
         const options = { year: "numeric", month: "long", day: "numeric" };
         return new Date(dateString).toLocaleDateString(undefined, options);
@@ -248,7 +210,7 @@ const HR_Leave_Management = () => {
     return (
         <>
             <div className="text-start">
-                <nav className="mb-6 grid grid-cols-3">
+                <nav className="mb-6 grid grid-cols-2">
                     <button
                         className={`navButton ${activeButton === "leaveFormList" ? "active" : ""}`}
                         onClick={() => toggleView("leaveFormList")}
@@ -261,217 +223,287 @@ const HR_Leave_Management = () => {
                     >
                         Template Provider AI
                     </button>
-                    <button
-                        className={`navButton ${activeButton === "leaveForm" ? "active" : ""}`}
-                        onClick={() => toggleView("leaveForm")}
-                    >
-                        Submit Leave Form
-                    </button>
                 </nav>
             </div>
 
             <div className="bg-white p-10 rounded-lg">
                 {activeButton === "leaveFormList" && (
-                    <div className="overflow-y-auto max-h-[600px]">
-                        {successMessage && (
-                            <p className="text-green-600 mb-4">
-                                {successMessage}
-                            </p>
-                        )}
-                        {errorMessage && (
-                            <p className="text-red-600 mb-4">{errorMessage}</p>
-                        )}
-                        <table className="employee-table table-auto w-full border-collapse border border-gray-300">
-                            <thead className="bg-gray-100 text-black sticky top-[-1px] z-0">
-                                <tr>
-                                    <th className="p-2 border-b border-gray-300">
-                                        Employee Name
-                                    </th>
-                                    <th className="p-2 border-b border-gray-300 hidden sm:table-cell">
-                                        Date Requested
-                                    </th>
-                                    <th className="p-2 border-b border-gray-300 hidden sm:table-cell">
-                                        Start Date
-                                    </th>
-                                    <th className="p-2 border-b border-gray-300 hidden sm:table-cell">
-                                        End Date
-                                    </th>
-                                    <th className="p-2 border-b border-gray-300 hidden lg:table-cell">
-                                        Days Requested
-                                    </th>
-                                    <th className="p-2 border-b border-gray-300 hidden lg:table-cell">
-                                        Status
-                                    </th>
-
-                                    <th className="p-2 border-b border-gray-300">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {leaveRequests.length > 0 ? (
-                                    leaveRequests.map((request) => (
-                                        <tr
-                                            key={request.id}
-                                            className={`hover:bg-white text-black ${
-                                                request.statuses === "pending"
-                                                    ? "bg-green-100"
-                                                    : "bg-red-100"
-                                            }`}
-                                        >
-                                            <td className="p-2 border sm:text-base border-gray-300">
-                                                {request.user_name}
-                                            </td>
-                                            <td className="p-2 border border-gray-300 hidden sm:table-cell">
-                                                {formatDate(request.created_at)}
-                                            </td>
-                                            <td className="p-2 border border-gray-300 hidden sm:table-cell">
-                                                {formatDate(request.start_date)}
-                                            </td>
-                                            <td className="p-2 border border-gray-300 hidden sm:table-cell">
-                                                {formatDate(request.end_date)}
-                                            </td>
-                                            <td className="p-2 border border-gray-300 hidden lg:table-cell">
-                                                {request.days_requested}
-                                            </td>
-                                            <td className="p-2 border border-gray-300 hidden lg:table-cell">
-                                                {request.statuses}
-                                            </td>
-
-                                            <td className="p-2 border border-gray-300">
-                                                <div className="flex flex-col items-center space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
-                                                    <button
-                                                        className="sm:hidden w-full bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
-                                                        onClick={() =>
-                                                            openModal(request)
-                                                        }
-                                                    >
-                                                        View
-                                                    </button>
-                                                    {user.position ===
-                                                        "Human Resource Manager" && (
-                                                        <>
-                                                            {request.file_path && (
-                                                                <button
-                                                                    className="px-4 hidden py-1 sm:flex  bg-blue-600 text-white rounded text-sm font-normal hover:bg-blue-600"
-                                                                    onClick={() =>
-                                                                        handleOpenPdf(
-                                                                            request.file_path,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Form
-                                                                </button>
-                                                            )}
-                                                            <button
-                                                                className={`px-3 w-full py-1 rounded ${
-                                                                    request.statuses ===
-                                                                        "approved" ||
-                                                                    request.statuses ===
-                                                                        "declined"
-                                                                        ? "bg-gray-300 cursor-not-allowed"
-                                                                        : "bg-green-500 hover:bg-green-600 text-white"
-                                                                }`}
-                                                                onClick={() =>
-                                                                    handleApprove(
-                                                                        request.id,
-                                                                    )
-                                                                }
-                                                                disabled={
-                                                                    request.statuses ===
-                                                                        "approved" ||
-                                                                    request.statuses ===
-                                                                        "declined"
-                                                                }
-                                                            >
-                                                                Approve
-                                                            </button>
-                                                            <button
-                                                                className={`w-full px-3 py-1 rounded ${
-                                                                    request.statuses ===
-                                                                        "declined" ||
-                                                                    request.statuses ===
-                                                                        "approved"
-                                                                        ? "bg-gray-300 cursor-not-allowed"
-                                                                        : "bg-red-500 hover:bg-red-600 text-white"
-                                                                }`}
-                                                                onClick={() =>
-                                                                    openDeclineModal(
-                                                                        request.id,
-                                                                    )
-                                                                } // Ensure request.id is passed correctly
-                                                                disabled={
-                                                                    request.statuses ===
-                                                                        "declined" ||
-                                                                    request.statuses ===
-                                                                        "approved"
-                                                                }
-                                                            >
-                                                                Decline
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
+                    <div className="flex flex-col w-full">
+                        {/* Messages */}
+                        <div className="mb-4">
+                            {successMessage && (
+                                <p className="text-green-600 font-medium">
+                                    {successMessage}
+                                </p>
+                            )}
+                            {errorMessage && (
+                                <p className="text-red-600 font-medium">
+                                    {errorMessage}
+                                </p>
+                            )}
+                        </div>
+                        <div className="mb-4 flex flex-wrap gap-4">
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 border border-gray-400"></div>
+                                <span className="text-sm text-gray-600">
+                                    Pending
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 bg-green-100 border border-green-300"></div>
+                                <span className="text-sm text-gray-600">
+                                    Approved
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 bg-red-100 border border-red-300"></div>
+                                <span className="text-sm text-gray-600">
+                                    Declined
+                                </span>
+                            </div>
+                        </div>
+                        {/* Table Container */}
+                        <div className="relative rounded-lg border border-gray-200 overflow-hidden">
+                            {/* Fixed Header */}
+                            <table className="w-full border-collapse">
+                                <thead className="bg-gray-50">
                                     <tr>
-                                        <td
-                                            colSpan="8"
-                                            className="text-center p-4"
-                                        >
-                                            No leave requests found
-                                        </td>
+                                        <th className="px-6 py-3 text-center text-xs  text-black tracking-wider border-b">
+                                            Employee Name
+                                        </th>
+
+                                        <th className="px-6 py-3 text-center text-xs  text-black tracking-wider border-b hidden sm:table-cell">
+                                            Start Date
+                                        </th>
+                                        <th className="px-6 py-3 text-center text-xs  text-black tracking-wider border-b hidden sm:table-cell">
+                                            End Date
+                                        </th>
+                                        <th className="px-6 py-3 text-center text-xs  text-black tracking-wider border-b hidden lg:table-cell">
+                                            Days Requested
+                                        </th>
+
+                                        <th className="px-6 py-3 text-center text-xs  text-black tracking-wider border-b">
+                                            Actions
+                                        </th>
                                     </tr>
-                                )}
-                            </tbody>
-                        </table>
+                                </thead>
+                            </table>
+
+                            {/* Scrollable Body */}
+                            <div className="overflow-y-auto max-h-[400px]">
+                                <table className="w-full border-collapse">
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {leaveRequests.length > 0 ? (
+                                            leaveRequests.map((request) => (
+                                                <tr
+                                                    key={request.id}
+                                                    className={`hover:bg-opacity-80 transition-colors ${
+                                                        request.statuses ===
+                                                        "pending"
+                                                            ? ""
+                                                            : request.statuses ===
+                                                                "approved"
+                                                              ? "bg-green-100"
+                                                              : "bg-red-100"
+                                                    }`}
+                                                >
+                                                    <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-900 ">
+                                                        {request.user_name}
+                                                    </td>
+
+                                                    <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600  hidden sm:table-cell">
+                                                        {formatDate(
+                                                            request.start_date,
+                                                        )}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600  hidden sm:table-cell">
+                                                        {formatDate(
+                                                            request.end_date,
+                                                        )}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-xs  text-gray-600  hidden lg:table-cell">
+                                                        {request.days_requested}
+                                                    </td>
+
+                                                    <td className=" py-4 whitespace-nowrap ">
+                                                        <div className="flex flex-col sm:flex-row gap-2 justify-end">
+                                                            <button
+                                                                className=" w-fit inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                                                onClick={() =>
+                                                                    openModal(
+                                                                        request,
+                                                                    )
+                                                                }
+                                                            >
+                                                                View
+                                                            </button>
+
+                                                            {user.position ===
+                                                                "Human Resource Manager" && (
+                                                                <>
+                                                                    <button
+                                                                        className={`inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md ${
+                                                                            request.statuses ===
+                                                                                "approved" ||
+                                                                            request.statuses ===
+                                                                                "declined"
+                                                                                ? "bg-gray-300 cursor-not-allowed"
+                                                                                : "text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                                                        }`}
+                                                                        onClick={() =>
+                                                                            handleApprove(
+                                                                                request.id,
+                                                                            )
+                                                                        }
+                                                                        disabled={
+                                                                            request.statuses ===
+                                                                                "approved" ||
+                                                                            request.statuses ===
+                                                                                "declined"
+                                                                        }
+                                                                    >
+                                                                        <FaCheckCircle
+                                                                            size={
+                                                                                20
+                                                                            }
+                                                                        />
+                                                                    </button>
+                                                                    <button
+                                                                        className={`inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md ${
+                                                                            request.statuses ===
+                                                                                "declined" ||
+                                                                            request.statuses ===
+                                                                                "approved"
+                                                                                ? "bg-gray-300 cursor-not-allowed"
+                                                                                : "text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                                                        }`}
+                                                                        onClick={() =>
+                                                                            openDeclineModal(
+                                                                                request.id,
+                                                                            )
+                                                                        }
+                                                                        disabled={
+                                                                            request.statuses ===
+                                                                                "declined" ||
+                                                                            request.statuses ===
+                                                                                "approved"
+                                                                        }
+                                                                    >
+                                                                        <RxCrossCircled
+                                                                            size={
+                                                                                20
+                                                                            }
+                                                                        />
+                                                                    </button>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td
+                                                    colSpan="8"
+                                                    className="px-6 py-4 text-center text-sm text-gray-500"
+                                                >
+                                                    No leave requests found
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 )}
 
                 {showModal && selectedRequest && (
                     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-20">
-                        <div className="relative top-20 mx-auto p-5 border w-11/12 sm:w-96 md:w-[600px] shadow-lg rounded-md bg-white">
-                            <div className="mt-3 text-center">
-                                <h3 className="text-lg leading-6 font-semibold text-gray-900">
+                        <div className="relative top-20 mx-auto p-8 border w-11/12 md:w-2/3 lg:w-1/2 xl:w-1/3 shadow-lg rounded-md bg-white">
+                            <div className="mt-3">
+                                <h3 className="text-xl font-semibold text-black mb-6 text-left">
                                     Leave Request Details
                                 </h3>
-                                <div className="mt-2 px-7 py-3 text-st">
-                                    <p className="font-bold text-lg text-gray-500">
-                                        <strong>Employee:</strong>{" "}
-                                        {selectedRequest.user_name}
-                                    </p>
-                                    <p className="font-bold text-lg text-gray-500">
-                                        <strong>Date Requested:</strong>{" "}
-                                        {formatDate(selectedRequest.created_at)}
-                                    </p>
-                                    <p className="font-bold text-lg text-gray-500">
-                                        <strong>Start Date:</strong>{" "}
-                                        {formatDate(selectedRequest.start_date)}
-                                    </p>
-                                    <p className="font-bold text-lg text-gray-500">
-                                        <strong>End Date:</strong>{" "}
-                                        {formatDate(selectedRequest.end_date)}
-                                    </p>
-                                    <p className="font-bold text-lg text-gray-500">
-                                        <strong>Days Requested:</strong>{" "}
-                                        {selectedRequest.days_requested}
-                                    </p>
-                                    <p className="font-bold text-lg text-gray-500">
-                                        <strong>Status:</strong>{" "}
-                                        {selectedRequest.statuses}
-                                    </p>
+                                <div className="space-y-4">
+                                    <div className="text-left">
+                                        <p className="text-base text-black">
+                                            <span className="font-medium">
+                                                Employee:
+                                            </span>{" "}
+                                            {selectedRequest.user_name}
+                                        </p>
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="text-base text-black">
+                                            <span className="font-medium">
+                                                Date Requested:
+                                            </span>{" "}
+                                            {formatDate(
+                                                selectedRequest.created_at,
+                                            )}
+                                        </p>
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="text-base text-black">
+                                            <span className="font-medium">
+                                                Start Date:
+                                            </span>{" "}
+                                            {formatDate(
+                                                selectedRequest.start_date,
+                                            )}
+                                        </p>
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="text-base text-black">
+                                            <span className="font-medium">
+                                                End Date:
+                                            </span>{" "}
+                                            {formatDate(
+                                                selectedRequest.end_date,
+                                            )}
+                                        </p>
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="text-base text-black">
+                                            <span className="font-medium">
+                                                Days Requested:
+                                            </span>{" "}
+                                            {selectedRequest.days_requested}
+                                        </p>
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="text-base text-black">
+                                            <span className="font-medium">
+                                                Status:
+                                            </span>{" "}
+                                            <span
+                                                className={`capitalize ${
+                                                    selectedRequest.statuses ===
+                                                    "approved"
+                                                        ? "text-green-600"
+                                                        : selectedRequest.statuses ===
+                                                            "declined"
+                                                          ? "text-red-600"
+                                                          : "text-yellow-600"
+                                                }`}
+                                            >
+                                                {selectedRequest.statuses}
+                                            </span>
+                                        </p>
+                                    </div>
                                 </div>
+
                                 {user.position === "Human Resource Manager" && (
-                                    <div className="flex justify-center space-x-4 mt-4">
+                                    <div className="flex justify-center gap-4 mt-8">
                                         <button
-                                            className={`px-3 w-full py-1 rounded ${
-                                                request.statuses ===
+                                            className={`px-4 py-2 rounded-md transition-colors duration-200 ${
+                                                selectedRequest.statuses ===
                                                     "approved" ||
-                                                request.statuses === "declined"
+                                                selectedRequest.statuses ===
+                                                    "declined"
                                                     ? "bg-gray-300 cursor-not-allowed"
-                                                    : "bg-green-500 hover:bg-green-600 text-white"
+                                                    : "bg-green-700 hover:bg-green-900 text-white"
                                             }`}
                                             onClick={() =>
                                                 handleApprove(
@@ -479,20 +511,22 @@ const HR_Leave_Management = () => {
                                                 )
                                             }
                                             disabled={
-                                                request.statuses ===
+                                                selectedRequest.statuses ===
                                                     "approved" ||
-                                                request.statuses === "declined"
+                                                selectedRequest.statuses ===
+                                                    "declined"
                                             }
                                         >
-                                            Approve
+                                            Approve Request
                                         </button>
                                         <button
-                                            className={`w-full px-3 py-1 rounded ${
-                                                request.statuses ===
+                                            className={`px-4 py-2 rounded-md transition-colors duration-200 ${
+                                                selectedRequest.statuses ===
                                                     "declined" ||
-                                                request.statuses === "approved"
+                                                selectedRequest.statuses ===
+                                                    "approved"
                                                     ? "bg-gray-300 cursor-not-allowed"
-                                                    : "bg-red-500 hover:bg-red-600 text-white"
+                                                    : "bg-red-700 hover:bg-red-900 text-white"
                                             }`}
                                             onClick={() =>
                                                 openDeclineModal(
@@ -500,30 +534,32 @@ const HR_Leave_Management = () => {
                                                 )
                                             }
                                             disabled={
-                                                request.statuses ===
+                                                selectedRequest.statuses ===
                                                     "declined" ||
-                                                request.statuses === "approved"
+                                                selectedRequest.statuses ===
+                                                    "approved"
                                             }
                                         >
-                                            Decline
+                                            Decline Request
                                         </button>
-                                        <button
-                                            className="w-full py-1  bg-blue-600 text-white rounded text-sm font-normal hover:bg-blue-800"
-                                            onClick={() =>
-                                                handleOpenPdf(
-                                                    selectedRequest.file_path,
-                                                )
-                                            }
-                                        >
-                                            Form
-                                        </button>
+                                        {selectedRequest.file_path && (
+                                            <button
+                                                className="px-4 py-2 bg-blue-700 text-white rounded-md transition-colors duration-200 hover:bg-blue-900"
+                                                onClick={() =>
+                                                    handleOpenPdf(
+                                                        selectedRequest.file_path,
+                                                    )
+                                                }
+                                            >
+                                                View Form
+                                            </button>
+                                        )}
                                     </div>
                                 )}
                             </div>
-                            <div className="items-center px-4 py-3">
+                            <div className="mt-8">
                                 <button
-                                    id="ok-btn"
-                                    className="w-full py-2 bg-gray-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2"
+                                    className="w-full py-2 bg-gray-700 text-white rounded-md transition-colors duration-200 hover:bg-gray-900"
                                     onClick={closeModal}
                                 >
                                     Close
@@ -622,51 +658,6 @@ const HR_Leave_Management = () => {
                                 </button>
                             </>
                         )}
-                    </div>
-                )}
-
-                {activeButton === "leaveForm" && (
-                    <div className="bg-white rounded-xl max-w-md mx-auto">
-                        <h2 className="text-2xl font-semibold mb-10 text-black">
-                            Submit Leave Form
-                        </h2>
-                        <form onSubmit={handleFormSubmit}>
-                            <label className="block mb-2 text-sm font-medium text-gray-700">
-                                Start Date:
-                                <input
-                                    type="date"
-                                    name="start_date"
-                                    value={formData.start_date}
-                                    onChange={handleFormChange}
-                                    className="mt-1 block w-full p-2 border border-gray-300 rounded"
-                                />
-                            </label>
-                            <label className="block mb-2 text-sm font-medium text-gray-700">
-                                End Date:
-                                <input
-                                    type="date"
-                                    name="end_date"
-                                    value={formData.end_date}
-                                    onChange={handleFormChange}
-                                    className="mt-1 block w-full p-2 border border-gray-300 rounded"
-                                />
-                            </label>
-                            <label className="block mb-4 text-sm font-medium text-gray-700">
-                                Upload File (Optional):
-                                <input
-                                    type="file"
-                                    name="file"
-                                    onChange={handleFormChange}
-                                    className="mt-1 block w-full"
-                                />
-                            </label>
-                            <button
-                                type="submit"
-                                className="bg-green-800 text-white px-4 py-2 rounded hover:bg-green-950 w-full"
-                            >
-                                Submit Leave Request
-                            </button>
-                        </form>
                     </div>
                 )}
 
