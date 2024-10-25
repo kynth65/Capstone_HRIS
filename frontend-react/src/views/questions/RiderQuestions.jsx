@@ -1,3 +1,8 @@
+export const riderQuestions = [
+    "Do you have a valid driver's license for this position?",
+    "Are you comfortable driving in various weather conditions?",
+    "How many years of experience do you have as a rider?",
+];
 const RiderQuestions = ({ questions, setQuestions, errors }) => {
     return (
         <div>

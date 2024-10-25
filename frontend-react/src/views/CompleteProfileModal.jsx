@@ -14,7 +14,7 @@ function CompleteProfileModal({ show, onClose, onComplete, tempUser }) {
         province: "",
         postal_code: "",
         country: "",
-        personal_email: "",
+        // personal_email: "",
         work_email: "",
         home_phone: "",
         emergency_contact_name: "",
@@ -30,7 +30,7 @@ function CompleteProfileModal({ show, onClose, onComplete, tempUser }) {
         suffix: "",
         completed_training_programs: "",
         // work_permit_expiry_date: "",
-        profile: "",
+        //profile: "",
         notes: "",
     });
 
@@ -72,47 +72,6 @@ function CompleteProfileModal({ show, onClose, onComplete, tempUser }) {
 
     // Don't render the modal if `show` is false
     if (!show) return null;
-
-    // Memoized InputField component
-    const InputField = ({ label, name, type = "text", value, onChange }) => (
-        <div className="mb-4">
-            <label
-                htmlFor={name}
-                className="block text-sm font-medium text-gray-700 mb-1"
-            >
-                {label}
-            </label>
-            <input
-                type={type}
-                id={name}
-                name={name}
-                value={value}
-                onChange={onChange}
-                autoComplete="off"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-black"
-            />
-        </div>
-    );
-
-    const TextAreaField = ({ label, name, value, onChange }) => (
-        <div className="mb-4">
-            <label
-                htmlFor={name}
-                className="block text-sm font-medium text-gray-700 mb-1"
-            >
-                {label}
-            </label>
-            <textarea
-                id={name}
-                name={name}
-                value={value}
-                onChange={onChange}
-                autoComplete="off"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-black"
-                rows="4"
-            ></textarea>
-        </div>
-    );
 
     return (
         <div className="modal-overlay">
@@ -311,7 +270,7 @@ function CompleteProfileModal({ show, onClose, onComplete, tempUser }) {
                             />
                         </div>
 
-                        <div className="mb-4">
+                        {/* <div className="mb-4">
                             <label
                                 htmlFor="personal_email"
                                 className="block text-sm font-medium text-gray-700 mb-1"
@@ -326,7 +285,7 @@ function CompleteProfileModal({ show, onClose, onComplete, tempUser }) {
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-black"
                             />
-                        </div>
+                        </div> */}
 
                         <div className="mb-4">
                             <label
@@ -561,7 +520,7 @@ function CompleteProfileModal({ show, onClose, onComplete, tempUser }) {
                             />
                         </div> */}
 
-                        <div className="mb-4">
+                        {/* <div className="mb-4">
                             <label
                                 htmlFor="profile"
                                 className="block text-sm font-medium text-gray-700 mb-1"
@@ -577,7 +536,7 @@ function CompleteProfileModal({ show, onClose, onComplete, tempUser }) {
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-black"
                             />
-                        </div>
+                        </div> */}
 
                         <div className="mb-4">
                             <label

@@ -537,7 +537,9 @@ const IncidentReportForm = () => {
                             Reported Incidents
                         </h2>
                         {reportedIncidents.length === 0 ? (
-                            <p>No reported incidents found.</p>
+                            <p className="text-black">
+                                No reported incidents found.
+                            </p>
                         ) : (
                             <table className="employee-table min-w-full border-collapse">
                                 <thead className="text-white sticky top-[-1px]">

@@ -87,6 +87,7 @@ class AuthController extends Controller
                 'probation_end_date' =>  $data['probation_end_date'],
                 'email' => $data['email'],
                 'password' => bcrypt($data['password']),
+                'schedule' =>  $data['schedule'],
             ]);
 
             // Create token for the user
@@ -138,7 +139,6 @@ class AuthController extends Controller
             'province' => 'nullable|string',
             'postal_code' => 'nullable|string',
             'country' => 'nullable|string',
-            'personal_email' => 'nullable|email',
             'work_email' => 'nullable|email',
             'home_phone' => 'nullable|string',
             'emergency_contact_name' => 'nullable|string',
@@ -154,7 +154,7 @@ class AuthController extends Controller
             'suffix' => 'nullable|string',
             'completed_training_programs' => 'nullable|string',
             // 'work_permit_expiry_date' => 'nullable|date',
-            'profile' => 'nullable|string',
+            'profile' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:204800', // Validate as image
             'notes' => 'nullable|string',
         ]);
 
@@ -168,7 +168,7 @@ class AuthController extends Controller
         $user->province = $request->input('province');
         $user->postal_code = $request->input('postal_code');
         $user->country = $request->input('country');
-        $user->personal_email = $request->input('personal_email');
+
         $user->work_email = $request->input('work_email');
         $user->home_phone = $request->input('home_phone');
         $user->emergency_contact_name = $request->input('emergency_contact_name');
@@ -187,6 +187,12 @@ class AuthController extends Controller
         $user->profile = $request->input('profile');
         $user->notes = $request->input('notes');
 
+        if ($request->hasFile('profile')) {
+            $profilePath = $request->file('profile')->store('images', 'public');
+            $user->profile = $profilePath;
+        }
+
+        // Save user
         $user->save();
 
         return response()->json(['message' => 'Profile completed successfully.']);

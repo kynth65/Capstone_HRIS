@@ -1,3 +1,8 @@
+export const ultrasoundQuestions = [
+    " Do you have a certification in Diagnostic Medical Sonography?",
+    "Are you comfortable working with patients in a medical setting?",
+    "How many years of experience do you have in conducting ultrasounds?",
+];
 const UltrasoundTechQuestions = ({ questions, setQuestions, errors }) => {
     return (
         <div>

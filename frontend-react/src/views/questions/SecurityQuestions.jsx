@@ -1,3 +1,8 @@
+export const securityQuestions = [
+    " Do you have a license for security services?",
+    "Are you willing to work night shifts?",
+    " How many years of experience do you have in the security industry?",
+];
 const SecurityQuestions = ({ questions, setQuestions, errors }) => {
     return (
         <div>

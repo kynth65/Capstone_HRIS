@@ -371,4 +371,43 @@ class ApplicantController extends Controller
 
         return response()->json(['message' => 'Upload status updated successfully']);
     }
+
+    public function getApplicantResponses($applicantId)
+    {
+        try {
+            // Find the applicant's resume ranking by applicant ID, with related position
+            $resumeRanking = ResumeRanking::with('position')->find($applicantId); // Ensure position is loaded
+
+            if (!$resumeRanking) {
+                return response()->json(['error' => 'Applicant not found'], 404);
+            }
+
+            // Create an array of all potential questions and responses
+            $allQuestions = [
+                ['text' => 'Question 1', 'response' => $resumeRanking->question1_response],
+                ['text' => 'Question 2', 'response' => $resumeRanking->question2_response],
+                ['text' => 'Question 3', 'response' => $resumeRanking->question3_response],
+                ['text' => 'Question 4', 'response' => $resumeRanking->question4_response],
+                ['text' => 'Question 5', 'response' => $resumeRanking->question5_response],
+                ['text' => 'Question 6', 'response' => $resumeRanking->question6_response],
+                ['text' => 'Question 7', 'response' => $resumeRanking->question7_response],
+                ['text' => 'Question 8', 'response' => $resumeRanking->question8_response],
+                ['text' => 'Question 9', 'response' => $resumeRanking->question9_response],
+                ['text' => 'Question 10', 'response' => $resumeRanking->question10_response],
+            ];
+
+            // Filter out questions that do not have a response
+            $filteredQuestions = array_filter($allQuestions, function ($question) {
+                return !is_null($question['response']);  // Only include questions with non-null responses
+            });
+
+            // Include position_name in the response
+            return response()->json([
+                'position_name' => $resumeRanking->position->name ?? 'Unknown Position',  // Make sure 'position' exists
+                'questions' => array_values($filteredQuestions)
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch responses', 'details' => $e->getMessage()], 500);
+        }
+    }
 }

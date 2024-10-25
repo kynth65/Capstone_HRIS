@@ -241,3 +241,4 @@ Route::prefix('admin')->group(function () {
     Route::patch('/notifications/{id}/mark-as-read', [AdminNotificationController::class, 'markAsRead']);
     Route::get('/notifications/unread-count', [AdminNotificationController::class, 'unreadCount']);
 });
+Route::get('/get-responses/{applicantId}', [ApplicantController::class, 'getApplicantResponses']);

@@ -1,4 +1,13 @@
-import React from "react";
+export const accountingQuestions = [
+    "Have you completed the following level of education:Bachelor&apos;s Degree?",
+    "Are you willing to undergo a background check, in accordance with local law/regulations?",
+    "Are you comfortable commuting to this job&apos;s location?* Are you comfortable commuting to this job&apos;s location?",
+    "Willing to work Saturdays?",
+    "Bachelor of Science in Accountancy graduate?",
+    "What is your level of proficiency in English?",
+    "How many years of Accounting/Auditing experience do you currently have?",
+    " How many years of work experience do you have with Accounting Software?",
+];
 
 const AccountingQuestions = ({ questions, setQuestions, errors }) => {
     return (
@@ -210,11 +219,9 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                 <div>
                     <select
                         value={questions.question4}
-                        value={questions.question4}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
-                                question4: e.target.value,
                                 question4: e.target.value,
                             })
                         }
@@ -231,11 +238,9 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                 <div>
                     <select
                         value={questions.question5}
-                        value={questions.question5}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
-                                question5: e.target.value,
                                 question5: e.target.value,
                             })
                         }
@@ -252,11 +257,9 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                 <div>
                     <select
                         value={questions.question6}
-                        value={questions.question6}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
-                                question6: e.target.value,
                                 question6: e.target.value,
                             })
                         }
@@ -279,11 +282,9 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                     <input
                         type="number"
                         value={questions.question7 || ""}
-                        value={questions.question7 || ""}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
-                                question7: e.target.value,
                                 question7: e.target.value,
                             })
                         }
@@ -299,11 +300,9 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                     <input
                         type="number"
                         value={questions.question8 || ""}
-                        value={questions.question8 || ""}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
-                                question8: e.target.value,
                                 question8: e.target.value,
                             })
                         }
@@ -319,11 +318,9 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                     <input
                         type="number"
                         value={questions.question9 || ""}
-                        value={questions.question9 || ""}
                         onChange={(e) =>
                             setQuestions({
                                 ...questions,
-                                question9: e.target.value,
                                 question9: e.target.value,
                             })
                         }

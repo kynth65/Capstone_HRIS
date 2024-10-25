@@ -1,4 +1,13 @@
-import React from "react";
+export const anatomicalQuestions = [
+    "Do you have a degree in a related field, such as Anatomy, Physiology, or Biomedical Science?",
+    "Are you familiar with anatomical dissection techniques?",
+    "Do you have experience working with human cadaver specimens?",
+    "How many years of experience do you have in an anatomical or biological laboratory setting?",
+    "How would you rate your proficiency in identifying and labeling anatomical structures?",
+    "Are you comfortable using anatomical software or virtual dissection tools?",
+    "Do you have experience teaching or presenting anatomical concepts to others?",
+    "What is your level of proficiency in medical terminology?",
+];
 
 const AnatomicalQuestions = ({ questions, setQuestions, errors }) => {
     return (

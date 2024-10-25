@@ -1,4 +1,8 @@
-import React from "react";
+export const medicalSecretaryQuestions = [
+    "Do you have experience with medical scheduling software?",
+    "Are you proficient in medical terminology?",
+    "How comfortable are you with patient interaction?",
+];
 
 const MedicalSecretaryQuestions = ({ questions, setQuestions, errors }) => (
     <div>

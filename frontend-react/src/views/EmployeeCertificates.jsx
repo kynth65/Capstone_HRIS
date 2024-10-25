@@ -12,6 +12,9 @@ function EmployeeCertificate() {
     const [sentRequests, setSentRequests] = useState([]);
     const [activeTab, setActiveTab] = useState("myCertificates");
     const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+    const [pendingRequests, setPendingRequests] = useState([]);
+    const [selectedRequest, setSelectedRequest] = useState(null);
     const [newCertificateRequest, setNewCertificateRequest] = useState({
         certificate_name: "",
         expiring_date: "",
@@ -20,7 +23,6 @@ function EmployeeCertificate() {
         category: "",
         type: "expirable",
     });
-    const [pendingRequests, setPendingRequests] = useState([]);
 
     const userId = localStorage.getItem("user_id");
 
@@ -156,6 +158,11 @@ function EmployeeCertificate() {
                 console.error("Error sending update request:", error);
             }
         }
+    };
+
+    const handleOpenDetailModal = (request) => {
+        setSelectedRequest(request);
+        setIsDetailModalOpen(true);
     };
 
     const handleOpenPdf = (pdfPath) => {
@@ -323,7 +330,9 @@ function EmployeeCertificate() {
                                         <th className="px-4 py-2">
                                             Date Requested
                                         </th>
+                                        <th className="px-4 py-2">Remarks</th>
                                         <th className="px-4 py-2">Status</th>
+                                        <th className="px-4 py-2">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -344,7 +353,32 @@ function EmployeeCertificate() {
                                                     )}
                                                 </td>
                                                 <td className="px-4 py-6">
+                                                    <span
+                                                        className="block truncate overflow-hidden"
+                                                        title={request.remarks}
+                                                    >
+                                                        {request.remarks &&
+                                                        request.remarks.length >
+                                                            30
+                                                            ? `${request.remarks.slice(0, 30)}...`
+                                                            : request.remarks ||
+                                                              "No remarks"}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-6">
                                                     {request.status}
+                                                </td>
+                                                <td className="px-4 py-6">
+                                                    <button
+                                                        className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                                        onClick={() =>
+                                                            handleOpenDetailModal(
+                                                                request,
+                                                            )
+                                                        }
+                                                    >
+                                                        View Details
+                                                    </button>
                                                 </td>
                                             </tr>
                                         ))
@@ -600,6 +634,40 @@ function EmployeeCertificate() {
                                 width="100%"
                                 height="750px"
                             />
+                        </div>
+                    </div>
+                )}
+
+                {isDetailModalOpen && selectedRequest && (
+                    <div className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                        <div className="modal-content bg-white p-6 rounded-lg w-1/3">
+                            <h2 className="text-lg font-bold mb-4">
+                                Request Details
+                            </h2>
+                            <p>
+                                <strong>Certificate Name:</strong>{" "}
+                                {selectedRequest.certificate_name}
+                            </p>
+                            <p>
+                                <strong>Date Requested:</strong>{" "}
+                                {new Date(
+                                    selectedRequest.created_at,
+                                ).toLocaleDateString("en-US")}
+                            </p>
+                            <p>
+                                <strong>Remarks:</strong>{" "}
+                                {selectedRequest.remarks || "No remarks"}
+                            </p>
+                            <p>
+                                <strong>Status:</strong>{" "}
+                                {selectedRequest.status}
+                            </p>
+                            <button
+                                className="bg-red-500 text-white p-2 rounded mt-4"
+                                onClick={() => setIsDetailModalOpen(false)}
+                            >
+                                Close
+                            </button>
                         </div>
                     </div>
                 )}

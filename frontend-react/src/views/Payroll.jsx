@@ -78,11 +78,11 @@ const Payroll = () => {
             startY: 40,
             head: [["Description", "Amount"]],
             body: [
-                ["Hourly Rate", `$${parseFloat(hourlyRate).toFixed(2)}`],
-                ["Gross Salary", `$${grossSalary.toFixed(2)}`],
+                ["Hourly Rate", `${parseFloat(hourlyRate).toFixed(2)}`],
+                ["Gross Salary", `${grossSalary.toFixed(2)}`],
                 ["Tax", `${tax}%`],
-                ["Deductions", `$${parseFloat(deductions).toFixed(2)}`],
-                ["Net Salary", `$${parseFloat(netSalary).toFixed(2)}`],
+                ["Deductions", `${parseFloat(deductions).toFixed(2)}`],
+                ["Net Salary", `${parseFloat(netSalary).toFixed(2)}`],
             ],
             theme: "striped",
         });
@@ -186,27 +186,25 @@ const Payroll = () => {
                             Payslip Summary
                         </h3>
                         <div className="space-y-3">
-                            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                            <div className="flex justify-between items-center py-2 border-b border-gray-200 text-black">
                                 <span className="font-medium">
                                     Gross Salary:
                                 </span>
-                                <span>${grossSalary.toFixed(2)}</span>
+                                <span>{grossSalary.toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                            <div className="flex justify-between items-center py-2 border-b border-gray-200 text-black">
                                 <span className="font-medium">Tax Amount:</span>
                                 <span>
-                                    ${(grossSalary * (tax / 100)).toFixed(2)}
+                                    {(grossSalary * (tax / 100)).toFixed(2)}
                                 </span>
                             </div>
-                            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                            <div className="flex justify-between items-center py-2 border-b border-gray-200 text-black">
                                 <span className="font-medium">Deductions:</span>
-                                <span>
-                                    ${parseFloat(deductions).toFixed(2)}
-                                </span>
+                                <span>{parseFloat(deductions).toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between items-center py-2 font-bold text-lg">
+                            <div className="flex justify-between items-center py-2 font-bold text-lg text-black">
                                 <span>Net Salary:</span>
-                                <span>${parseFloat(netSalary).toFixed(2)}</span>
+                                <span>{parseFloat(netSalary).toFixed(2)}</span>
                             </div>
                         </div>
                         <button

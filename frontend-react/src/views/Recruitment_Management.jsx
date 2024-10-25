@@ -11,6 +11,17 @@ import useDocument from "../hooks/useDocuments";
 import { MdDelete, MdEdit, MdExpandMore, MdExpandLess } from "react-icons/md";
 import { jsPDF } from "jspdf";
 import HRTagSuggestion from "./HRTagSuggestion";
+import { riderQuestions } from "../views/questions/RiderQuestions";
+import { accountingQuestions } from "../views/questions/AccountingQuestions";
+import { anatomicalQuestions } from "../views/questions/AnatomicalQuestions";
+import { maintenanceQuestions } from "../views/questions/MaintenanceQuestions";
+import { medicalSecretaryQuestions } from "../views/questions/MedicalSecretaryQuestions";
+import { receptionistQuestions } from "../views/questions/ReceptionistQuestion";
+import { rmtQuestions } from "../views/questions/RMTQuestions";
+import { securityQuestions } from "../views/questions/SecurityQuestions";
+import { ultrasoundQuestions } from "../views/questions/UltraSoundQuestions";
+import { xrayTechQuestions } from "../views/questions/XrayTechQuestions";
+import { purchasingClerkQuestions } from "../views/questions/PurchasingClerkQuestions";
 // Register the fonts
 function Recruitment_Management() {
     const [activeButton, setActiveButton] = useState("openPosition");
@@ -37,6 +48,7 @@ function Recruitment_Management() {
     const [showApplicantsModal, setShowApplicantsModal] = useState(false);
     const [showApplicantDetailModal, setShowApplicantDetailModal] =
         useState(false);
+    const [showResponseModal, setShowResponseModal] = useState(false);
     const errorTimeoutRef = useRef(null);
     const [isPdfModalOpen, setIsPdfModalOpen] = useState(false); // State for PDF modal
     const [pdfUrl, setPdfUrl] = useState(null); // State to hold the selected PDF URL
@@ -53,7 +65,38 @@ function Recruitment_Management() {
         hr_tags: "",
         base_salary: "",
     });
-
+    const [questions, setQuestions] = useState([]);
+    const getQuestionsForPosition = (positionName) => {
+        switch (positionName.toLowerCase()) {
+            case "rider":
+                return riderQuestions;
+            case "accounting":
+                return accountingQuestions;
+            case "receptionist":
+                return receptionistQuestions; // Add if you have these
+            case "medical secretary":
+                return medicalSecretaryQuestions; // Add if you have these
+            case "security":
+                return securityQuestions; // Add if you have these
+            case "maintenance":
+                return maintenanceQuestions; // Add if you have these
+            case "purchasing clerk":
+                return purchasingClerkQuestions; // Add if you have these
+            case "ultrasound":
+                return ultrasoundQuestions; // Add if you have these
+            case "xray tech":
+                return xrayTechQuestions; // Add if you have these
+            case "rmt":
+                return rmtQuestions; // Add if you have these
+            case "anatomical":
+                return anatomicalQuestions; // Add if you have these
+            default:
+                console.log(
+                    `No questions defined for position: ${positionName}`,
+                );
+                return []; // Return empty array if no questions defined
+        }
+    };
     useEffect(() => {
         setDocumentContent(useDocument[documentType]);
 
@@ -538,6 +581,50 @@ function Recruitment_Management() {
         return text.substr(0, maxLength) + "...";
     };
 
+    const handleViewResponses = (applicant) => {
+        // Get questions for the position
+        const positionQuestions = getQuestionsForPosition(
+            applicant.position_name,
+        );
+        console.log("Position:", applicant.position_name); // Debug log
+        console.log("Questions:", positionQuestions); // Debug log
+
+        // Map questions with responses from the applicant
+        const questionsWithResponses = positionQuestions.map(
+            (question, index) => ({
+                text: question,
+                response:
+                    applicant[`question${index + 1}_response`] ||
+                    "No response provided",
+            }),
+        );
+
+        setQuestions(questionsWithResponses);
+        setShowResponseModal(true);
+    };
+
+    const fetchResponsesForApplicant = async (applicantId) => {
+        try {
+            const response = await axiosClient.get(
+                `/get-responses/${applicantId}`,
+            );
+
+            // Make sure response.data.questions is an array
+            if (
+                response.data.questions &&
+                Array.isArray(response.data.questions)
+            ) {
+                setQuestions(response.data.questions);
+            } else {
+                setQuestions([]); // Fallback in case no questions are returned
+            }
+
+            setShowResponseModal(true); // Show modal after data is fetched
+        } catch (error) {
+            console.error("Error fetching responses:", error);
+        }
+    };
+
     return (
         <div>
             <nav className="grid grid-cols-2 space-x-4 mb-4">
@@ -709,6 +796,9 @@ function Recruitment_Management() {
                                                         Percentage
                                                     </th>
                                                     <th className="text-center px-4 py-2 border-b">
+                                                        Questions Response
+                                                    </th>
+                                                    <th className="text-center px-4 py-2 border-b">
                                                         Actions
                                                     </th>
                                                 </tr>
@@ -742,6 +832,19 @@ function Recruitment_Management() {
                                                                     2,
                                                                 )}
                                                                 %
+                                                            </td>
+                                                            <td className="applicant-response px-4 py-2 border-b">
+                                                                <button
+                                                                    className="text-blue-500 hover:underline"
+                                                                    onClick={() =>
+                                                                        handleViewResponses(
+                                                                            applicant,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    View
+                                                                    response
+                                                                </button>
                                                             </td>
                                                             <td className="applicant-actions px-4 py-2 border-b">
                                                                 <button
@@ -784,6 +887,48 @@ function Recruitment_Management() {
                                 </div>
                             )}
                         </div>
+                        {showResponseModal && (
+                            <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+                                <div className="bg-white p-6 rounded-lg shadow-lg w-3/4 h-[700px] overflow-y-auto text-black relative">
+                                    <span
+                                        className="absolute top-2 right-2 cursor-pointer text-xl font-bold text-gray-600 hover:text-gray-900"
+                                        onClick={() =>
+                                            setShowResponseModal(false)
+                                        }
+                                    >
+                                        &times;
+                                    </span>
+                                    <h3 className="text-2xl font-semibold mb-4 text-center">
+                                        Applicant Responses
+                                    </h3>
+
+                                    <div className="text-lg mb-4">
+                                        {questions.length > 0 ? (
+                                            questions.map((question, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="mb-3"
+                                                >
+                                                    <strong>{`Question ${index + 1}:`}</strong>{" "}
+                                                    {question.text}
+                                                    <p className="ml-6">
+                                                        Response:{" "}
+                                                        {question.response ||
+                                                            "No response provided"}
+                                                    </p>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p>
+                                                No questions available for this
+                                                position.
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {showModal && (
                             <div className="modal">
                                 <div className="bg-white overflow-auto h-[600px] w-fit xl:w-3/4 text-sm flex flex-col items-center mx-4 px-7 pb-10 pt-4 rounded-lg">

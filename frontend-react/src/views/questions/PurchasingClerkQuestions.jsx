@@ -1,18 +1,18 @@
-export const rmtQuestions = [
-    "Do you have a license to practice as a Registered Massage Therapist?",
-    "Are you willing to work evenings or weekends?",
-    "How many years of experience do you have as a Registered Massage Therapist?",
+export const purchasingClerkQuestions = [
+    "Do you have experience in purchasing and inventory management?",
+    "Are you familiar with purchase order processing?",
+    "How many years of experience do you have as a purchasing clerk?",
 ];
-const RMTQuestions = ({ questions, setQuestions, errors }) => {
+
+const PurchasingClerkQuestions = ({ questions, setQuestions, errors }) => {
     return (
         <div>
             <label>
-                Do you have a license to practice as a Registered Massage
-                Therapist?*
+                Do you have experience in purchasing and inventory management?*
                 <div>
                     <input
                         type="radio"
-                        name="licensedRMT"
+                        name="purchasingExperience"
                         value="Yes"
                         checked={questions.question1 === "Yes"}
                         onChange={(e) =>
@@ -25,7 +25,7 @@ const RMTQuestions = ({ questions, setQuestions, errors }) => {
                     Yes
                     <input
                         type="radio"
-                        name="licensedRMT"
+                        name="purchasingExperience"
                         value="No"
                         checked={questions.question1 === "No"}
                         onChange={(e) =>
@@ -40,11 +40,11 @@ const RMTQuestions = ({ questions, setQuestions, errors }) => {
             </label>
 
             <label>
-                Are you willing to work evenings or weekends?*
+                Are you familiar with purchase order processing?*
                 <div>
                     <input
                         type="radio"
-                        name="eveningsWeekends"
+                        name="purchaseOrder"
                         value="Yes"
                         checked={questions.question2 === "Yes"}
                         onChange={(e) =>
@@ -57,7 +57,7 @@ const RMTQuestions = ({ questions, setQuestions, errors }) => {
                     Yes
                     <input
                         type="radio"
-                        name="eveningsWeekends"
+                        name="purchaseOrder"
                         value="No"
                         checked={questions.question2 === "No"}
                         onChange={(e) =>
@@ -72,8 +72,7 @@ const RMTQuestions = ({ questions, setQuestions, errors }) => {
             </label>
 
             <label>
-                How many years of experience do you have as a Registered Massage
-                Therapist?*
+                How many years of experience do you have as a purchasing clerk?*
                 <div>
                     <input
                         type="number"
@@ -99,4 +98,5 @@ const RMTQuestions = ({ questions, setQuestions, errors }) => {
         </div>
     );
 };
-export default RMTQuestions;
+
+export default PurchasingClerkQuestions;

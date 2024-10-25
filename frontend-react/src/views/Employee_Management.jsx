@@ -65,6 +65,7 @@ function EmployeeManagement() {
         "middle_name",
         "department",
         "email",
+        "personal_email",
         "position",
         "schedule",
         "contact_number",

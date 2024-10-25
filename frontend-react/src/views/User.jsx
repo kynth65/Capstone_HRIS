@@ -287,13 +287,20 @@ function Profile() {
                                 >
                                     Gender
                                 </label>
-                                <input
-                                    type="text"
+                                <select
                                     name="gender"
                                     value={formData.gender || ""}
                                     onChange={handleChange}
                                     className="w-full p-2 border border-gray-300 rounded"
-                                />
+                                >
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                    <option value="Prefer not to say">
+                                        Prefer not to say
+                                    </option>
+                                </select>
                             </div>
 
                             {/* Marital Status */}
@@ -304,13 +311,20 @@ function Profile() {
                                 >
                                     Marital Status
                                 </label>
-                                <input
-                                    type="text"
+                                <select
                                     name="marital_status"
                                     value={formData.marital_status || ""}
                                     onChange={handleChange}
                                     className="w-full p-2 border border-gray-300 rounded"
-                                />
+                                >
+                                    <option value="">
+                                        Select Marital Status
+                                    </option>
+                                    <option value="Single">Single</option>
+                                    <option value="Married">Married</option>
+                                    <option value="Divorced">Divorced</option>
+                                    <option value="Separated">Separated</option>
+                                </select>
                             </div>
 
                             {/* Personal Email */}
@@ -385,6 +399,23 @@ function Profile() {
                                     }
                                     onChange={handleChange}
                                     className="w-full p-2 border border-gray-300 rounded"
+                                />
+                            </div>
+                            {/* Password */}
+                            <div className="mb-4">
+                                <label
+                                    htmlFor="password"
+                                    className="block text-sm font-semibold mb-2"
+                                >
+                                    Password
+                                </label>
+                                <input
+                                    type="password"
+                                    id="password"
+                                    name="password"
+                                    value={formData.password || ""}
+                                    onChange={handleChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-black"
                                 />
                             </div>
                         </div>

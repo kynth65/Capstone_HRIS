@@ -17,7 +17,6 @@ export default function Register() {
         Admin: ["Admin", "Purchasing"],
         HR: [
             "Human Resource Manager",
-            "HR Manager",
             "Human Resource Assistant",
             "Accountant",
             "Marketing",
@@ -43,6 +42,7 @@ export default function Register() {
                 "last_name",
                 "middle_name",
                 "email",
+                "personal_email",
                 "contact_number",
                 "gender",
                 "department",
@@ -254,6 +254,8 @@ export default function Register() {
             case "probation_end_date":
                 return <input type="date" {...commonProps} />;
             case "email":
+                return <input type="email" {...commonProps} />;
+            case "personal_email":
                 return <input type="email" {...commonProps} />;
             case "contact_number":
                 return <input type="text" {...commonProps} />;

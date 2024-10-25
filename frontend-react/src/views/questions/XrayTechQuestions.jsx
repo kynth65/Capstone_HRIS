@@ -1,3 +1,9 @@
+export const xrayTechQuestions = [
+    "Do you have a certification as an X-Ray Technician?",
+    " Are you comfortable working with radiation?",
+    "Are you certified in CPR?",
+    " How many years of experience do you have as an X-Ray Technician?",
+];
 const XRayTechQuestions = ({ questions, setQuestions, errors }) => {
     return (
         <div>

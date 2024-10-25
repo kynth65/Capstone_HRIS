@@ -1,3 +1,8 @@
+export const maintenanceQuestions = [
+    "Are you comfortable performing minor repair work?",
+    "Are you willing to work on a flexible schedule, including weekends?",
+    "How many years of experience do you have in maintenance work?",
+];
 const MaintenanceQuestions = ({ questions, setQuestions, errors }) => {
     return (
         <div>
