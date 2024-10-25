@@ -27,7 +27,10 @@ function EmployeeManagement() {
     const [positions, setPositions] = useState([]);
     const [currentStep, setCurrentStep] = useState(0);
     const [formData, setFormData] = useState({});
-
+    const [candidates, setCandidates] = useState([]);
+    const [filteredCandidates, setFilteredCandidates] = useState([]);
+    const [showCreateAccountModal, setShowCreateAccountModal] = useState(false);
+    const [existingUsers, setExistingUsers] = useState([]);
     const formSections = [
         {
             title: "Personal Information",
@@ -37,6 +40,7 @@ function EmployeeManagement() {
                 "last_name",
                 "middle_name",
                 "email",
+                "personal_email",
                 "contact_number",
                 "gender",
                 "department",
@@ -45,7 +49,7 @@ function EmployeeManagement() {
                 "employment_status",
                 "employee_type",
                 "hire_date",
-                "probationary_end_date",
+                "probation_end_date",
                 "pay_frequency",
                 "reporting_manager",
                 "password",
@@ -65,7 +69,7 @@ function EmployeeManagement() {
         "schedule",
         "contact_number",
         "hire_date",
-        "probationary_end_date",
+        "probation_end_date",
         "pay_frequency",
         "employment_status",
         "employee_type",
@@ -85,9 +89,34 @@ function EmployeeManagement() {
                 .catch((error) => {
                     console.error("Error fetching employees:", error);
                 });
+        } else if (activeButton === "probationaryList") {
+            axiosClient
+                .post("/candidates")
+                .then((response) => {
+                    const probationaryCandidates = response.data.filter(
+                        (candidate) =>
+                            candidate.recruitment_stage === "probationary",
+                    );
+                    setCandidates(probationaryCandidates);
+                    setFilteredCandidates(probationaryCandidates);
+                })
+                .catch((error) => {
+                    console.error("Error fetching candidates:", error);
+                });
+
+            axiosClient
+                .get("/users") // Fetching all users to check for existing accounts
+                .then((response) => {
+                    setExistingUsers(response.data);
+                })
+                .catch((error) => {
+                    console.error("Error fetching users:", error);
+                });
         }
     }, [activeButton]);
-
+    const checkIfUserExists = (candidateName) => {
+        return existingUsers.some((user) => user.name === candidateName);
+    };
     const departmentPositions = {
         Admin: ["Admin", "Purchasing"],
         HR: [
@@ -111,12 +140,21 @@ function EmployeeManagement() {
 
     const handleSearch = () => {
         const searchTerm = searchRef.current.value.trim().toLowerCase();
-        const filtered = employees.filter(
-            (employee) =>
-                employee.name.toLowerCase().includes(searchTerm) ||
-                employee.user_id.toString().includes(searchTerm),
-        );
-        setFilteredEmployees(filtered);
+        if (activeButton === "employeeList") {
+            const filtered = employees.filter(
+                (employee) =>
+                    employee.name.toLowerCase().includes(searchTerm) ||
+                    employee.user_id.toString().includes(searchTerm),
+            );
+            setFilteredEmployees(filtered);
+        } else if (activeButton === "probationaryList") {
+            const filtered = candidates.filter(
+                (candidate) =>
+                    candidate.name.toLowerCase().includes(searchTerm) ||
+                    candidate.email.toLowerCase().includes(searchTerm),
+            );
+            setFilteredCandidates(filtered);
+        }
     };
 
     const renderField = (label, value) => (
@@ -314,10 +352,12 @@ function EmployeeManagement() {
                 );
             case "password":
                 return <input type="password" {...commonProps} />;
+            case "personal_email":
+                return <input type="email" {...commonProps} />;
             case "confirm_password":
                 return <input type="password" {...commonProps} />;
             case "hire_date":
-            case "probationary_end_date":
+            case "probation_end_date":
                 return <input type="date" {...commonProps} />;
             case "email":
                 return <input type="email" {...commonProps} />;
@@ -465,6 +505,14 @@ function EmployeeManagement() {
                             Create Account
                         </button>
                     </li>
+                    <li>
+                        <button
+                            className={`navButton ${activeButton === "probationaryList" ? "active" : ""}`}
+                            onClick={() => setActiveButton("probationaryList")}
+                        >
+                            Probationary Candidates
+                        </button>
+                    </li>
                 </ul>
             </nav>
 
@@ -476,7 +524,7 @@ function EmployeeManagement() {
                             ref={searchRef}
                             placeholder="Search by name..."
                             onChange={handleSearch}
-                            className="search-bar"
+                            className="search-bar text-black"
                         />
                         <button className="btnArchive" onClick={handleArchive}>
                             Archive
@@ -662,6 +710,170 @@ function EmployeeManagement() {
                     </div>
                 )}
             </div>
+            {activeButton === "probationaryList" && (
+                <div className="candidate-list">
+                    <input
+                        type="text"
+                        ref={searchRef}
+                        placeholder="Search candidates..."
+                        onChange={handleSearch}
+                        className="search-bar text-black"
+                    />
+                    <div className="candidate-list-container animated fadeInDown">
+                        <table className="candidate-table bg-white text-black rounded-xl overflow-hidden w-3/4 xl:w-11/12">
+                            <thead>
+                                <tr className="font-bold text-base">
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Position</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredCandidates.length > 0 ? (
+                                    filteredCandidates.map((candidate) => {
+                                        const userExists = checkIfUserExists(
+                                            candidate.name,
+                                        ); // Check if the candidate exists in the users table
+                                        return (
+                                            <tr
+                                                key={candidate.id}
+                                                className="font-bold"
+                                            >
+                                                <td>{candidate.name}</td>
+                                                <td>{candidate.email}</td>
+                                                <td>{candidate.position}</td>
+                                                <td>
+                                                    {userExists ? (
+                                                        <button
+                                                            className="bg-gray-500 px-4 py-2 rounded-md text-white cursor-not-allowed"
+                                                            disabled
+                                                        >
+                                                            Already Created
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            className="bg-green-900 px-4 py-2 rounded-md text-white"
+                                                            onClick={() =>
+                                                                setShowCreateAccountModal(
+                                                                    true,
+                                                                )
+                                                            }
+                                                        >
+                                                            Create Account
+                                                        </button>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                ) : (
+                                    <tr>
+                                        <td colSpan="4">
+                                            No probationary candidates found.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+            {showCreateAccountModal && (
+                <div className="modal modal-overlay">
+                    <div className="modal-content bg-white p-6 rounded-lg">
+                        <button
+                            className="close-button text-red-500 text-xl"
+                            onClick={() => setShowCreateAccountModal(false)}
+                        >
+                            &times;
+                        </button>
+                        <h2 className="text-2xl font-bold mb-6 text-center">
+                            Register - {formSections[currentStep].title}
+                        </h2>
+                        {errors && (
+                            <div className="mb-4 p-2 bg-red-100 text-red-700 rounded">
+                                {Object.values(errors)
+                                    .flat()
+                                    .map((err, index) => (
+                                        <p key={index}>{err}</p>
+                                    ))}
+                            </div>
+                        )}
+                        <form
+                            onSubmit={onSubmit}
+                            className="flex flex-col w-full"
+                        >
+                            {formSections[currentStep].fields.map(
+                                (fieldName) => (
+                                    <div
+                                        className="form-group flex items-center mb-4"
+                                        key={fieldName}
+                                    >
+                                        <label
+                                            htmlFor={fieldName}
+                                            className="block font-medium text-gray-700 w-1/3"
+                                        >
+                                            {fieldName
+                                                .split("_")
+                                                .map(
+                                                    (word) =>
+                                                        word
+                                                            .charAt(0)
+                                                            .toUpperCase() +
+                                                        word.slice(1),
+                                                )
+                                                .join(" ")}
+                                            {requiredFields.includes(
+                                                fieldName,
+                                            ) && (
+                                                <span className="text-red-500">
+                                                    *
+                                                </span>
+                                            )}
+                                        </label>
+                                        <div className="w-2/3">
+                                            {renderFormField(fieldName)}
+                                        </div>
+                                    </div>
+                                ),
+                            )}
+                            {passwordError && (
+                                <div className="text-red-500 mb-4">
+                                    {passwordError}
+                                </div>
+                            )}
+                            <div className="form-navigation flex justify-between mt-6">
+                                {currentStep > 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={goToPreviousStep}
+                                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                                    >
+                                        Previous
+                                    </button>
+                                )}
+                                {currentStep < formSections.length - 1 ? (
+                                    <button
+                                        type="button"
+                                        onClick={goToNextStep}
+                                        className="px-4 py-2 bg-green-900 text-white rounded hover:opacity-85 "
+                                    >
+                                        Next
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="submit"
+                                        className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                                    >
+                                        Submit
+                                    </button>
+                                )}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             {successMessage && (
                 <div className="successMessageDiv">

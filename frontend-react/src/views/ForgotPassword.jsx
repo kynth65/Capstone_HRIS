@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; // for redirecting
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import axiosClient from "../axiosClient";
 import { IoIosArrowRoundBack } from "react-icons/io";
 
 function ForgotPassword() {
-    const [email, setEmail] = useState("");
+    const [personalEmail, setPersonalEmail] = useState("");
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
 
@@ -14,7 +14,7 @@ function ForgotPassword() {
         e.preventDefault();
         try {
             const response = await axiosClient.post("/forgot-password", {
-                email,
+                personal_email: personalEmail,
             });
             setMessage(response.data.message);
             setTimeout(() => {
@@ -32,34 +32,32 @@ function ForgotPassword() {
         <>
             <div className="h-screen">
                 <div className="relative flex justify-center items-center h-full">
-                    {/* Back Arrow */}
                     <div className="absolute left-2 top-4">
                         <Link to="/login">
                             <IoIosArrowRoundBack className="ml-3 size-14" />
                         </Link>
                     </div>
 
-                    {/* Main Content */}
-                    <div className="flex flex-col items-center bg-white rounded-xl  w-full h-fit py-20 max-w-md">
-                        {/* Header */}
+                    <div className="flex flex-col items-center bg-white rounded-xl w-full h-fit py-20 max-w-md">
                         <h2 className="text-black text-2xl font-semibold uppercase pb-5">
                             Forgot Password
                         </h2>
 
-                        {/* Form */}
                         <form
                             onSubmit={handleSubmit}
                             className="flex flex-col items-center"
                         >
                             <label className="text-black font-kodchasan font-semibold text-base">
-                                Email:
+                                Personal Email:
                             </label>
                             <input
                                 className="userEmail w-72 h-12 rounded-lg font-kodchasan text-black lg:h-12"
                                 type="email"
-                                placeholder="Type your email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Type your personal email"
+                                value={personalEmail}
+                                onChange={(e) =>
+                                    setPersonalEmail(e.target.value)
+                                }
                                 required
                             />
 
@@ -71,7 +69,6 @@ function ForgotPassword() {
                             </button>
                         </form>
 
-                        {/* Error and Success Messages */}
                         {error && (
                             <div className="errorPopup mt-4">{error}</div>
                         )}

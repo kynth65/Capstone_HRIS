@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use App\Http\Resources\UserResource;
+use App\Mail\SendEmployeeAccount;
 
 class AuthController extends Controller
 {
@@ -74,6 +75,7 @@ class AuthController extends Controller
                 'department' => $data['department'],
                 'department' => $data['department'],
                 'employment_status' => $data['employment_status'],
+                'personal_email' =>  $data['personal_email'],
                 'employee_type' =>  $data['employee_type'],
                 'position' => $data['position'],
                 'hire_date' => $data['hire_date'],
@@ -96,10 +98,9 @@ class AuthController extends Controller
             // Return response with token and user resource
             // Set token as a cookie
             $cookie = cookie('token', $token, 60 * 24); // token valid for 1 day
-
+            Mail::to($data['personal_email'])->send(new SendEmployeeAccount($data['email'], $data['password']));
             // Return response with token and user resource
             return response()->json([
-                'user' => $user,
                 'user' => $user,
                 'token' => $token
             ])->withCookie($cookie);
@@ -346,5 +347,11 @@ class AuthController extends Controller
             'employmentStatus' => $employmentStatuses,
             'notifications' => $notifications,
         ]);
+    }
+    public function getUsers()
+    {
+        // Fetch all users and return their name and other necessary fields
+        $users = User::select('name')->get(); // Adjust the fields you need
+        return response()->json($users);
     }
 }

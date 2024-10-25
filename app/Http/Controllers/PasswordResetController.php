@@ -16,46 +16,44 @@ class PasswordResetController extends Controller
     public function forgotPassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email|exists:users,email',
+            'personal_email' => 'required|email|exists:users,personal_email',
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['message' => 'Email does not exist'], 422);
+            return response()->json(['message' => 'Personal email does not exist'], 422);
         }
 
-        // Generate a secure token for password reset
         $token = Str::random(60);
 
-        // Store the token in a password_resets table (you might need to create this table)
-        DB::table('password_reset_tokens')->insert([
-            'email' => $request->email,
+        DB::table('password_resets')->insert([
+            'personal_email' => $request->personal_email,
             'token' => Hash::make($token),
             'created_at' => Carbon::now()
         ]);
 
-        // Send the password reset email with a link
-        Mail::send('emails.password-reset', ['token' => $token, 'email' => $request->email], function ($message) use ($request) {
-            $message->to($request->email);
+        Mail::send('emails.password-reset', [
+            'token' => $token,
+            'personal_email' => $request->personal_email
+        ], function ($message) use ($request) {
+            $message->to($request->personal_email);
             $message->subject('Reset Your Password');
         });
 
-        return response()->json(['message' => 'Reset password link has been sent to your email']);
+        return response()->json(['message' => 'Reset password link has been sent to your personal email']);
     }
 
-    // Handle password reset directly
     public function resetPassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email|exists:users,email',
+            'personal_email' => 'required|email|exists:users,personal_email',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['message' => 'password and confirm password are not match'], 422);
+            return response()->json(['message' => 'Password and confirm password do not match'], 422);
         }
 
-        // Find the user by email and update the password
-        $user = User::where('email', $request->email)->first();
+        $user = User::where('personal_email', $request->personal_email)->first();
         $user->password = Hash::make($request->password);
         $user->save();
 

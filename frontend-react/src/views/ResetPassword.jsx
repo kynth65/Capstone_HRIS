@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLocation, useNavigate, Link, useParams } from "react-router-dom"; // for navigation
+import { useLocation, useNavigate, Link, useParams } from "react-router-dom";
 import axiosClient from "../axiosClient";
 import "../styles/applicantPortal.css";
 import "../styles/openPosition.css";
@@ -9,21 +9,30 @@ function ResetPassword() {
     const [password, setPassword] = useState("");
     const [passwordConfirmation, setPasswordConfirmation] = useState("");
     const [message, setMessage] = useState("");
+    const [error, setError] = useState("");
     const { token } = useParams();
-    const email = new URLSearchParams(window.location.search).get("email");
+    const personalEmail = new URLSearchParams(window.location.search).get(
+        "personal_email",
+    );
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             const response = await axiosClient.post("/reset-password", {
                 token,
-                email,
+                personal_email: personalEmail,
                 password,
                 password_confirmation: passwordConfirmation,
             });
             setMessage(response.data.message);
+            setTimeout(() => {
+                setMessage("");
+            }, 2000);
         } catch (error) {
-            setMessage(error.response.data.message);
+            setError(error.response.data.message);
+            setTimeout(() => {
+                setError("");
+            }, 2000);
         }
     };
 
@@ -50,13 +59,13 @@ function ResetPassword() {
                         className="flex flex-col items-center"
                     >
                         <label className="text-black font-semibold font-kodchasan text-lg">
-                            Email:
+                            Personal Email:
                         </label>
                         <input
                             className="w-72 h-12 rounded-lg font-semibold text-black lg:h-12"
                             type="email"
-                            value={email}
-                            readOnly // Email is not editable
+                            value={personalEmail}
+                            readOnly
                         />
 
                         <label className="text-black font-semibold font-kodchasan text-lg mt-4">

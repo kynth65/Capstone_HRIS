@@ -31,6 +31,7 @@ class RegisterRequest extends FormRequest
             'hire_date' => 'required|date',
             'probation_end_date' => 'required|date',
             'reporting_manager' => 'required',
+            'personal_email' =>  'required|email',
             'schedule' => 'required'
 
         ];

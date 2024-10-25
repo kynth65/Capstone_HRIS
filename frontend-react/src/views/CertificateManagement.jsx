@@ -834,7 +834,7 @@ function CertificateManagement() {
                             className="md:px-3 sm:mb-4 w-full py-[10px] bg-green-700 text-white h-fit rounded text-sm font-normal hover:bg-green-900"
                             onClick={handleOpenUpdateRequestModal}
                         >
-                            Certificate Requests
+                            Certificate Update Requests
                         </button>
                     </div>
 

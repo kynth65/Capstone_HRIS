@@ -275,7 +275,7 @@ function EmployeeLayout() {
                             </div>
 
                             {showNotificationDropdown && (
-                                <div className="absolute right-0 mt-2 h-96 overflow-auto w-70 bg-white shadow-lg rounded-lg border border-gray-100 z-50">
+                                <div className="absolute right-0 mt-2 h-96 overflow-auto w-[520px] bg-white shadow-lg rounded-lg border border-gray-100 z-50">
                                     {notifications.length > 0 ? (
                                         Object.entries(
                                             notifications.reduce(
@@ -315,6 +315,11 @@ function EmployeeLayout() {
                                                                     path: "/salary-history",
                                                                     text: "Salary History",
                                                                 },
+                                                                certificate_update_rejection:
+                                                                    {
+                                                                        path: "/employee-certificate",
+                                                                        text: "Employee Certificate",
+                                                                    },
                                                                 certificate_response:
                                                                     {
                                                                         path: "/employee-certificate",

@@ -279,199 +279,220 @@ const IncidentManagement = () => {
     );
 
     return (
-        <div className="pt-5 md:p-6 bg-white rounded-xl shadow-md mx-auto">
-            {successMessage && (
-                <p className="text-green-600 mb-4">{successMessage}</p>
-            )}
-            {errorMessage && (
-                <p className="text-red-600 mb-4">{errorMessage}</p>
-            )}
+        <>
+            {" "}
+            <nav className="grid grid-cols-3 space-x-4 mb-4">
+                <button
+                    className={`navButton ${
+                        activeStatus === "pending" ? "active" : ""
+                    }`}
+                    onClick={() => handleStatusChange("pending")}
+                >
+                    Pending
+                </button>
 
-            <nav className="mb-6">
-                <ul className="flex space-x-4">
-                    {["Pending", "Investigating", "Resolved"].map((status) => (
-                        <li key={status}>
-                            <button
-                                onClick={() => handleStatusChange(status)}
-                                className={`px-4 py-2 rounded ${
-                                    activeStatus === status.toLowerCase()
-                                        ? "bg-green-900 text-white"
-                                        : "bg-gray-200 text-black"
-                                }`}
-                            >
-                                {status}
-                            </button>
-                        </li>
-                    ))}
-                </ul>
+                <button
+                    className={`navButton ${
+                        activeStatus === "investigating" ? "active" : ""
+                    }`}
+                    onClick={() => handleStatusChange("investigating")}
+                >
+                    Investigating
+                </button>
+
+                <button
+                    className={`navButton ${
+                        activeStatus === "resolved" ? "active" : ""
+                    }`}
+                    onClick={() => handleStatusChange("resolved")}
+                >
+                    Resolved
+                </button>
             </nav>
+            <div className="pt-5 md:p-6 bg-white rounded-xl shadow-md mx-auto">
+                {successMessage && (
+                    <p className="text-green-600 mb-4">{successMessage}</p>
+                )}
+                {errorMessage && (
+                    <p className="text-red-600 mb-4">{errorMessage}</p>
+                )}
 
-            <div className="overflow-y-auto max-h-[600px]">
-                {activeStatus === "pending" &&
-                    renderIncidentTable(pendingIncidents)}
-                {activeStatus === "investigating" &&
-                    renderIncidentTable(investigatingIncidents)}
-                {activeStatus === "resolved" &&
-                    renderIncidentTable(resolvedIncidents)}
-            </div>
-
-            {viewMode && selectedIncident && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-xl py-12 shadow-md w-full max-w-4xl text-black overflow-y-auto max-h-[90vh]">
-                        <h3 className="text-xl font-semibold mb-4 text-center">
-                            Incident Details
-                        </h3>
-                        <div className="space-y-2 mb-4 text-base">
-                            <p>
-                                <strong>Name:</strong> {selectedIncident.name}
-                            </p>
-                            <p>
-                                <strong>Title:</strong> {selectedIncident.title}
-                            </p>
-                            <p className="whitespace-pre-wrap break-words">
-                                <strong>Description:</strong>{" "}
-                                {selectedIncident.description}
-                            </p>
-                            <p>
-                                <strong>Date:</strong>{" "}
-                                {selectedIncident.incident_date}
-                            </p>
-                            <p>
-                                <strong>Severity:</strong>{" "}
-                                {selectedIncident.severity}
-                            </p>
-                            <p>
-                                <strong>Status:</strong>{" "}
-                                {selectedIncident.status}
-                            </p>
-                            {selectedIncident.file_path && (
-                                <p>
-                                    <strong>PDF: </strong>
-                                    <a
-                                        href={`${import.meta.env.VITE_BASE_URL.replace("/api", "")}/storage/${selectedIncident.file_path}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-500 hover:underline"
-                                    >
-                                        View PDF
-                                    </a>
-                                </p>
-                            )}
-                        </div>
-
-                        {selectedIncident.status === "investigating" &&
-                            complianceReports.length > 0 && (
-                                <div className="mt-6">
-                                    <h4 className="text-lg font-semibold mb-2">
-                                        Compliance Reports
-                                    </h4>
-                                    <table className="min-w-full border-collapse">
-                                        <thead className="bg-gray-200">
-                                            <tr>
-                                                <th className="p-2">User</th>
-                                                <th className="p-2">
-                                                    Response
-                                                </th>
-                                                <th className="p-2">PDF</th>
-                                                <th className="p-2">
-                                                    Submitted Date
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {complianceReports.map((report) => (
-                                                <tr key={report.id}>
-                                                    <td className="p-2 border">
-                                                        {report.user
-                                                            ? report.user
-                                                                  .name ||
-                                                              `${report.user.first_name} ${report.user.last_name}`
-                                                            : "Unknown User"}
-                                                    </td>
-                                                    <td className="p-2 border">
-                                                        {report.report ||
-                                                            "No response"}
-                                                    </td>
-                                                    <td className="p-2 border">
-                                                        {report.file_path ? (
-                                                            <a
-                                                                href={`${import.meta.env.VITE_BASE_URL.replace("/api", "")}/storage/${report.file_path}`}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="text-blue-500 hover:underline"
-                                                            >
-                                                                View PDF
-                                                            </a>
-                                                        ) : (
-                                                            "No PDF"
-                                                        )}
-                                                    </td>
-                                                    <td className="p-2 border">
-                                                        {report.created_at
-                                                            ? new Date(
-                                                                  report.created_at,
-                                                              ).toLocaleString()
-                                                            : "Unknown Date"}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-
-                        <form
-                            onSubmit={handleSubmit}
-                            className="space-y-4 mt-6"
-                        >
-                            <div className="flex items-center space-x-4">
-                                <label className="text-black w-1/3">
-                                    Status
-                                </label>
-                                <select
-                                    name="status"
-                                    value={form.status}
-                                    onChange={handleChange}
-                                    className="w-2/3 p-2 border border-green-900 rounded"
-                                >
-                                    <option value="pending">Pending</option>
-                                    <option value="investigating">
-                                        Investigating
-                                    </option>
-                                    <option value="resolved">Resolved</option>
-                                </select>
-                            </div>
-                            <div className="flex items-center space-x-4">
-                                <label className="text-gray-700 w-1/3">
-                                    Upload PDF Report (optional)
-                                </label>
-                                <input
-                                    type="file"
-                                    onChange={handleFileChange}
-                                    accept="application/pdf"
-                                    className="w-2/3 p-2 border border-green-900 rounded"
-                                />
-                            </div>
-                            <div className="flex justify-end space-x-2 mt-4">
-                                <button
-                                    type="button"
-                                    onClick={() => setViewMode(false)}
-                                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                                >
-                                    Close
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="px-4 py-2 bg-green-900 text-white rounded hover:bg-green-800"
-                                >
-                                    Update
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                <div className="overflow-y-auto max-h-[600px]">
+                    {activeStatus === "pending" &&
+                        renderIncidentTable(pendingIncidents)}
+                    {activeStatus === "investigating" &&
+                        renderIncidentTable(investigatingIncidents)}
+                    {activeStatus === "resolved" &&
+                        renderIncidentTable(resolvedIncidents)}
                 </div>
-            )}
-        </div>
+
+                {viewMode && selectedIncident && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white p-6 rounded-xl py-12 shadow-md w-full max-w-4xl text-black overflow-y-auto max-h-[90vh]">
+                            <h3 className="text-xl font-semibold mb-4 text-center">
+                                Incident Details
+                            </h3>
+                            <div className="space-y-2 mb-4 text-base">
+                                <p>
+                                    <strong>Name:</strong>{" "}
+                                    {selectedIncident.name}
+                                </p>
+                                <p>
+                                    <strong>Title:</strong>{" "}
+                                    {selectedIncident.title}
+                                </p>
+                                <p className="whitespace-pre-wrap break-words">
+                                    <strong>Description:</strong>{" "}
+                                    {selectedIncident.description}
+                                </p>
+                                <p>
+                                    <strong>Date:</strong>{" "}
+                                    {selectedIncident.incident_date}
+                                </p>
+                                <p>
+                                    <strong>Severity:</strong>{" "}
+                                    {selectedIncident.severity}
+                                </p>
+                                <p>
+                                    <strong>Status:</strong>{" "}
+                                    {selectedIncident.status}
+                                </p>
+                                {selectedIncident.file_path && (
+                                    <p>
+                                        <strong>PDF: </strong>
+                                        <a
+                                            href={`${import.meta.env.VITE_BASE_URL.replace("/api", "")}/storage/${selectedIncident.file_path}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-500 hover:underline"
+                                        >
+                                            View PDF
+                                        </a>
+                                    </p>
+                                )}
+                            </div>
+
+                            {selectedIncident.status === "investigating" &&
+                                complianceReports.length > 0 && (
+                                    <div className="mt-6">
+                                        <h4 className="text-lg font-semibold mb-2">
+                                            Compliance Reports
+                                        </h4>
+                                        <table className="min-w-full border-collapse">
+                                            <thead className="bg-gray-200">
+                                                <tr>
+                                                    <th className="p-2">
+                                                        User
+                                                    </th>
+                                                    <th className="p-2">
+                                                        Response
+                                                    </th>
+                                                    <th className="p-2">PDF</th>
+                                                    <th className="p-2">
+                                                        Submitted Date
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {complianceReports.map(
+                                                    (report) => (
+                                                        <tr key={report.id}>
+                                                            <td className="p-2 border">
+                                                                {report.user
+                                                                    ? report
+                                                                          .user
+                                                                          .name ||
+                                                                      `${report.user.first_name} ${report.user.last_name}`
+                                                                    : "Unknown User"}
+                                                            </td>
+                                                            <td className="p-2 border">
+                                                                {report.report ||
+                                                                    "No response"}
+                                                            </td>
+                                                            <td className="p-2 border">
+                                                                {report.file_path ? (
+                                                                    <a
+                                                                        href={`${import.meta.env.VITE_BASE_URL.replace("/api", "")}/storage/${report.file_path}`}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="text-blue-500 hover:underline"
+                                                                    >
+                                                                        View PDF
+                                                                    </a>
+                                                                ) : (
+                                                                    "No PDF"
+                                                                )}
+                                                            </td>
+                                                            <td className="p-2 border">
+                                                                {report.created_at
+                                                                    ? new Date(
+                                                                          report.created_at,
+                                                                      ).toLocaleString()
+                                                                    : "Unknown Date"}
+                                                            </td>
+                                                        </tr>
+                                                    ),
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+
+                            <form
+                                onSubmit={handleSubmit}
+                                className="space-y-4 mt-6"
+                            >
+                                <div className="flex items-center space-x-4">
+                                    <label className="text-black w-1/3">
+                                        Status
+                                    </label>
+                                    <select
+                                        name="status"
+                                        value={form.status}
+                                        onChange={handleChange}
+                                        className="w-2/3 p-2 border border-green-900 rounded"
+                                    >
+                                        <option value="pending">Pending</option>
+                                        <option value="investigating">
+                                            Investigating
+                                        </option>
+                                        <option value="resolved">
+                                            Resolved
+                                        </option>
+                                    </select>
+                                </div>
+                                <div className="flex items-center space-x-4">
+                                    <label className="text-gray-700 w-1/3">
+                                        Upload PDF Report (optional)
+                                    </label>
+                                    <input
+                                        type="file"
+                                        onChange={handleFileChange}
+                                        accept="application/pdf"
+                                        className="w-2/3 p-2 border border-green-900 rounded"
+                                    />
+                                </div>
+                                <div className="flex justify-end space-x-2 mt-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setViewMode(false)}
+                                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                                    >
+                                        Close
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="px-4 py-2 bg-green-900 text-white rounded hover:bg-green-800"
+                                    >
+                                        Update
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </>
     );
 };
 

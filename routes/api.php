@@ -229,3 +229,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/employee-notifications/{id}/mark-as-read', [EmployeeNotificationController::class, 'markAsRead']);
     Route::get('/employee-notifications/unread-count', [EmployeeNotificationController::class, 'unreadCount']);
 });
+
+Route::get('/users', [AuthController::class, 'getUsers']);
