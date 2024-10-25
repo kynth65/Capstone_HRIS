@@ -612,7 +612,7 @@ function Recruitment_Management() {
 
                             {showApplicantsModal && (
                                 <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-                                    <div className="bg-white p-6 rounded-lg shadow-lg w-3/4 h-[700px] overflow-y-scroll text-black relative">
+                                    <div className="bg-white p-6 rounded-lg shadow-lg w-3/4 h-[700px] overflow-y-auto text-black relative">
                                         <span
                                             className="absolute top-2 right-2 cursor-pointer text-xl font-bold text-gray-600 hover:text-gray-900"
                                             onClick={() =>

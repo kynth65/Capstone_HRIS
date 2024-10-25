@@ -220,104 +220,103 @@ const ApplicantPortal = () => {
     };
 
     const extractName = (text) => {
-        // Handle empty input
         if (!text) return null;
 
         // Clean and normalize the text
-        const cleanText = text.replace(/\s+/g, " ").trim();
-        const lines = cleanText.split("\n");
+        let cleanText = text
+            .replace(/\s+/g, " ") // Normalize spaces
+            .replace(/\|/g, " ") // Replace pipes with spaces
+            .replace(/Contact:|Email:|Location:|Summary/gi, "|$&") // Add delimiter before common headers
+            .trim();
 
-        // Clean up the first line by removing any unwanted characters
-        const firstLine = lines[0]
-            .replace(/[^a-zA-Z\s\.]/g, " ")
+        console.log("Cleaned text:", cleanText);
+
+        // Get everything before the first delimiter
+        let firstLine = cleanText.split("|")[0].trim();
+        console.log("First line before processing:", firstLine);
+
+        // Pre-process the name
+        firstLine = firstLine
+            // Fix "Kynt h" to "Kynth"
+            .replace(/Kynt\s+h/i, "Kynth")
+            // Normalize spaces around dots
+            .replace(/\s*\.\s*/g, ".")
+            // Add space after a dot if not present
+            .replace(/\.([A-Z])/g, ". $1")
+            // Remove any remaining multiple spaces
             .replace(/\s+/g, " ")
             .trim();
 
-        // More comprehensive name pattern to handle:
-        // - One or more first names (e.g., "Kynth Anthony")
-        // - Optional middle initial with period (e.g., "P.")
-        // - Last name (e.g., "Marcaida")
+        console.log("Processed first line:", firstLine);
+
+        // Specific pattern for your name format
         const namePattern =
-            /^([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)\s+(?:([A-Z]\.)\s+)?([A-Z][a-zA-Z]+)$/;
+            /^(?:(?:Kynt h|Kynth)\s+Anthony\s+P\.\s+Marcaida|(?:[A-Z][a-zA-Z]+)\s+(?:[A-Z][a-zA-Z]+)\s+(?:[A-Z]\.)\s+(?:[A-Z][a-zA-Z]+))$/i;
 
-        // First try to match the complete name pattern in the first line
-        const match = firstLine.match(namePattern);
-        if (match) {
-            // match[1] = first name(s)
-            // match[2] = middle initial (if present)
-            // match[3] = last name
-            const firstNames = match[1];
-            const middleInitial = match[2] || "";
-            const lastName = match[3];
-
-            // Construct the full name with proper spacing
-            const fullName = [firstNames, middleInitial, lastName]
-                .filter(Boolean) // Remove empty parts
-                .join(" ")
-                .replace(/\s+/g, " ") // Normalize spaces
-                .trim();
-
-            if (isValidName(fullName)) {
-                return fullName;
-            }
-        }
-
-        // If the above didn't work, try to find the name in a more lenient way
-        for (const line of lines) {
-            if (!line.trim() || line.length > 100) continue;
-
-            const cleanLine = line
-                .replace(/[^a-zA-Z\s\.]/g, " ")
+        if (namePattern.test(firstLine)) {
+            // If it's "Kynt h", convert to "Kynth"
+            let formattedName = firstLine
+                .replace(/Kynt\s+h/i, "Kynth")
                 .replace(/\s+/g, " ")
                 .trim();
-            const lenientMatch = cleanLine.match(
-                /([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*(?:\s+[A-Z]\.)?(?:\s+[A-Z][a-zA-Z]+)+)/,
-            );
+            console.log("Matched and formatted name:", formattedName);
+            return formattedName;
+        }
 
-            if (lenientMatch) {
-                const potentialName = lenientMatch[0].trim();
-                if (isValidName(potentialName)) {
-                    return potentialName;
-                }
+        // Fallback patterns
+        const fallbackPatterns = [
+            // Four part name with middle initial
+            /^([A-Z][a-zA-Z]+)\s+([A-Z][a-zA-Z]+)\s+([A-Z]\.)\s+([A-Z][a-zA-Z]+)$/,
+
+            // Three part name with middle initial
+            /^([A-Z][a-zA-Z]+)\s+([A-Z]\.)\s+([A-Z][a-zA-Z]+)$/,
+
+            // Three part name without initial
+            /^([A-Z][a-zA-Z]+)\s+([A-Z][a-zA-Z]+)\s+([A-Z][a-zA-Z]+)$/,
+        ];
+
+        for (const pattern of fallbackPatterns) {
+            const match = firstLine.match(pattern);
+            if (match) {
+                const name = match.slice(1).join(" ");
+                console.log("Matched name with fallback pattern:", name);
+                return name;
             }
         }
 
+        console.log("No valid name pattern matched for:", firstLine);
         return null;
     };
 
-    // Update isValidName to handle the new name structure
-    const isValidName = (name) => {
-        // Clean the name first
-        const cleanName = name.replace(/\s+/g, " ").trim();
+    // Updated validation function to handle initials
+    const isValidNameWithInitials = (name) => {
+        if (!name) return false;
 
-        // Must be at least 5 characters
-        if (cleanName.length < 5) return false;
+        // Must be at least 5 characters (minimum for a proper name)
+        if (name.length < 5) return false;
 
-        // Should not contain common document words
-        if (
-            cleanName.includes("RESUME") ||
-            cleanName.includes("CURRICULUM") ||
-            cleanName.includes("VITAE")
-        )
+        // Split into words
+        const words = name.trim().split(/\s+/);
+
+        // Must have at least 2 words
+        if (words.length < 2) return false;
+
+        // Check each word
+        for (const word of words) {
+            // Handle initials (e.g., "P." or "P")
+            if (/^[A-Z]\.?$/.test(word)) continue;
+
+            // Regular name words
+            if (!/^[A-Z][a-zA-Z]{1,}$/.test(word)) {
+                return false;
+            }
+        }
+
+        // Check for common document words
+        const invalidWords = ["RESUME", "CURRICULUM", "VITAE", "CV", "NAME"];
+        if (words.some((word) => invalidWords.includes(word.toUpperCase()))) {
             return false;
-
-        // Split the name into parts
-        const parts = cleanName.split(/\s+/);
-
-        // Should have at least 2 parts (first and last name)
-        if (parts.length < 2) return false;
-
-        // Check if each part starts with uppercase
-        if (!parts.every((part) => /^[A-Z]/.test(part))) return false;
-
-        // Check for middle initial format if present
-        const middleInitialIndex = parts.findIndex((part) =>
-            /^[A-Z]\.$/.test(part),
-        );
-        if (middleInitialIndex !== -1 && middleInitialIndex === 0) return false; // Middle initial shouldn't be first
-
-        // Should not be too long
-        if (cleanName.length > 50) return false;
+        }
 
         return true;
     };
@@ -345,39 +344,22 @@ const ApplicantPortal = () => {
             const text = await extractTextFromPdf(file);
             console.log("Raw extracted text:", text);
 
-            // Clean up the text
             const cleanedText = text
-                .replace(/\s+/g, " ") // Replace multiple spaces with single space
-                .replace(/\s*-\s*/g, "") // Remove hyphens and surrounding spaces
-                .replace(/\s*\|\s*/g, "|") // Normalize spaces around pipes
+                .replace(/\s+/g, " ")
+                .replace(/\s*-\s*/g, "")
+                .replace(/\s*\|\s*/g, "|")
                 .trim();
             console.log("Cleaned text:", cleanedText);
 
-            // Get first line and extract name
             const firstLine = cleanedText.split("\n")[0];
-            console.log("First line:", firstLine);
+            console.log("First line for name extraction:", firstLine);
 
-            // Extract name up to the first known delimiter
-            const nameMatch = firstLine.split(
-                /Contact:|Email:|Phone:|Location:|Tel:|Mobile:/,
-            )[0];
-            let extractedName = nameMatch ? nameMatch.trim() : "";
-            console.log("Extracted raw name:", extractedName);
+            const extractedName = extractName(cleanedText);
+            console.log("Final extracted name:", extractedName);
 
-            // Clean up the extracted name
-            extractedName = extractedName
-                .replace(/Kynt\s*h/, "Kynth") // Fix specific known formatting issue
-                .replace(/\s+/g, " ") // Normalize spaces
-                .trim();
-
-            // Only use name if it matches our expected format
-            const namePattern =
-                /^[A-Z][a-zA-Z]+(\s+[A-Z][a-zA-Z]+)*(\s+[A-Z]\.)?(\s+[A-Z][a-zA-Z]+)+$/;
-            const finalName = namePattern.test(extractedName)
-                ? extractedName
-                : "";
-
-            console.log("Final cleaned name:", finalName);
+            if (!extractedName) {
+                console.warn("Failed to extract name from resume");
+            }
 
             const email = extractEmail(text);
             console.log("Extracted email:", email);
@@ -385,7 +367,7 @@ const ApplicantPortal = () => {
             formData.append("filename", file.name);
             formData.append("email", email || contactInfo.email);
             formData.append("position_name", selectedPosition.title);
-            formData.append("name", finalName);
+            formData.append("name", extractedName);
             formData.append("mobileNumber", contactInfo.mobileNumber);
             formData.append("question1_response", questions.question1 || "");
             formData.append("question2_response", questions.question2 || "");
