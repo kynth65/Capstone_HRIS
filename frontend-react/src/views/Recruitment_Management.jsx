@@ -24,14 +24,6 @@ function Recruitment_Management() {
     const [selectedTags, setSelectedTags] = useState([]);
     const [candidates, setCandidates] = useState([]);
     const [filteredCandidates, setFilteredCandidates] = useState([]);
-    const [newPosition, setNewPosition] = useState({
-        title: "",
-        type: "",
-        description: "",
-        qualifications: "",
-        hr_tags: "",
-        base_salary: "",
-    });
     const [files, setFiles] = useState([]);
     const [remove, setRemove] = useState([]);
     const [hr_tags, setHrTags] = useState("");
@@ -52,6 +44,15 @@ function Recruitment_Management() {
     const [expandedDescriptions, setExpandedDescriptions] = useState({});
     const [tagCache, setTagCache] = useState({});
     const debounceTimer = useRef(null);
+    const [applicantCounts, setApplicantCounts] = useState({});
+    const [newPosition, setNewPosition] = useState({
+        title: "",
+        type: "",
+        description: "",
+        qualifications: "",
+        hr_tags: "",
+        base_salary: "",
+    });
 
     useEffect(() => {
         setDocumentContent(useDocument[documentType]);
@@ -246,6 +247,7 @@ function Recruitment_Management() {
             setLoading(false);
         }
     };
+
     const handleViewApplicants = async (position) => {
         try {
             const response = await axiosClient.get(
@@ -255,16 +257,56 @@ function Recruitment_Management() {
             const sortedApplicants = applicants
                 .map((applicant, index) => ({
                     ...applicant,
-                    rank: index + 1, // Add rank for sorting
+                    rank: index + 1,
                 }))
-                .sort((a, b) => b.percentage - a.percentage); // Sort by percentage descending
+                .sort((a, b) => b.percentage - a.percentage);
+
             setApplicants(sortedApplicants);
             setCurrentPosition(position);
             setShowApplicantsModal(true);
+
+            // Update the count for this position
+            setApplicantCounts((prev) => ({
+                ...prev,
+                [position.position_id]: applicants.length,
+            }));
         } catch (error) {
             console.error("Error fetching applicants:", error);
         }
     };
+    useEffect(() => {
+        const fetchApplicantCounts = async () => {
+            try {
+                const counts = {};
+                for (const position of positions) {
+                    const response = await axiosClient.get(
+                        `/applicants/${position.position_id}`,
+                    );
+                    counts[position.position_id] = response.data.length;
+                }
+                setApplicantCounts(counts);
+            } catch (error) {
+                console.error("Error fetching applicant counts:", error);
+            }
+        };
+
+        if (positions.length > 0) {
+            fetchApplicantCounts();
+        }
+    }, [positions]);
+
+    const updateApplicantCount = async (positionId) => {
+        try {
+            const response = await axiosClient.get(`/applicants/${positionId}`);
+            setApplicantCounts((prev) => ({
+                ...prev,
+                [positionId]: response.data.length,
+            }));
+        } catch (error) {
+            console.error("Error updating applicant count:", error);
+        }
+    };
+
     const handleToOnboarding = async (candidateId) => {
         console.log("To onboarding with ID:", candidateId); // Log the candidate ID for debugging
         try {
@@ -289,6 +331,10 @@ function Recruitment_Management() {
             // Send a POST request to the backend for onboarding the candidate
             await axiosClient.post(`/onboarding/${candidateId}`);
 
+            // Update the count immediately
+            if (currentPosition) {
+                updateApplicantCount(currentPosition.position_id);
+            }
             // Set the success message and clear it after 4 seconds
             setSuccessMessage("Employee successfully onboarded and archived.");
             setTimeout(() => {
@@ -325,6 +371,10 @@ function Recruitment_Management() {
                     (candidate) => candidate.id !== candidateId,
                 ),
             );
+
+            if (currentPosition) {
+                updateApplicantCount(currentPosition.position_id);
+            }
 
             // Set the success message and clear it after 4 seconds
             setSuccessMessage("Applicant successfully removed.");
@@ -598,14 +648,30 @@ function Recruitment_Management() {
                                             <strong>Base Salary: </strong>{" "}
                                             {position.base_salary}
                                         </p>
-                                        <button
-                                            className="bg-green-900 border-2 border-green-900 font-normal text-white px-4 py-2 rounded hover:bg-white hover:text-green-900 transition"
-                                            onClick={() =>
-                                                handleViewApplicants(position)
-                                            }
-                                        >
-                                            View Applicants
-                                        </button>
+                                        <div className="relative">
+                                            <button
+                                                className="bg-green-900 border-2 border-green-900 font-normal text-white px-4 py-2 rounded hover:bg-white hover:text-green-900 transition"
+                                                onClick={() =>
+                                                    handleViewApplicants(
+                                                        position,
+                                                    )
+                                                }
+                                            >
+                                                View Applicants
+                                                {applicantCounts[
+                                                    position.position_id
+                                                ] > 0 && (
+                                                    <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                                        {
+                                                            applicantCounts[
+                                                                position
+                                                                    .position_id
+                                                            ]
+                                                        }
+                                                    </span>
+                                                )}
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>

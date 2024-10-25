@@ -160,7 +160,6 @@ const IncidentManagement = () => {
             setTimeout(() => setErrorMessage(""), 3000);
         }
     };
-
     const renderIncidentTable = (incidents) => (
         <table className="employee-table min-w-full border-collapse w-full">
             <thead className="bg-gray-100 text-black sticky top-0 z-1">
@@ -179,101 +178,110 @@ const IncidentManagement = () => {
                 </tr>
             </thead>
             <tbody className="text-black">
-                {incidents.map((incident) => (
-                    <tr key={incident.id} className="text-center">
-                        <td className="p-2 hidden md:table-cell">
-                            {incident.name}
-                        </td>
-                        <td className="p-2">{incident.title}</td>
-                        <td className="p-2 max-w-xs truncate overflow-hidden hidden md:table-cell">
-                            <span title={incident.description}>
-                                {incident.description}
-                            </span>
-                        </td>
-                        <td className="p-2 hidden lg:table-cell">
-                            {incident.incident_date}
-                        </td>
-                        <td className="p-2 hidden md:table-cell">
-                            {incident.severity}
-                        </td>
-                        <td className="p-2 hidden md:table-cell">
-                            {incident.file_path ? (
-                                <a
-                                    href={`${import.meta.env.VITE_BASE_URL.replace("/api", "")}/storage/${incident.file_path}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-500 hover:underline"
-                                >
-                                    View PDF
-                                </a>
-                            ) : (
-                                "No PDF"
-                            )}
-                        </td>
-                        <td className="p-2 hidden lg:table-cell">
-                            {incident.reported_employee_ids &&
-                            incident.reported_employee_ids.length > 0
-                                ? incident.reported_employee_ids.map(
-                                      (employeeId, index) => (
-                                          <span key={employeeId}>
-                                              {
-                                                  employees.find(
-                                                      (e) =>
-                                                          e.user_id ===
-                                                          employeeId,
-                                                  )?.name
-                                              }
-                                              {index <
-                                              incident.reported_employee_ids
-                                                  .length -
-                                                  1
-                                                  ? ", "
-                                                  : ""}
-                                          </span>
-                                      ),
-                                  )
-                                : "None"}
-                        </td>
-                        <td className="p-2">
-                            {incident.compliance_reports_count > 0 ? (
-                                <span className="text-green-600 font-bold">
-                                    {incident.compliance_reports_count}
+                {incidents && incidents.length > 0 ? (
+                    incidents.map((incident) => (
+                        <tr key={incident.id} className="text-center">
+                            <td className="p-2 hidden md:table-cell">
+                                {incident.name}
+                            </td>
+                            <td className="p-2">{incident.title}</td>
+                            <td className="p-2 max-w-xs truncate overflow-hidden hidden md:table-cell">
+                                <span title={incident.description}>
+                                    {incident.description}
                                 </span>
-                            ) : (
-                                <span className="text-red-600">
-                                    No response
-                                </span>
-                            )}
-                        </td>
-                        <td className="flex gap-3 justify-center">
-                            {incident.status === "investigating" &&
-                                incident.reported_employee_ids.length > 0 && (
-                                    <button
-                                        onClick={() =>
-                                            handleSendComplianceRequest(
-                                                incident.id,
-                                            )
-                                        }
-                                        className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                            </td>
+                            <td className="p-2 hidden lg:table-cell">
+                                {incident.incident_date}
+                            </td>
+                            <td className="p-2 hidden md:table-cell">
+                                {incident.severity}
+                            </td>
+                            <td className="p-2 hidden md:table-cell">
+                                {incident.file_path ? (
+                                    <a
+                                        href={`${import.meta.env.VITE_BASE_URL.replace("/api", "")}/storage/${incident.file_path}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-500 hover:underline"
                                     >
-                                        Send Compliance Request
-                                    </button>
+                                        View PDF
+                                    </a>
+                                ) : (
+                                    "No PDF"
                                 )}
-                            <button
-                                onClick={() => handleView(incident)}
-                                className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                            >
-                                View
-                            </button>
-                            <button
-                                onClick={() => handleDelete(incident.id)}
-                                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                            >
-                                Delete
-                            </button>
+                            </td>
+                            <td className="p-2 hidden lg:table-cell">
+                                {incident.reported_employee_ids &&
+                                incident.reported_employee_ids.length > 0
+                                    ? incident.reported_employee_ids.map(
+                                          (employeeId, index) => (
+                                              <span key={employeeId}>
+                                                  {
+                                                      employees.find(
+                                                          (e) =>
+                                                              e.user_id ===
+                                                              employeeId,
+                                                      )?.name
+                                                  }
+                                                  {index <
+                                                  incident.reported_employee_ids
+                                                      .length -
+                                                      1
+                                                      ? ", "
+                                                      : ""}
+                                              </span>
+                                          ),
+                                      )
+                                    : "None"}
+                            </td>
+                            <td className="p-2">
+                                {incident.compliance_reports_count > 0 ? (
+                                    <span className="text-green-600 font-bold">
+                                        {incident.compliance_reports_count}
+                                    </span>
+                                ) : (
+                                    <span className="text-red-600">
+                                        No response
+                                    </span>
+                                )}
+                            </td>
+                            <td className="flex gap-3 justify-center">
+                                {incident.status === "investigating" &&
+                                    incident.reported_employee_ids.length >
+                                        0 && (
+                                        <button
+                                            onClick={() =>
+                                                handleSendComplianceRequest(
+                                                    incident.id,
+                                                )
+                                            }
+                                            className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                                        >
+                                            Send Compliance Request
+                                        </button>
+                                    )}
+                                <button
+                                    onClick={() => handleView(incident)}
+                                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                >
+                                    View
+                                </button>
+                                <button
+                                    onClick={() => handleDelete(incident.id)}
+                                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                                >
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    ))
+                ) : (
+                    <tr>
+                        <td colSpan="9" className="text-center py-4">
+                            No incidents currently
                         </td>
                     </tr>
-                ))}
+                )}
             </tbody>
         </table>
     );

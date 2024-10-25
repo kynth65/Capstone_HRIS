@@ -38,6 +38,7 @@ function CertificateManagement() {
     const [selectedDepartment, setSelectedDepartment] = useState(""); // State for selected department
     const [isArchivedModalOpen, setIsArchivedModalOpen] = useState(false);
     const [archivedCertificates, setArchivedCertificates] = useState([]); // Initialize as an empty array
+    const [archivedCertificateCount, setArchivedCertificateCount] = useState(0); // State for archived certificate count
     const [selectedCategory, setSelectedCategory] = useState(""); // Add state for selected category
     const [archivedSearchQuery, setArchivedSearchQuery] = useState("");
     const [isUpdateRequestModalOpen, setIsUpdateRequestModalOpen] =
@@ -65,8 +66,9 @@ function CertificateManagement() {
         useState(false);
     const [selectedArchivedCertificate, setSelectedArchivedCertificate] =
         useState(null);
-
     const [archivedSuccessMessage, setArchivedSuccessMessage] = useState("");
+    const [certificateUpdateRequestCount, setCertificateUpdateRequestCount] =
+        useState(0);
 
     // Define departments
     const departments = ["Admin", "Diagnostics", "Clinic", "Utility", "HR"];
@@ -108,6 +110,7 @@ function CertificateManagement() {
             const response = await axiosClient.get("/certificate-requests");
             // Handle the response, e.g., set it to a state variable
             setCertificateRequests(response.data);
+            setCertificateUpdateRequestCount(response.data.length); // Set the count of requests
         } catch (error) {
             console.error("Error fetching user's certificate requests:", error);
         }
@@ -520,9 +523,11 @@ function CertificateManagement() {
 
             if (response.data && Array.isArray(response.data.data)) {
                 setArchivedCertificates(response.data.data);
+                setArchivedCertificateCount(response.data.data.length); // Set the count of archived certificates
             } else {
                 console.error("Unexpected response format:", response.data);
                 setArchivedCertificates([]);
+                setArchivedCertificateCount(0); // Reset count if no data
             }
         } catch (error) {
             console.error(
@@ -530,6 +535,7 @@ function CertificateManagement() {
                 error.response ? error.response.data : error.message,
             );
             setArchivedCertificates([]);
+            setArchivedCertificateCount(0); // Reset count if error occurs
         }
     };
 
@@ -538,6 +544,10 @@ function CertificateManagement() {
         setIsArchivedModalOpen(true);
         setArchivedSuccessMessage(""); // Clear any existing messages
     };
+
+    useEffect(() => {
+        fetchArchivedCertificates(); // Fetch the certificates and update the count when the component loads
+    }, []);
 
     const handleGrantUpdateAccess = (certificateId) => {
         if (!selectedEmployee) {
@@ -567,7 +577,8 @@ function CertificateManagement() {
             const response = await axiosClient.get(
                 "/certificate-update-requests",
             );
-            setCertificateUpdateRequests(response.data); // Ensure file_url is now included in the response
+            setCertificateUpdateRequests(response.data);
+            setCertificateUpdateRequestCount(response.data.length); // Set the count of requests
         } catch (error) {
             console.error("Error fetching update requests:", error);
         }
@@ -577,6 +588,9 @@ function CertificateManagement() {
         fetchCertificateUpdateRequests();
         setIsUpdateRequestModalOpen(true);
     };
+    useEffect(() => {
+        fetchCertificateUpdateRequests();
+    }, []);
 
     const handleOpenUpdateModal = (request) => {
         console.log(request); // Check if the correct request data is logged
@@ -692,6 +706,7 @@ function CertificateManagement() {
                             );
                             alert("Failed to revoke access. Please try again.");
                         });
+                    fetchCertificateUpdateRequests(); // Re-fetch after rejecting to update the list and count
                 })
                 .catch((error) => {
                     console.error("Error rejecting the request:", error);
@@ -830,12 +845,19 @@ function CertificateManagement() {
                         />
 
                         {/* Button to open certificate update request modal */}
-                        <button
-                            className="md:px-3 sm:mb-4 w-full py-[10px] bg-green-700 text-white h-fit rounded text-sm font-normal hover:bg-green-900"
-                            onClick={handleOpenUpdateRequestModal}
-                        >
-                            Certificate Update Requests
-                        </button>
+                        <div className="relative">
+                            <button
+                                className="md:px-3 sm:mb-4 w-full py-[10px] bg-green-700 text-white h-fit rounded text-sm font-normal hover:bg-green-900"
+                                onClick={handleOpenUpdateRequestModal}
+                            >
+                                Certificate Update Requests
+                                {certificateUpdateRequestCount > 0 && (
+                                    <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                        {certificateUpdateRequestCount}
+                                    </span>
+                                )}
+                            </button>
+                        </div>
                     </div>
 
                     <div className="max-h-[400px] overflow-y-auto rounded-lg">
@@ -918,10 +940,16 @@ function CertificateManagement() {
                         />
 
                         <button
-                            className="md:px-3 sm:mb-4 w-full py-[10px] bg-green-700 text-white h-fit rounded text-sm font-normal hover:bg-green-900"
+                            className="md:px-3 sm:mb-4 w-full py-[10px] bg-green-700 text-white h-fit rounded text-sm font-normal hover:bg-green-900 relative"
                             onClick={handleOpenArchiveModal}
                         >
                             View Archived Certificates
+                            {/* Display the count beside the button */}
+                            {archivedCertificateCount > 0 && (
+                                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                    {archivedCertificateCount}
+                                </span>
+                            )}
                         </button>
                     </div>
 
