@@ -47,6 +47,80 @@ function AdminLayout() {
             window.removeEventListener("beforeunload", handleBeforeUnload);
         };
     }, []);
+
+    useEffect(() => {
+        // Function to fetch notifications
+        const fetchNotifications = () => {
+            axiosClient
+                .get("/admin/notifications") // Changed from /notifications
+                .then((response) => {
+                    console.log("Notifications response:", response.data);
+                    setNotifications(response.data);
+                    const unread = response.data.filter(
+                        (n) => n.isRead === false || n.isRead === 0,
+                    ).length; // Modified condition
+                    setUnreadCount(unread);
+                })
+                .catch((error) =>
+                    console.error("Error fetching notifications:", error),
+                );
+        };
+
+        // Function to fetch unread count
+        const fetchUnreadCount = () => {
+            axiosClient
+                .get("/admin/notifications/unread-count") // Changed from /notifications/unread-count
+                .then((response) => {
+                    console.log("Unread count response:", response.data);
+                    if (response.data.unreadCount !== undefined) {
+                        setUnreadCount(response.data.unreadCount);
+                    }
+                })
+                .catch((error) =>
+                    console.error("Error fetching unread count:", error),
+                );
+        };
+
+        fetchUnreadCount();
+        fetchNotifications();
+        const intervalId = setInterval(fetchNotifications, 3000);
+
+        return () => clearInterval(intervalId);
+    }, []);
+
+    const handleNotificationClick = (notification) => {
+        console.log("Clicked notification:", notification);
+
+        // Only mark this specific notification as read
+        if (!notification.isRead) {
+            axiosClient
+                .patch(`/admin/notifications/${notification.id}/mark-as-read`) // Changed from post to patch and fixed path
+                .then((response) => {
+                    console.log("Mark as read response:", response.data);
+                    if (
+                        response.data.message === "Notification marked as read"
+                    ) {
+                        // Changed success check
+                        // Only update this specific notification
+                        setNotifications(
+                            notifications.map((n) =>
+                                n.id === notification.id
+                                    ? { ...n, isRead: true }
+                                    : n,
+                            ),
+                        );
+                        // Update unread count only for this notification
+                        setUnreadCount((prevCount) =>
+                            Math.max(0, prevCount - 1),
+                        );
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error marking notification as read:", error);
+                });
+        }
+    };
+
     const getRelativeTime = (date) => {
         const now = new Date();
         const notificationDate = new Date(date);
@@ -63,51 +137,6 @@ function AdminLayout() {
             return notificationDate.toLocaleDateString();
         }
     };
-
-    useEffect(() => {
-        axiosClient
-            .get("/admin-notifications")
-            .then((response) => {
-                console.log("Admin notifications response:", response.data);
-                const notificationsWithReadStatus = response.data.map(
-                    (notification) => ({
-                        ...notification,
-                        isRead: Boolean(notification.isRead),
-                    }),
-                );
-                setNotifications(notificationsWithReadStatus);
-                const unread = notificationsWithReadStatus.filter(
-                    (n) => !n.isRead,
-                ).length;
-                setUnreadCount(unread);
-            })
-            .catch((error) =>
-                console.error("Error fetching admin notifications:", error),
-            );
-    }, []);
-
-    const handleNotificationClick = (notification) => {
-        if (!notification.isRead) {
-            axiosClient
-                .post(`/admin-notifications/${notification.id}/mark-as-read`)
-                .then((response) => {
-                    if (response.data.success) {
-                        setNotifications(
-                            notifications.map((n) =>
-                                n.id === notification.id
-                                    ? { ...n, isRead: true }
-                                    : n,
-                            ),
-                        );
-                        setUnreadCount((prevCount) => prevCount - 1);
-                    }
-                })
-                .catch((error) => {
-                    console.error("Error marking notification as read:", error);
-                });
-        }
-    };
-
     const toggleNotificationDropdown = () => {
         setShowNotificationDropdown(!showNotificationDropdown);
     };
@@ -210,13 +239,7 @@ function AdminLayout() {
                     >
                         Admin Tags
                     </Link>
-                    <Link
-                        to="/admin-leave-management"
-                        onClick={() => handleHeaderChange("Leave Management")}
-                        className="h-10 cursor-pointer text-white hover:bg-opacity-70 hover:bg-gray-600 rounded-lg transition flex items-center justify-center"
-                    >
-                        Leave Management
-                    </Link>
+
                     <Link
                         to="/employee_management"
                         onClick={() =>
@@ -296,6 +319,12 @@ function AdminLayout() {
                                                                     path: "/admin-leave-management",
                                                                     text: "Leave Management",
                                                                 },
+                                                                probationary_candidate:
+                                                                    {
+                                                                        // Add this new type
+                                                                        path: "/employee_management", // Adjust this path to where you manage employees
+                                                                        text: "Employee Management",
+                                                                    },
                                                                 // Add more notification types and their corresponding routes here
                                                             };
 

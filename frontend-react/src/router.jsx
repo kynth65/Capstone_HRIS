@@ -87,10 +87,6 @@ const router = createBrowserRouter([
                 path: "employee_management",
                 element: <Employee_Management />,
             },
-            {
-                path: "admin-leave-management",
-                element: <Leave_Management />,
-            },
         ],
         errorElement: <ErrorPage />,
     },

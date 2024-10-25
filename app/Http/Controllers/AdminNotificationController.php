@@ -13,7 +13,6 @@ class AdminNotificationController extends Controller
     {
         try {
             Log::info('Fetching admin notifications');
-
             $notifications = AdminNotification::select([
                 'id',
                 'type',
@@ -30,12 +29,14 @@ class AdminNotificationController extends Controller
                         ->timezone('Asia/Kuala_Lumpur')
                         ->format('Y-m-d H:i:s');
 
+                    // Ensure isRead is boolean
+                    $notification->isRead = (bool)$notification->isRead;
+
                     if (!$notification->type && $notification->data) {
                         try {
                             $data = is_array($notification->data) ?
                                 $notification->data :
                                 json_decode($notification->data, true);
-
                             $notification->type = $data['type'] ?? null;
                         } catch (\Exception $e) {
                             Log::error('Error parsing notification data', [
@@ -46,6 +47,8 @@ class AdminNotificationController extends Controller
                     }
                     return $notification;
                 });
+
+            Log::info('Notifications fetched:', ['count' => $notifications->count()]);
 
             return response()->json($notifications);
         } catch (\Exception $e) {
@@ -60,32 +63,59 @@ class AdminNotificationController extends Controller
     public function markAsRead($id)
     {
         try {
+            Log::info('Attempting to mark notification as read', ['id' => $id]);
+
             $notification = AdminNotification::findOrFail($id);
-            $notification->update([
+
+            Log::info('Found notification', [
+                'notification' => $notification->toArray()
+            ]);
+
+            $updated = $notification->update([
                 'isRead' => true,
                 'read_at' => now()
             ]);
 
-            return response()->json(['message' => 'Notification marked as read']);
+            Log::info('Update result', ['success' => $updated]);
+
+            return response()->json([
+                'message' => 'Notification marked as read',
+                'success' => true
+            ]);
         } catch (\Exception $e) {
             Log::error('Error marking notification as read', [
                 'notification_id' => $id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
-            return response()->json(['error' => 'Failed to mark notification as read'], 500);
+            return response()->json([
+                'error' => 'Failed to mark notification as read',
+                'success' => false
+            ], 500);
         }
     }
 
     public function unreadCount()
     {
         try {
-            $count = AdminNotification::where('isRead', false)->count();
-            return response()->json(['unreadCount' => $count]);
+            $count = AdminNotification::where('isRead', false)
+                ->orWhere('isRead', 0)  // Added this condition
+                ->count();
+
+            Log::info('Unread count:', ['count' => $count]); // Add logging
+
+            return response()->json([
+                'unreadCount' => $count,
+                'success' => true
+            ]);
         } catch (\Exception $e) {
             Log::error('Error getting unread count', [
                 'error' => $e->getMessage()
             ]);
-            return response()->json(['error' => 'Failed to get unread count'], 500);
+            return response()->json([
+                'error' => 'Failed to get unread count',
+                'success' => false
+            ], 500);
         }
     }
 }
