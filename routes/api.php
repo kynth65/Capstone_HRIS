@@ -32,6 +32,8 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\CertificateRequestController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AdminNotificationController;
+use App\Http\Controllers\RfidCardController;
+
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -242,3 +244,10 @@ Route::prefix('admin')->group(function () {
     Route::get('/notifications/unread-count', [AdminNotificationController::class, 'unreadCount']);
 });
 Route::get('/get-responses/{applicantId}', [ApplicantController::class, 'getApplicantResponses']);
+
+Route::middleware(['api'])->group(function () {
+    Route::get('/rfid-cards', [RfidCardController::class, 'index']);
+    Route::get('/rfid-cards/available', [RfidCardController::class, 'getAvailable']);
+    Route::get('/rfid-cards/assigned', [RfidCardController::class, 'getAssigned']);
+    Route::put('/rfid-cards/{id}/status', [RfidCardController::class, 'updateStatus']);
+});

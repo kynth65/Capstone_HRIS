@@ -29,6 +29,7 @@ import EmployeeAttendance from "./views/EmployeeAttendance.jsx";
 import IncidentReportForm from "./views/IncidentsReportForm.jsx";
 import IncidentManagement from "./views/IncidentManagement.jsx";
 import HR_Leave_Management from "./views/HR_Leave_Management.jsx";
+import RfidManagement from "./views/RfidManagement.jsx";
 
 const ErrorPage = () => (
     <div>
@@ -86,6 +87,10 @@ const router = createBrowserRouter([
             {
                 path: "employee_management",
                 element: <Employee_Management />,
+            },
+            {
+                path: "rfid_management",
+                element: <RfidManagement />,
             },
         ],
         errorElement: <ErrorPage />,

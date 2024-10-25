@@ -531,10 +531,10 @@ function EmployeeManagement() {
                             Archive
                         </button>
                         <div className="employee-list-container animated fadeInDown">
-                            <table className="employee-table bg-white text-black rounded-xl overflow-hidden w-3/4 xl:w-11/12">
+                            <table className="employee-table bg-white text-black rounded-xl overflow-hidden w-3/4 xl:w-full">
                                 <thead>
                                     <tr className="font-bold text-base">
-                                        <th className="hidden lg:table-cell w-16"></th>
+                                        <th className="hidden lg:table-cell w-28"></th>
                                         <th>ID</th>
                                         <th>Name</th>
                                         <th className="hidden lg:table-cell">
@@ -559,7 +559,7 @@ function EmployeeManagement() {
                                             >
                                                 {" "}
                                                 {/* Add key prop here */}
-                                                <td className="hidden lg:table-cell lg:w-fit">
+                                                <td className="hidden lg:table-cell lg:w-fit lg:justify-center">
                                                     <img
                                                         src={
                                                             employee.profile
