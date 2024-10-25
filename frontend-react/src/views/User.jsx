@@ -245,6 +245,7 @@ function Profile() {
                             "Hire Date",
                             format(parseISO(user.hire_date), "MMMM d, yyyy"),
                         )}
+                        {renderField("Schedule", user.schedule)}
                         {renderField("Department", user.department)}
                         {renderField(
                             "Reporting Manager",
