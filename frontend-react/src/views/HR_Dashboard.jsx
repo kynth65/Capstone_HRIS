@@ -238,7 +238,7 @@ const Dashboard = () => {
                 <div className="lg:grid lg:grid-cols-2 lg:space-x-3">
                     <div className="">
                         <div className="flex flex-col mb-4 mr-2 sm:mr-0 justify-center items-center w-auto lg:h-[313px] xl:h-[334px] bg-white text-black rounded-lg  overflow-auto">
-                            <h1 className="font-bold text-lg py-2">
+                            <h1 className="font-bold text-lg">
                                 Attendance Records
                             </h1>
                             <div className="employee-list-container w-full h-72">

@@ -2301,9 +2301,6 @@ function CertificateManagement() {
 
             {activeButton === "certificateRequests" && (
                 <div className="certificate-requests-container animated fadeInDown">
-                    <h2 className="text-2xl font-semibold mb-4">
-                        Certificate Requests
-                    </h2>
                     <div className="max-h-[450px] overflow-x-auto overflow-y-auto rounded-lg">
                         <table className="employee-table bg-white text-black w-full">
                             <thead className="sticky top-0 bg-gray-200 border-b-2">
