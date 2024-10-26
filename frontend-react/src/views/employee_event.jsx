@@ -199,7 +199,50 @@ const EmployeeEvent = () => {
                 </div>
             </div>
 
-            <div className="w-full px-4 overflow-y-auto max-h-[360px]">
+            <div className="md:hidden w-full px-4 overflow-y-auto max-h-[360px]">
+                {events.length > 0 ? (
+                    <div className="space-y-3">
+                        {events.map((event) => {
+                            const { date, time } = formatEventDateTime(
+                                event.event_date,
+                            );
+                            const status = getEventStatus(event.event_date);
+                            const styles = getStatusStyles(status);
+
+                            return (
+                                <div
+                                    key={event.id}
+                                    onClick={() => handleView(event)}
+                                    className={`p-3 rounded-lg transition-colors cursor-pointer relative ${styles.cardStyle} hover:bg-opacity-75`}
+                                >
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="text-xl">
+                                            {getEventIcon(event.type)}
+                                        </span>
+                                        <h3 className="font-semibold text-neutral-800 truncate flex-1">
+                                            {event.title}
+                                        </h3>
+                                        <span
+                                            className={`px-2 py-0.5 text-xs font-medium rounded-full ${styles.badge}`}
+                                        >
+                                            {styles.text}
+                                        </span>
+                                    </div>
+                                    <div className="text-sm text-neutral-600">
+                                        {time} · {date}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div className="text-center text-neutral-600 py-4">
+                        No upcoming events
+                    </div>
+                )}
+            </div>
+
+            <div className="hidden md:block w-full px-4 overflow-y-auto max-h-[360px]">
                 {events.length > 0 ? (
                     <div className="space-y-3">
                         {events.map((event) => {
