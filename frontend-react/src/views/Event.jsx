@@ -1,6 +1,61 @@
 import React, { useState, useEffect } from "react";
 import axiosClient from "../axiosClient";
-import { PlusCircle, UserPlus, X, Building } from "lucide-react";
+import { PlusCircle, UserPlus, X, Building, Lock } from "lucide-react";
+
+const getEventStatus = (eventDateTime) => {
+    const now = new Date();
+    const eventDate = new Date(eventDateTime);
+    const isToday = eventDate.toDateString() === now.toDateString();
+    const isPast = eventDate < now;
+
+    if (isPast) return "done";
+    if (isToday) {
+        const eventTime = eventDate.getTime();
+        const currentTime = now.getTime();
+        // Check if the event is happening now (within a 2-hour window)
+        if (
+            currentTime >= eventTime &&
+            currentTime <= eventTime + 2 * 60 * 60 * 1000
+        ) {
+            return "ongoing";
+        }
+        return "today";
+    }
+    return "upcoming";
+};
+
+const getStatusStyles = (status) => {
+    switch (status) {
+        case "ongoing":
+            return {
+                cardStyle: "bg-green-50 hover:bg-green-100",
+                dotColor: "bg-green-500",
+                badge: "bg-green-100 text-green-800 border border-green-300",
+                text: "Ongoing",
+            };
+        case "today":
+            return {
+                cardStyle: "bg-blue-50 hover:bg-blue-100",
+                dotColor: "bg-blue-500",
+                badge: "bg-blue-100 text-blue-800 border border-blue-300",
+                text: "Today",
+            };
+        case "done":
+            return {
+                cardStyle: "bg-gray-50 opacity-75",
+                dotColor: "bg-gray-500",
+                badge: "bg-gray-100 text-gray-800 border border-gray-300",
+                text: "Done",
+            };
+        default:
+            return {
+                cardStyle: "bg-gray-50 hover:bg-gray-100",
+                dotColor: "bg-purple-500",
+                badge: "bg-purple-100 text-purple-800 border border-purple-300",
+                text: "Upcoming",
+            };
+    }
+};
 
 const Event = () => {
     const TYPES = {
@@ -14,6 +69,7 @@ const Event = () => {
     const AUDIENCES = {
         all_team: "All Team",
         specific_department: "Specific Department",
+        none: "None",
     };
 
     const [events, setEvents] = useState([]);
@@ -143,22 +199,6 @@ const Event = () => {
         });
     };
 
-    const fetchEvents = async () => {
-        try {
-            const response = await axiosClient.get("/events/upcoming");
-            // Sort events by date
-            const sortedEvents = response.data.sort(
-                (a, b) => new Date(a.event_date) - new Date(b.event_date),
-            );
-            setEvents(sortedEvents);
-            setLoading(false);
-        } catch (error) {
-            console.error("Error fetching events:", error);
-            setError("Failed to load events");
-            setLoading(false);
-        }
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -166,6 +206,13 @@ const Event = () => {
             const payload = {
                 ...formData,
                 event_date: eventDateTime,
+                selected_users: formData.selected_users || [],
+                // Clear departments if audience is none
+                selected_departments:
+                    formData.audience === "none"
+                        ? []
+                        : formData.selected_departments || [],
+                is_active: 1,
             };
 
             let updatedEvent;
@@ -175,22 +222,12 @@ const Event = () => {
                     payload,
                 );
                 updatedEvent = response.data;
-
-                // Update the specific event in the events array
-                setEvents((currentEvents) =>
-                    currentEvents.map((event) =>
-                        event.id === editingEvent.id ? updatedEvent : event,
-                    ),
-                );
             } else {
                 const response = await axiosClient.post("/events", payload);
                 updatedEvent = response.data;
-
-                // Add the new event to the events array
-                setEvents((currentEvents) => [...currentEvents, updatedEvent]);
             }
 
-            // Clear form and close modal
+            // Close modal and reset form
             setShowModal(false);
             setEditingEvent(null);
             setFormData({
@@ -199,14 +236,16 @@ const Event = () => {
                 event_date: "",
                 event_time: "",
                 audience: "all_team",
-                with_person: "",
+                selected_users: [],
+                selected_departments: [],
             });
+            setSelectedEmployees([]);
+            setSelectedDepartments([]);
 
-            // Refresh the events list to ensure consistency with server
-            fetchEvents();
+            // Fetch fresh data instead of updating state directly
+            await fetchEvents();
         } catch (error) {
             console.error("Error saving event:", error);
-            // You might want to show an error message to the user here
         }
     };
 
@@ -219,14 +258,87 @@ const Event = () => {
             event_date: eventDate.toISOString().split("T")[0],
             event_time: eventDate.toTimeString().slice(0, 5),
             audience: event.audience,
-            with_person: event.with_person || "",
+            selected_users: event.selected_users || [],
+            selected_departments: event.selected_departments || [],
         });
         setShowModal(true);
+
+        // Set selected employees and departments
         if (event.selected_users && event.selected_users.length > 0) {
             const selectedUsers = employees.filter((emp) =>
                 event.selected_users.includes(emp.user_id),
             );
             setSelectedEmployees(selectedUsers);
+        } else {
+            setSelectedEmployees([]);
+        }
+
+        if (
+            event.selected_departments &&
+            event.selected_departments.length > 0
+        ) {
+            const selectedDepts = departments.filter((dept) =>
+                event.selected_departments.includes(dept.id),
+            );
+            setSelectedDepartments(selectedDepts);
+        } else {
+            setSelectedDepartments([]);
+        }
+    };
+
+    const fetchEvents = async () => {
+        try {
+            const response = await axiosClient.get("/events/upcoming");
+
+            // Process the events data
+            const processedEvents = response.data.map((event) => ({
+                ...event,
+                // Handle both string JSON and array formats
+                selected_users: event.selected_users
+                    ? typeof event.selected_users === "string"
+                        ? JSON.parse(event.selected_users)
+                        : event.selected_users
+                    : [],
+                selected_departments: event.selected_departments
+                    ? typeof event.selected_departments === "string"
+                        ? JSON.parse(event.selected_departments)
+                        : event.selected_departments
+                    : [],
+            }));
+
+            // Sort events by status priority and date
+            const sortedEvents = processedEvents.sort((a, b) => {
+                const statusA = getEventStatus(a.event_date);
+                const statusB = getEventStatus(b.event_date);
+
+                const priority = {
+                    ongoing: 4,
+                    today: 3,
+                    upcoming: 2,
+                    done: 1,
+                };
+
+                // First compare by status priority
+                if (priority[statusA] !== priority[statusB]) {
+                    return priority[statusB] - priority[statusA];
+                }
+
+                // If same status, sort by date
+                // For 'done' status, sort in reverse chronological order
+                if (statusA === "done" && statusB === "done") {
+                    return new Date(b.event_date) - new Date(a.event_date);
+                }
+
+                // For other statuses, sort chronologically
+                return new Date(a.event_date) - new Date(b.event_date);
+            });
+
+            setEvents(sortedEvents);
+            setLoading(false);
+        } catch (error) {
+            console.error("Error fetching events:", error);
+            setError("Failed to load events");
+            setLoading(false);
         }
     };
 
@@ -280,19 +392,20 @@ const Event = () => {
 
     return (
         <>
-            <div className="flex justify-between items-center px-4 mb-4">
+            <div className="flex w-full justify-center space-x-5 py-2 px-4 mb-4">
                 <div className="flex items-center gap-2">
                     <h1 className="font-bold text-lg text-black">
-                        Upcoming Events ({events.length})
+                        Upcoming Events
                     </h1>
-                    <span className="text-gray-400">→</span>
                 </div>
-                <button
-                    onClick={() => setShowModal(true)}
-                    className="text-blue-600 hover:text-blue-700"
-                >
-                    <PlusCircle className="w-5 h-5" />
-                </button>
+                <div className="flex justify-end ">
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className="text-blue-600  hover:text-blue-700"
+                    >
+                        <PlusCircle className="w-5 h-5" />
+                    </button>
+                </div>
             </div>
 
             <div className="w-full px-4 overflow-y-auto max-h-[260px]">
@@ -302,28 +415,52 @@ const Event = () => {
                             const { date, time } = formatEventDateTime(
                                 event.event_date,
                             );
+                            const status = getEventStatus(event.event_date);
+                            const styles = getStatusStyles(status);
+
                             return (
                                 <div
                                     key={event.id}
-                                    className="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                                    className={`flex items-center p-3 rounded-lg transition-colors cursor-pointer relative ${styles.cardStyle}`}
                                     onClick={() => handleEdit(event)}
                                 >
+                                    {/* Status indicator dot */}
+                                    <div className="absolute -left-1 top-1/2 transform -translate-y-1/2">
+                                        <div
+                                            className={`w-2 h-2 rounded-full ${styles.dotColor}`}
+                                        ></div>
+                                    </div>
+
                                     <div className="text-2xl mr-3">
                                         {getEventIcon(event.type)}
                                     </div>
-                                    <div className="flex-grow">
+                                    <div className="flex-grow min-w-0">
                                         <div className="flex items-center gap-2">
-                                            <h3 className="font-semibold text-gray-800">
+                                            <h3 className="font-semibold text-gray-800 truncate max-w-[200px]">
                                                 {event.title}
                                             </h3>
-                                            {event.with_person && (
-                                                <span className="text-sm text-gray-500">
-                                                    with {event.with_person}
+                                            <span
+                                                className={`px-2 py-0.5 text-xs font-medium rounded-full ${styles.badge}`}
+                                            >
+                                                {styles.text}
+                                            </span>
+                                            {event.selected_users?.length >
+                                                0 && (
+                                                <span className="text-sm text-gray-500 truncate">
+                                                    with{" "}
+                                                    {
+                                                        event.selected_users
+                                                            .length
+                                                    }{" "}
+                                                    {event.selected_users
+                                                        .length === 1
+                                                        ? "person"
+                                                        : "people"}
                                                 </span>
                                             )}
                                         </div>
                                         <div className="flex items-center gap-1">
-                                            {event.audience === "all_team" && (
+                                            {event.audience === "all_team" ? (
                                                 <div className="flex -space-x-2">
                                                     {[...Array(3)].map(
                                                         (_, i) => (
@@ -334,15 +471,27 @@ const Event = () => {
                                                         ),
                                                     )}
                                                 </div>
+                                            ) : event.audience === "none" ? (
+                                                <Lock className="w-5 h-5 text-gray-400" /> // Using Lock icon for private meetings
+                                            ) : (
+                                                <Building className="w-5 h-5 text-gray-500" />
                                             )}
-                                            <span className="text-sm text-gray-500 ml-1">
+                                            <span className="text-sm text-gray-500 ml-1 truncate max-w-[150px]">
                                                 {event.audience === "all_team"
                                                     ? "All Team"
-                                                    : event.audience}
+                                                    : event.audience === "none"
+                                                      ? "Private" // or however you want to display it
+                                                      : `${event.selected_departments?.length || 0} ${
+                                                            event
+                                                                .selected_departments
+                                                                ?.length === 1
+                                                                ? "Department"
+                                                                : "Departments"
+                                                        }`}
                                             </span>
                                         </div>
                                     </div>
-                                    <div className="text-right">
+                                    <div className="text-right ml-4">
                                         <div className="text-sm font-medium text-gray-900">
                                             {time}
                                         </div>

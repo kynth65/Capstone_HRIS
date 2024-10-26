@@ -23,21 +23,29 @@ class EventController extends Controller
     public function upcoming()
     {
         $events = Event::where('is_active', true)
-            ->where('event_date', '>=', now())
+            ->where('event_date', '>=', now()->subDays(1))
             ->orderBy('event_date')
-            ->take(5)
             ->get()
             ->map(function ($event) {
+                // Only decode if it's a string
+                $selected_users = is_string($event->selected_users)
+                    ? json_decode($event->selected_users)
+                    : $event->selected_users;
+
+                $selected_departments = is_string($event->selected_departments)
+                    ? json_decode($event->selected_departments)
+                    : $event->selected_departments;
+
                 return [
                     'id' => $event->id,
                     'title' => $event->title,
-                    'icon' => $event->icon ?? Event::ICONS[$event->type],
-                    'event_date' => $event->event_date->format('Y-m-d H:i:s'),  // Add full datetime
-                    'formatted_date' => $event->event_date->format('M jS'),     // Keep formatted version if needed
-                    'formatted_time' => $event->event_date->format('H:i'),      // Keep formatted version if needed
+                    'type' => $event->type,
+                    'icon' => $event->icon ?? null,
+                    'event_date' => $event->event_date->format('Y-m-d H:i:s'),
                     'audience' => $event->audience,
                     'with_person' => $event->with_person,
-                    'type' => $event->type
+                    'selected_users' => $selected_users ?? [],
+                    'selected_departments' => $selected_departments ?? []
                 ];
             });
 
@@ -51,45 +59,45 @@ class EventController extends Controller
             'type' => 'required|string|in:' . implode(',', array_keys(Event::TYPES)),
             'event_date' => 'required|date',
             'audience' => 'required|string|in:' . implode(',', array_keys(Event::AUDIENCES)),
-            'selected_employees' => 'sometimes|array', // Updated key
-            'selected_departments' => 'sometimes|array',
-            'selected_positions' => 'sometimes|array',
+            'selected_users' => 'nullable|array',
+            'selected_departments' => 'nullable|array'
         ]);
+
+        if (isset($validated['selected_users'])) {
+            $validated['selected_users'] = json_encode($validated['selected_users']);
+        }
+        if (isset($validated['selected_departments'])) {
+            $validated['selected_departments'] = json_encode($validated['selected_departments']);
+        }
 
         $event = Event::create([
             ...$validated,
-            'created_by' => Auth::id(),
+            'is_active' => 1,
+            'created_by' => Auth::id()
         ]);
 
-        // Sync relationships
-        if (isset($validated['selected_employees'])) {
-            $event->selectedEmployees()->sync($validated['selected_employees']); // Corrected key
-        }
-
-        if ($validated['type'] !== 'meeting') {
-            if (isset($validated['selected_departments'])) {
-                $event->selectedDepartments()->sync($validated['selected_departments']);
-            }
-
-            if (isset($validated['selected_positions'])) {
-                $event->selectedPositions()->sync($validated['selected_positions']);
-            }
-        }
-
-        return response()->json($event->load(['selectedEmployees', 'selectedDepartments', 'selectedPositions']), 201);
+        return response()->json($event, 201);
     }
-
 
     public function update(Request $request, Event $event)
     {
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
             'type' => 'sometimes|string|in:' . implode(',', array_keys(Event::TYPES)),
-            'icon' => 'nullable|string',
             'event_date' => 'sometimes|date',
             'audience' => 'sometimes|string|in:' . implode(',', array_keys(Event::AUDIENCES)),
+            'selected_users' => 'nullable|array',
+            'selected_departments' => 'nullable|array',
             'with_person' => 'nullable|string'
         ]);
+
+        // Convert arrays to JSON strings before saving
+        if (isset($validated['selected_users'])) {
+            $validated['selected_users'] = json_encode($validated['selected_users']);
+        }
+        if (isset($validated['selected_departments'])) {
+            $validated['selected_departments'] = json_encode($validated['selected_departments']);
+        }
 
         $event->update($validated);
 

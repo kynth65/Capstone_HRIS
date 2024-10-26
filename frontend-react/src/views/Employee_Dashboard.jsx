@@ -4,7 +4,7 @@ import "../styles/profile.css";
 import defaultAvatar from "../assets/default-avatar.png";
 import axiosClient from "../axiosClient";
 import { parseISO, differenceInYears } from "date-fns";
-
+import EmployeeEvent from "./employee_event";
 const EmployeeDashboard = () => {
     const { user } = useStateContext();
     const [employee, setEmployee] = useState({
@@ -98,9 +98,9 @@ const EmployeeDashboard = () => {
 
     return (
         <div className="animated fadeInDown">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
                 {/* Employee Profile Section */}
-                <div className="flex flex-col items-center bg-white text-black p-6 rounded-xl">
+                <div className="flex flex-col md:col-span-1 items-center bg-white text-black p-6 rounded-xl">
                     <img
                         src={
                             employee.profile
@@ -108,7 +108,7 @@ const EmployeeDashboard = () => {
                                 : defaultAvatar
                         }
                         alt="Profile"
-                        className="p-2 w-52 h-52 mb-4 hover:w-56 hover:h-56 transition-all"
+                        className="p-2 w-40 h-40 mb-4 transition-all"
                     />
                     <h1 className="font-bold text-xl mb-2">{employee.name}</h1>
                     <p className="text-gray-500 text-base">
@@ -116,7 +116,7 @@ const EmployeeDashboard = () => {
                     </p>
                 </div>
                 {/* Employee Personal Details Section */}
-                <div className="flex flex-col bg-white text-black p-6 rounded-xl">
+                <div className="flex flex-col md:col-span-2 bg-white text-black p-6 rounded-xl">
                     <h2 className="font-bold text-lg mb-4">Personal Details</h2>
                     <div className="profile-details text-base font-kodchasan">
                         {/* Name */}
@@ -163,6 +163,13 @@ const EmployeeDashboard = () => {
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div
+                    className="flex flex-col md:col-span-3 items-center bg-white text-black
+                p-6 rounded-xl"
+                >
+                    <EmployeeEvent />
                 </div>
             </div>
 

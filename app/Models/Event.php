@@ -42,8 +42,7 @@ class Event extends Model
     public const AUDIENCES = [
         'all_team' => 'All Team',
         'specific_department' => 'Specific Department',
-        'specific_positions' => 'Specific Positions',
-        'specific_people' => 'Specific People'
+        'none' => 'None'  // Add this new audience type
     ];
 
     // Icon mappings
