@@ -301,14 +301,11 @@ const IncidentReportForm = () => {
             <div className="p-6 bg-white rounded-xl shadow-md">
                 {activeButton === "submitReport" && (
                     <>
-                        <h2 className="md:text-2xl text-base font-semibold mb-4 text-black">
-                            Submit Incident Report
-                        </h2>
                         <form
                             onSubmit={handleSubmit}
                             className="space-y-4 text-black"
                         >
-                            <div className="grid grid-cols-3 space-x-2 items-center">
+                            <div className="md:grid md:grid-cols-3 md:space-x-2 items-center">
                                 <div>
                                     <label className="block text-gray-700">
                                         Title of report
@@ -370,223 +367,395 @@ const IncidentReportForm = () => {
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-gray-700">
+                            <div className="space-y-4 ">
+                                <label className="block text-sm font-medium text-black">
                                     Reported Employees
                                 </label>
-                                <div className="flex justify-center space-x-2">
-                                    <select
-                                        value={selectedEmployee}
-                                        onChange={(e) =>
-                                            setSelectedEmployee(e.target.value)
-                                        }
-                                        className="w-full p-2 border border-green-900 rounded"
-                                    >
-                                        <option value="">
-                                            Select an employee
-                                        </option>
-                                        {employees
-                                            .filter(
-                                                (employee) =>
-                                                    employee.user_id !==
-                                                        user.user_id && // Exclude the current user
-                                                    !relatedEmployees.includes(
-                                                        employee.user_id,
-                                                    ), // Exclude already selected employees
-                                            )
-                                            .map((employee) => (
-                                                <option
-                                                    key={employee.user_id}
-                                                    value={employee.user_id}
-                                                >
-                                                    {employee.name}
-                                                </option>
-                                            ))}
-                                    </select>
+
+                                {/* Selection Controls */}
+                                <div className="flex items-center flex-col md:flex-row justify-center gap-3">
+                                    <div className="">
+                                        <select
+                                            value={selectedEmployee}
+                                            onChange={(e) =>
+                                                setSelectedEmployee(
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="w-full p-2.5 border mb-0 border-green-500 rounded-md bg-white text-black focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                        >
+                                            <option
+                                                value=""
+                                                className="text-black/60"
+                                            >
+                                                Select an employee to report
+                                            </option>
+                                            {employees
+                                                .filter(
+                                                    (employee) =>
+                                                        employee.user_id !==
+                                                            user.user_id &&
+                                                        !relatedEmployees.includes(
+                                                            employee.user_id,
+                                                        ),
+                                                )
+                                                .map((employee) => (
+                                                    <option
+                                                        key={employee.user_id}
+                                                        value={employee.user_id}
+                                                        className="text-black "
+                                                    >
+                                                        {employee.name}
+                                                    </option>
+                                                ))}
+                                        </select>
+                                    </div>
                                     <button
                                         type="button"
                                         onClick={handleAddEmployee}
-                                        className="p-2 bg-green-600 text-white rounded hover:bg-green-700"
-                                        disabled={!selectedEmployee} // Disable if no employee is selected
+                                        disabled={!selectedEmployee}
+                                        className="min-w-[100px] h-[42px] bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
                                     >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="h-4 w-4"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M12 4v16m8-8H4"
+                                            />
+                                        </svg>
                                         Add
                                     </button>
                                 </div>
 
-                                <div className="mt-2">
-                                    {relatedEmployees.map((employeeId) => (
-                                        <div
-                                            key={employeeId}
-                                            className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
-                                        >
-                                            {
-                                                employees.find(
-                                                    (e) =>
-                                                        e.user_id ===
-                                                        employeeId,
-                                                )?.name
-                                            }
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    handleRemoveEmployee(
-                                                        employeeId,
-                                                    )
-                                                }
-                                                className="ml-2 text-red-500"
-                                            >
-                                                &times;
-                                            </button>
+                                {/* Selected Employees List */}
+                                <div className="flex flex-wrap justify-center gap-2 min-h-[40px] p-2 bg-green-50/50 rounded-md">
+                                    {relatedEmployees.length === 0 ? (
+                                        <div className="w-full text-center text-black/60 py-1">
+                                            No employees selected
                                         </div>
-                                    ))}
+                                    ) : (
+                                        relatedEmployees.map((employeeId) => (
+                                            <div
+                                                key={employeeId}
+                                                className="inline-flex  items-center bg-white border border-green-600 rounded-md px-3 py-1.5 group transition-all duration-200 hover:border-green-400"
+                                            >
+                                                <span className="text-sm font-medium text-black">
+                                                    {
+                                                        employees.find(
+                                                            (e) =>
+                                                                e.user_id ===
+                                                                employeeId,
+                                                        )?.name
+                                                    }
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        handleRemoveEmployee(
+                                                            employeeId,
+                                                        )
+                                                    }
+                                                    className="ml-2 text-black/40 hover:text-red-500 transition-colors duration-200"
+                                                >
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        className="h-4 w-4"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M6 18L18 6M6 6l12 12"
+                                                        />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
                             </div>
 
-                            <div>
-                                <label className="block text-gray-700">
-                                    Upload PDF report (optional)
-                                </label>
-                                <input
-                                    type="file"
-                                    onChange={handleFileChange}
-                                    accept="application/pdf"
-                                    className="w-full p-2 border border-green-900 rounded"
-                                />
+                            <div className="space-y-6 pt-10">
+                                {/* File Upload Section */}
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-black">
+                                        Upload PDF Report (Optional)
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type="file"
+                                            onChange={handleFileChange}
+                                            accept="application/pdf"
+                                            className="w-full p-3 border border-green-500 rounded-md text-black bg-white file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-green-500 file:text-white hover:file:bg-green-600 cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                        />
+                                        <div className="text-xs text-black/60 mt-1">
+                                            Supported format: PDF (Max size:
+                                            10MB)
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Submit Button Section */}
+                                <div className="flex flex-col gap-4">
+                                    <button
+                                        type="submit"
+                                        className="w-full py-3.5 bg-green-700 text-white rounded-md hover:bg-green-600 active:bg-green-700 transition-colors duration-200 flex items-center justify-center gap-2 font-medium"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="h-5 w-5"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            />
+                                        </svg>
+                                        Submit Incident Report
+                                    </button>
+
+                                    {/* Optional help text */}
+                                    <p className="text-center text-sm text-black/60">
+                                        Please review all information before
+                                        submitting the report
+                                    </p>
+                                </div>
                             </div>
-                            <button
-                                type="submit"
-                                className="w-full p-2 bg-green-900 text-white rounded hover:bg-green-800"
-                            >
-                                Submit Report
-                            </button>
                         </form>
                         {message && (
                             <p className="mt-4 text-green-900">{message}</p>
                         )}
-                        <button
-                            onClick={openExpandedModal}
-                            className="mt-4 p-2 bg-green-600 text-white rounded hover:bg-green-700"
-                        >
-                            View All Submitted Reports
-                        </button>
 
                         <div
                             className="overflow-y-auto"
                             style={{ maxHeight: "400px" }}
                         >
-                            <table className="employee-table min-w-full border-collapse">
-                                <thead className="text-white sticky top-[-1px]">
-                                    <tr>
-                                        <th className="p-2">Title</th>
-                                        <th className="p-2 hidden lg:table-cell">
-                                            Incident Date
-                                        </th>
-                                        <th className="p-2 hidden lg:table-cell">
-                                            Reported date
-                                        </th>
-                                        <th className="p-2">Severity</th>
-                                        <th className="p-2">Status</th>
-                                        <th className="p-2">PDF</th>
-                                        <th className="p-2">
-                                            Reported Employees
-                                        </th>
-                                        <th className="p-2">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="text-black">
-                                    {reports.map((report) => (
-                                        <tr
-                                            key={report.id}
-                                            className="text-center"
-                                        >
-                                            <td className="p-2 border">
-                                                {report.title}
-                                            </td>
-                                            <td className="p-2 border hidden lg:table-cell">
-                                                {formatIncidentDate(
-                                                    report.incident_date,
-                                                )}
-                                            </td>
-                                            <td className="p-2 border hidden lg:table-cell">
-                                                {formatReportedDate(
-                                                    report.created_at,
-                                                )}
-                                            </td>
-                                            <td className="p-2 border">
-                                                {report.severity}
-                                            </td>
-                                            <td className="p-2 border">
-                                                {report.status}
-                                            </td>
-                                            <td className="p-2 border">
-                                                {report.file_path ? (
-                                                    <a
-                                                        href={`${import.meta.env.VITE_BASE_URL.replace("/api", "")}/storage/${report.file_path}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-blue-500 hover:underline"
-                                                    >
-                                                        View
-                                                    </a>
-                                                ) : (
-                                                    "No PDF"
-                                                )}
-                                            </td>
-                                            <td className="p-2 border">
-                                                {report.reported_employee_ids &&
-                                                report.reported_employee_ids
-                                                    .length > 0
-                                                    ? report.reported_employee_ids.map(
-                                                          (
-                                                              employeeId,
-                                                              index,
-                                                          ) => (
-                                                              <span
-                                                                  key={
-                                                                      employeeId
-                                                                  }
-                                                              >
-                                                                  {
-                                                                      employees.find(
-                                                                          (e) =>
-                                                                              e.user_id ===
-                                                                              employeeId,
-                                                                      )?.name
-                                                                  }
-                                                                  {index <
-                                                                  report
-                                                                      .reported_employee_ids
-                                                                      .length -
-                                                                      1
-                                                                      ? ", "
-                                                                      : ""}
-                                                              </span>
-                                                          ),
-                                                      )
-                                                    : "None"}
-                                            </td>
-                                            <td className="p-2 border">
-                                                <button
-                                                    onClick={() =>
-                                                        openDetailModal(report)
-                                                    }
-                                                    className="bg-blue-500 text-white px-2 py-1 rounded mr-2 hover:bg-blue-600"
+                            <div className="md:hidden max-h-[400px] overflow-y-auto rounded-lg mt-2">
+                                {reports.map((report) => (
+                                    <div
+                                        key={report.id}
+                                        className="border border-gray-300 p-4 rounded-lg mb-4 bg-gray-50"
+                                    >
+                                        <p className="text-gray-700">
+                                            <strong>Title:</strong>{" "}
+                                            {report.title}
+                                        </p>
+                                        <p className="text-gray-700">
+                                            <strong>Incident Date:</strong>{" "}
+                                            {formatIncidentDate(
+                                                report.incident_date,
+                                            )}
+                                        </p>
+                                        <p className="text-gray-700">
+                                            <strong>Severity:</strong>{" "}
+                                            {report.severity}
+                                        </p>
+                                        <p className="text-gray-700">
+                                            <strong>Status:</strong>{" "}
+                                            {report.status}
+                                        </p>
+                                        <p className="text-gray-700">
+                                            <strong>PDF:</strong>{" "}
+                                            {report.file_path ? (
+                                                <a
+                                                    href={`${import.meta.env.VITE_BASE_URL.replace("/api", "")}/storage/${report.file_path}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-500 hover:underline"
                                                 >
-                                                    View Details
-                                                </button>
-                                                <button
-                                                    onClick={() =>
-                                                        handleDelete(report.id)
-                                                    }
-                                                    className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                                                >
-                                                    Delete
-                                                </button>
-                                            </td>
+                                                    View
+                                                </a>
+                                            ) : (
+                                                "No PDF"
+                                            )}
+                                        </p>
+                                        <p className="text-gray-700">
+                                            <strong>Reported Employees:</strong>{" "}
+                                            {report.reported_employee_ids &&
+                                            report.reported_employee_ids
+                                                .length > 0
+                                                ? report.reported_employee_ids.map(
+                                                      (employeeId, index) => (
+                                                          <span
+                                                              key={employeeId}
+                                                          >
+                                                              {
+                                                                  employees.find(
+                                                                      (e) =>
+                                                                          e.user_id ===
+                                                                          employeeId,
+                                                                  )?.name
+                                                              }
+                                                              {index <
+                                                              report
+                                                                  .reported_employee_ids
+                                                                  .length -
+                                                                  1
+                                                                  ? ", "
+                                                                  : ""}
+                                                          </span>
+                                                      ),
+                                                  )
+                                                : "None"}
+                                        </p>
+                                        <div className="mt-2 flex justify-center gap-2">
+                                            <button
+                                                onClick={() =>
+                                                    openDetailModal(report)
+                                                }
+                                                className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+                                            >
+                                                View Details
+                                            </button>
+                                            <button
+                                                onClick={() =>
+                                                    handleDelete(report.id)
+                                                }
+                                                className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="hidden md:block overflow-x-auto">
+                                <table className="employee-table min-w-full border-collapse">
+                                    <thead className="text-white sticky top-[-1px]">
+                                        <tr>
+                                            <th className="p-2">Title</th>
+                                            <th className="p-2">
+                                                Incident Date
+                                            </th>
+                                            <th className="p-2">
+                                                Reported date
+                                            </th>
+                                            <th className="p-2">Severity</th>
+                                            <th className="p-2">Status</th>
+                                            <th className="p-2">PDF</th>
+                                            <th className="p-2">
+                                                Reported Employees
+                                            </th>
+                                            <th className="p-2">Actions</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="text-black">
+                                        {reports.map((report) => (
+                                            <tr
+                                                key={report.id}
+                                                className="text-center"
+                                            >
+                                                <td className="p-2 border">
+                                                    {report.title}
+                                                </td>
+                                                <td className="p-2 border">
+                                                    {formatIncidentDate(
+                                                        report.incident_date,
+                                                    )}
+                                                </td>
+                                                <td className="p-2 border">
+                                                    {formatReportedDate(
+                                                        report.created_at,
+                                                    )}
+                                                </td>
+                                                <td className="p-2 border">
+                                                    {report.severity}
+                                                </td>
+                                                <td className="p-2 border">
+                                                    {report.status}
+                                                </td>
+                                                <td className="p-2 border">
+                                                    {report.file_path ? (
+                                                        <a
+                                                            href={`${import.meta.env.VITE_BASE_URL.replace("/api", "")}/storage/${report.file_path}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-blue-500 hover:underline"
+                                                        >
+                                                            View
+                                                        </a>
+                                                    ) : (
+                                                        "No PDF"
+                                                    )}
+                                                </td>
+                                                <td className="p-2 border">
+                                                    {report.reported_employee_ids &&
+                                                    report.reported_employee_ids
+                                                        .length > 0
+                                                        ? report.reported_employee_ids.map(
+                                                              (
+                                                                  employeeId,
+                                                                  index,
+                                                              ) => (
+                                                                  <span
+                                                                      key={
+                                                                          employeeId
+                                                                      }
+                                                                  >
+                                                                      {
+                                                                          employees.find(
+                                                                              (
+                                                                                  e,
+                                                                              ) =>
+                                                                                  e.user_id ===
+                                                                                  employeeId,
+                                                                          )
+                                                                              ?.name
+                                                                      }
+                                                                      {index <
+                                                                      report
+                                                                          .reported_employee_ids
+                                                                          .length -
+                                                                          1
+                                                                          ? ", "
+                                                                          : ""}
+                                                                  </span>
+                                                              ),
+                                                          )
+                                                        : "None"}
+                                                </td>
+                                                <td className="p-2 border">
+                                                    <button
+                                                        onClick={() =>
+                                                            openDetailModal(
+                                                                report,
+                                                            )
+                                                        }
+                                                        className="bg-blue-500 text-white px-2 py-1 rounded mr-2 hover:bg-blue-600"
+                                                    >
+                                                        View Details
+                                                    </button>
+                                                    <button
+                                                        onClick={() =>
+                                                            handleDelete(
+                                                                report.id,
+                                                            )
+                                                        }
+                                                        className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </>
                 )}
@@ -596,203 +765,142 @@ const IncidentReportForm = () => {
                         <h2 className="md:text-2xl text-base font-semibold mb-4 text-black">
                             Reported Incidents
                         </h2>
-                        {reportedIncidents.length === 0 ? (
-                            <p className="text-black">
-                                No reported incidents found.
-                            </p>
-                        ) : (
-                            <table className="employee-table min-w-full border-collapse">
-                                <thead className="text-white sticky top-[-1px]">
-                                    <tr>
-                                        <th className="p-2">Title</th>
-                                        <th className="p-2">Description</th>
-                                        <th className="p-2">Incident Date</th>
-                                        <th className="p-2">Reported Date</th>
-                                        <th className="p-2">Severity</th>
-                                        <th className="p-2">PDF</th>
-                                        <th className="p-2">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="text-black">
-                                    {reportedIncidents.map((incident) => (
-                                        <tr
-                                            key={incident.id}
-                                            className="text-center"
-                                        >
-                                            <td className="p-2 border">
-                                                {incident.title}
-                                            </td>
-                                            <td className="p-2 border">
-                                                {incident.description}
-                                            </td>
-                                            <td className="p-2 border">
-                                                {incident.incident_date}
-                                            </td>
-                                            <td className="p-2 border">
-                                                {new Date(
-                                                    incident.created_at,
-                                                ).toLocaleString()}
-                                            </td>
-                                            <td className="p-2 border">
-                                                {incident.severity}
-                                            </td>
-                                            <td className="p-2 border">
-                                                {incident.file_path ? (
-                                                    <a
-                                                        href={`${import.meta.env.VITE_BASE_URL.replace("/api", "")}/storage/${incident.file_path}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-blue-500 hover:underline"
-                                                    >
-                                                        View PDF
-                                                    </a>
-                                                ) : (
-                                                    "No PDF"
-                                                )}
-                                            </td>
-                                            <td className="p-2 border">
-                                                <button
-                                                    onClick={() =>
-                                                        openComplianceModal(
-                                                            incident,
-                                                        )
-                                                    }
-                                                    className="bg-green-500 text-white px-2 py-1 rounded mr-2 hover:bg-green-600"
+                        <div className="md:hidden max-h-[400px] overflow-y-auto rounded-lg">
+                            {reportedIncidents.length === 0 ? (
+                                <p className="text-black text-center py-4">
+                                    No reported incidents found.
+                                </p>
+                            ) : (
+                                reportedIncidents.map((incident) => (
+                                    <div
+                                        key={incident.id}
+                                        className="border border-gray-300 p-4 rounded-lg mb-4 bg-gray-50"
+                                    >
+                                        <p className="text-gray-700">
+                                            <strong>Title:</strong>{" "}
+                                            {incident.title}
+                                        </p>
+                                        <p className="text-gray-700">
+                                            <strong>Description:</strong>{" "}
+                                            {incident.description}
+                                        </p>
+                                        <p className="text-gray-700">
+                                            <strong>Incident Date:</strong>{" "}
+                                            {incident.incident_date}
+                                        </p>
+                                        <p className="text-gray-700">
+                                            <strong>Severity:</strong>{" "}
+                                            {incident.severity}
+                                        </p>
+                                        <p className="text-gray-700">
+                                            <strong>PDF:</strong>{" "}
+                                            {incident.file_path ? (
+                                                <a
+                                                    href={`${import.meta.env.VITE_BASE_URL.replace("/api", "")}/storage/${incident.file_path}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-500 hover:underline"
                                                 >
-                                                    Submit Compliance Report
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
-                    </div>
-                )}
+                                                    View PDF
+                                                </a>
+                                            ) : (
+                                                "No PDF"
+                                            )}
+                                        </p>
+                                        <div className="mt-2">
+                                            <button
+                                                onClick={() =>
+                                                    openComplianceModal(
+                                                        incident,
+                                                    )
+                                                }
+                                                className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
+                                            >
+                                                Submit Compliance Report
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
 
-                {/* Expanded Table Modal */}
-                {isExpandedModalOpen && (
-                    <div className="modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                        <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-5xl h-fit overflow-y-auto">
-                            <h3 className="text-xl font-semibold mb-4 text-center">
-                                All Incident Reports
-                            </h3>
-                            <table className="employee-table min-w-full border-collapse">
-                                {/* Table Head */}
-                                <thead className="text-white sticky top-[-1px]">
-                                    <tr>
-                                        <th className="p-2">Title</th>
-                                        <th className="p-2">Incident Date</th>
-                                        <th className="p-2">Reported Date</th>
-                                        <th className="p-2">Severity</th>
-                                        <th className="p-2">Status</th>
-                                        <th className="p-2">PDF</th>
-                                        <th className="p-2">
-                                            Reported Employees
-                                        </th>
-                                        <th className="p-2">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="text-black">
-                                    {reports.map((report) => (
-                                        <tr
-                                            key={report.id}
-                                            className="text-center"
-                                        >
-                                            <td className="p-2 border border-green-900">
-                                                {report.title}
-                                            </td>
-                                            <td className="p-2 border border-green-900">
-                                                {formatIncidentDate(
-                                                    report.incident_date,
-                                                )}
-                                            </td>
-                                            <td className="p-2 border border-green-900">
-                                                {formatReportedDate(
-                                                    report.created_at,
-                                                )}
-                                            </td>
-                                            <td className="p-2 border border-green-900">
-                                                {report.severity}
-                                            </td>
-                                            <td className="p-2 border border-green-900">
-                                                {report.status}
-                                            </td>
-                                            <td className="p-2 border border-green-900">
-                                                {report.file_path ? (
-                                                    <a
-                                                        href={`${import.meta.env.VITE_BASE_URL.replace("/api", "")}/storage/${report.file_path}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-blue-500 hover:underline"
-                                                    >
-                                                        View
-                                                    </a>
-                                                ) : (
-                                                    "No PDF"
-                                                )}
-                                            </td>
-                                            <td className="p-2 border border-green-900">
-                                                {report.reported_employee_ids &&
-                                                report.reported_employee_ids
-                                                    .length > 0
-                                                    ? report.reported_employee_ids.map(
-                                                          (
-                                                              employeeId,
-                                                              index,
-                                                          ) => (
-                                                              <span
-                                                                  key={
-                                                                      employeeId
-                                                                  }
-                                                              >
-                                                                  {
-                                                                      employees.find(
-                                                                          (e) =>
-                                                                              e.user_id ===
-                                                                              employeeId,
-                                                                      )?.name
-                                                                  }
-                                                                  {index <
-                                                                  report
-                                                                      .reported_employee_ids
-                                                                      .length -
-                                                                      1
-                                                                      ? ", "
-                                                                      : ""}
-                                                              </span>
-                                                          ),
-                                                      )
-                                                    : "None"}
-                                            </td>
-                                            <td className="p-2 border border-green-900">
-                                                <button
-                                                    onClick={() =>
-                                                        openDetailModal(report)
-                                                    }
-                                                    className="bg-blue-500 text-white px-2 py-1 rounded mr-2 hover:bg-blue-600"
-                                                >
-                                                    View Details
-                                                </button>
-                                                <button
-                                                    onClick={() =>
-                                                        handleDelete(report.id)
-                                                    }
-                                                    className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                                                >
-                                                    Delete
-                                                </button>
-                                            </td>
+                        {/* Desktop View for Compliance Reports */}
+                        <div className="hidden md:block">
+                            {reportedIncidents.length === 0 ? (
+                                <p className="text-black text-center py-4">
+                                    No reported incidents found.
+                                </p>
+                            ) : (
+                                <table className="employee-table min-w-full border-collapse">
+                                    <thead className="text-white sticky top-[-1px]">
+                                        <tr>
+                                            <th className="p-2">Title</th>
+                                            <th className="p-2">Description</th>
+                                            <th className="p-2">
+                                                Incident Date
+                                            </th>
+                                            <th className="p-2">
+                                                Reported Date
+                                            </th>
+                                            <th className="p-2">Severity</th>
+                                            <th className="p-2">PDF</th>
+                                            <th className="p-2">Actions</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                            <button
-                                onClick={closeExpandedModal}
-                                className="mt-4 p-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                            >
-                                Close
-                            </button>
+                                    </thead>
+                                    <tbody className="text-black">
+                                        {reportedIncidents.map((incident) => (
+                                            <tr
+                                                key={incident.id}
+                                                className="text-center"
+                                            >
+                                                <td className="p-2 border">
+                                                    {incident.title}
+                                                </td>
+                                                <td className="p-2 border">
+                                                    {incident.description}
+                                                </td>
+                                                <td className="p-2 border">
+                                                    {incident.incident_date}
+                                                </td>
+                                                <td className="p-2 border">
+                                                    {new Date(
+                                                        incident.created_at,
+                                                    ).toLocaleString()}
+                                                </td>
+                                                <td className="p-2 border">
+                                                    {incident.severity}
+                                                </td>
+                                                <td className="p-2 border">
+                                                    {incident.file_path ? (
+                                                        <a
+                                                            href={`${import.meta.env.VITE_BASE_URL.replace("/api", "")}/storage/${incident.file_path}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-blue-500 hover:underline"
+                                                        >
+                                                            View PDF
+                                                        </a>
+                                                    ) : (
+                                                        "No PDF"
+                                                    )}
+                                                </td>
+                                                <td className="p-2 border">
+                                                    <button
+                                                        onClick={() =>
+                                                            openComplianceModal(
+                                                                incident,
+                                                            )
+                                                        }
+                                                        className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
+                                                    >
+                                                        Submit Compliance Report
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
                         </div>
                     </div>
                 )}
