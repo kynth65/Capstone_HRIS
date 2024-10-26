@@ -7,6 +7,7 @@ import { useStateContext } from "../contexts/ContextProvider";
 import Spinner from "./SpinnerLoading";
 import { FaCheckCircle } from "react-icons/fa";
 import { RxCrossCircled } from "react-icons/rx";
+import { X } from "lucide-react";
 
 const HR_Leave_Management = () => {
     const { user } = useStateContext();
@@ -228,437 +229,549 @@ const HR_Leave_Management = () => {
 
             <div className="bg-white p-10 rounded-lg">
                 {activeButton === "leaveFormList" && (
-                    <div className="flex flex-col w-full">
+                    <div className="flex flex-col w-full px-4">
                         {/* Messages */}
                         <div className="mb-4">
                             {successMessage && (
-                                <p className="text-green-600 font-medium">
+                                <p className="text-green-600 font-medium bg-green-50 p-3 rounded-lg">
                                     {successMessage}
                                 </p>
                             )}
                             {errorMessage && (
-                                <p className="text-red-600 font-medium">
+                                <p className="text-red-600 font-medium bg-red-50 p-3 rounded-lg">
                                     {errorMessage}
                                 </p>
                             )}
                         </div>
+
+                        {/* Status Legend */}
                         <div className="mb-4 flex flex-wrap gap-4">
-                            <div className="flex items-center gap-2">
-                                <div className="w-4 h-4 border border-gray-400"></div>
-                                <span className="text-sm text-gray-600">
-                                    Pending
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-4 h-4 bg-green-100 border border-green-300"></div>
-                                <span className="text-sm text-gray-600">
-                                    Approved
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-4 h-4 bg-red-100 border border-red-300"></div>
-                                <span className="text-sm text-gray-600">
-                                    Declined
-                                </span>
-                            </div>
+                            {[
+                                {
+                                    label: "Pending",
+                                    color: "gray",
+                                    bg: "white",
+                                },
+                                {
+                                    label: "Approved",
+                                    color: "green",
+                                    bg: "green",
+                                },
+                                { label: "Declined", color: "red", bg: "red" },
+                            ].map((status) => (
+                                <div
+                                    key={status.label}
+                                    className="flex items-center gap-2"
+                                >
+                                    <div
+                                        className={`w-4 h-4 border border-${status.color}-300 bg-${status.bg}-50`}
+                                    ></div>
+                                    <span className="text-sm text-gray-600">
+                                        {status.label}
+                                    </span>
+                                </div>
+                            ))}
                         </div>
-                        {/* Table Container */}
-                        <div className="relative rounded-lg border border-gray-200 overflow-hidden">
-                            {/* Fixed Header */}
+
+                        {/* Desktop View */}
+                        <div className="hidden md:block relative rounded-lg border border-gray-200 overflow-hidden">
                             <table className="w-full border-collapse">
                                 <thead className="bg-gray-50">
                                     <tr>
-                                        <th className="px-6 py-3 text-center text-xs  text-black tracking-wider border-b">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-neutral-900 tracking-wider border-b">
                                             Employee Name
                                         </th>
-
-                                        <th className="px-6 py-3 text-center text-xs  text-black tracking-wider border-b hidden sm:table-cell">
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-neutral-900 tracking-wider border-b">
                                             Start Date
                                         </th>
-                                        <th className="px-6 py-3 text-center text-xs  text-black tracking-wider border-b hidden sm:table-cell">
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-neutral-900 tracking-wider border-b">
                                             End Date
                                         </th>
-                                        <th className="px-6 py-3 text-center text-xs  text-black tracking-wider border-b hidden lg:table-cell">
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-neutral-900 tracking-wider border-b">
                                             Days Requested
                                         </th>
-
-                                        <th className="px-6 py-3 text-center text-xs  text-black tracking-wider border-b">
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-neutral-900 tracking-wider border-b">
                                             Actions
                                         </th>
                                     </tr>
                                 </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {leaveRequests.length > 0 ? (
+                                        leaveRequests.map((request) => (
+                                            <tr
+                                                key={request.id}
+                                                className={`hover:bg-opacity-80 transition-colors ${
+                                                    request.statuses ===
+                                                    "pending"
+                                                        ? ""
+                                                        : request.statuses ===
+                                                            "approved"
+                                                          ? "bg-green-50"
+                                                          : "bg-red-50"
+                                                }`}
+                                            >
+                                                <td className="px-6 py-4 text-sm text-neutral-900">
+                                                    {request.user_name}
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-center text-neutral-600">
+                                                    {formatDate(
+                                                        request.start_date,
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-center text-neutral-600">
+                                                    {formatDate(
+                                                        request.end_date,
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-center text-neutral-600">
+                                                    {request.days_requested}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex justify-end items-center gap-2">
+                                                        <button
+                                                            onClick={() =>
+                                                                openModal(
+                                                                    request,
+                                                                )
+                                                            }
+                                                            className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                                                        >
+                                                            View
+                                                        </button>
+                                                        {user.position ===
+                                                            "Human Resource Manager" && (
+                                                            <>
+                                                                <button
+                                                                    onClick={() =>
+                                                                        handleApprove(
+                                                                            request.id,
+                                                                        )
+                                                                    }
+                                                                    disabled={
+                                                                        request.statuses !==
+                                                                        "pending"
+                                                                    }
+                                                                    className={`p-2 rounded-md ${
+                                                                        request.statuses !==
+                                                                        "pending"
+                                                                            ? "bg-gray-100 text-gray-400"
+                                                                            : "bg-green-600 text-white hover:bg-green-700"
+                                                                    } transition-colors`}
+                                                                >
+                                                                    <FaCheckCircle className="w-5 h-5" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() =>
+                                                                        openDeclineModal(
+                                                                            request.id,
+                                                                        )
+                                                                    }
+                                                                    disabled={
+                                                                        request.statuses !==
+                                                                        "pending"
+                                                                    }
+                                                                    className={`p-2 rounded-md ${
+                                                                        request.statuses !==
+                                                                        "pending"
+                                                                            ? "bg-gray-100 text-gray-400"
+                                                                            : "bg-red-600 text-white hover:bg-red-700"
+                                                                    } transition-colors`}
+                                                                >
+                                                                    <RxCrossCircled className="w-5 h-5" />
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td
+                                                colSpan="5"
+                                                className="px-6 py-4 text-center text-sm text-gray-500"
+                                            >
+                                                No leave requests found
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
                             </table>
+                        </div>
 
-                            {/* Scrollable Body */}
-                            <div className="overflow-y-auto max-h-[400px]">
-                                <table className="w-full border-collapse">
-                                    <tbody className="bg-white divide-y divide-gray-200">
-                                        {leaveRequests.length > 0 ? (
-                                            leaveRequests.map((request) => (
-                                                <tr
-                                                    key={request.id}
-                                                    className={`hover:bg-opacity-80 transition-colors ${
-                                                        request.statuses ===
-                                                        "pending"
-                                                            ? ""
-                                                            : request.statuses ===
-                                                                "approved"
-                                                              ? "bg-green-100"
-                                                              : "bg-red-100"
-                                                    }`}
-                                                >
-                                                    <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-900 ">
-                                                        {request.user_name}
-                                                    </td>
-
-                                                    <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600  hidden sm:table-cell">
+                        {/* Mobile View */}
+                        <div className="md:hidden space-y-4">
+                            {leaveRequests.length > 0 ? (
+                                leaveRequests.map((request) => (
+                                    <div
+                                        key={request.id}
+                                        className={`rounded-lg border p-4 ${
+                                            request.statuses === "pending"
+                                                ? "bg-white"
+                                                : request.statuses ===
+                                                    "approved"
+                                                  ? "bg-green-50"
+                                                  : "bg-red-50"
+                                        }`}
+                                    >
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <h3 className="font-medium text-neutral-900">
+                                                    {request.user_name}
+                                                </h3>
+                                                <div className="mt-1 space-y-1">
+                                                    <p className="text-sm text-neutral-600">
+                                                        <span className="font-medium">
+                                                            Start:
+                                                        </span>{" "}
                                                         {formatDate(
                                                             request.start_date,
                                                         )}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-600  hidden sm:table-cell">
+                                                    </p>
+                                                    <p className="text-sm text-neutral-600">
+                                                        <span className="font-medium">
+                                                            End:
+                                                        </span>{" "}
                                                         {formatDate(
                                                             request.end_date,
                                                         )}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-xs  text-gray-600  hidden lg:table-cell">
+                                                    </p>
+                                                    <p className="text-sm text-neutral-600">
+                                                        <span className="font-medium">
+                                                            Days:
+                                                        </span>{" "}
                                                         {request.days_requested}
-                                                    </td>
-
-                                                    <td className=" py-4 whitespace-nowrap ">
-                                                        <div className="flex flex-col sm:flex-row gap-2 justify-end">
-                                                            <button
-                                                                className=" w-fit inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                                                                onClick={() =>
-                                                                    openModal(
-                                                                        request,
-                                                                    )
-                                                                }
-                                                            >
-                                                                View
-                                                            </button>
-
-                                                            {user.position ===
-                                                                "Human Resource Manager" && (
-                                                                <>
-                                                                    <button
-                                                                        className={`inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md ${
-                                                                            request.statuses ===
-                                                                                "approved" ||
-                                                                            request.statuses ===
-                                                                                "declined"
-                                                                                ? "bg-gray-300 cursor-not-allowed"
-                                                                                : "text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                                                                        }`}
-                                                                        onClick={() =>
-                                                                            handleApprove(
-                                                                                request.id,
-                                                                            )
-                                                                        }
-                                                                        disabled={
-                                                                            request.statuses ===
-                                                                                "approved" ||
-                                                                            request.statuses ===
-                                                                                "declined"
-                                                                        }
-                                                                    >
-                                                                        <FaCheckCircle
-                                                                            size={
-                                                                                20
-                                                                            }
-                                                                        />
-                                                                    </button>
-                                                                    <button
-                                                                        className={`inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md ${
-                                                                            request.statuses ===
-                                                                                "declined" ||
-                                                                            request.statuses ===
-                                                                                "approved"
-                                                                                ? "bg-gray-300 cursor-not-allowed"
-                                                                                : "text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                                                                        }`}
-                                                                        onClick={() =>
-                                                                            openDeclineModal(
-                                                                                request.id,
-                                                                            )
-                                                                        }
-                                                                        disabled={
-                                                                            request.statuses ===
-                                                                                "declined" ||
-                                                                            request.statuses ===
-                                                                                "approved"
-                                                                        }
-                                                                    >
-                                                                        <RxCrossCircled
-                                                                            size={
-                                                                                20
-                                                                            }
-                                                                        />
-                                                                    </button>
-                                                                </>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td
-                                                    colSpan="8"
-                                                    className="px-6 py-4 text-center text-sm text-gray-500"
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col gap-2">
+                                                <button
+                                                    onClick={() =>
+                                                        openModal(request)
+                                                    }
+                                                    className="px-3 py-1.5 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
                                                 >
-                                                    No leave requests found
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
+                                                    View
+                                                </button>
+                                                {user.position ===
+                                                    "Human Resource Manager" && (
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() =>
+                                                                handleApprove(
+                                                                    request.id,
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                request.statuses !==
+                                                                "pending"
+                                                            }
+                                                            className={`p-2 rounded-md ${
+                                                                request.statuses !==
+                                                                "pending"
+                                                                    ? "bg-gray-100 text-gray-400"
+                                                                    : "bg-green-600 text-white hover:bg-green-700"
+                                                            } transition-colors`}
+                                                        >
+                                                            <FaCheckCircle className="w-5 h-5" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() =>
+                                                                openDeclineModal(
+                                                                    request.id,
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                request.statuses !==
+                                                                "pending"
+                                                            }
+                                                            className={`p-2 rounded-md ${
+                                                                request.statuses !==
+                                                                "pending"
+                                                                    ? "bg-gray-100 text-gray-400"
+                                                                    : "bg-red-600 text-white hover:bg-red-700"
+                                                            } transition-colors`}
+                                                        >
+                                                            <RxCrossCircled className="w-5 h-5" />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center text-sm text-gray-500 bg-white p-4 rounded-lg border">
+                                    No leave requests found
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
 
                 {showModal && selectedRequest && (
-                    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-20">
-                        <div className="relative top-20 mx-auto p-8 border w-11/12 md:w-2/3 lg:w-1/2 xl:w-1/3 shadow-lg rounded-md bg-white">
-                            <div className="mt-3">
-                                <h3 className="text-xl font-semibold text-black mb-6 text-left">
+                    <div className="modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-20 p-4">
+                        <div className="relative top-10 mx-auto border shadow-lg rounded-lg bg-white max-w-lg">
+                            {/* Modal Header */}
+                            <div className="px-6 py-4 border-b flex justify-between items-center">
+                                <h3 className="text-lg md:text-xl font-semibold text-neutral-900">
                                     Leave Request Details
                                 </h3>
+                                <button
+                                    onClick={closeModal}
+                                    className="text-neutral-500 hover:text-neutral-700 transition-colors"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            {/* Modal Content */}
+                            <div className="p-6">
                                 <div className="space-y-4">
-                                    <div className="text-left">
-                                        <p className="text-base text-black">
-                                            <span className="font-medium">
-                                                Employee:
-                                            </span>{" "}
-                                            {selectedRequest.user_name}
-                                        </p>
-                                    </div>
-                                    <div className="text-left">
-                                        <p className="text-base text-black">
-                                            <span className="font-medium">
-                                                Date Requested:
-                                            </span>{" "}
-                                            {formatDate(
+                                    {[
+                                        {
+                                            label: "Employee",
+                                            value: selectedRequest.user_name,
+                                        },
+                                        {
+                                            label: "Date Requested",
+                                            value: formatDate(
                                                 selectedRequest.created_at,
-                                            )}
-                                        </p>
-                                    </div>
-                                    <div className="text-left">
-                                        <p className="text-base text-black">
-                                            <span className="font-medium">
-                                                Start Date:
-                                            </span>{" "}
-                                            {formatDate(
+                                            ),
+                                        },
+                                        {
+                                            label: "Start Date",
+                                            value: formatDate(
                                                 selectedRequest.start_date,
-                                            )}
-                                        </p>
-                                    </div>
-                                    <div className="text-left">
-                                        <p className="text-base text-black">
-                                            <span className="font-medium">
-                                                End Date:
-                                            </span>{" "}
-                                            {formatDate(
+                                            ),
+                                        },
+                                        {
+                                            label: "End Date",
+                                            value: formatDate(
                                                 selectedRequest.end_date,
-                                            )}
-                                        </p>
-                                    </div>
-                                    <div className="text-left">
-                                        <p className="text-base text-black">
-                                            <span className="font-medium">
-                                                Days Requested:
-                                            </span>{" "}
-                                            {selectedRequest.days_requested}
-                                        </p>
-                                    </div>
-                                    <div className="text-left">
-                                        <p className="text-base text-black">
-                                            <span className="font-medium">
-                                                Status:
-                                            </span>{" "}
-                                            <span
-                                                className={`capitalize ${
-                                                    selectedRequest.statuses ===
-                                                    "approved"
-                                                        ? "text-green-600"
-                                                        : selectedRequest.statuses ===
-                                                            "declined"
-                                                          ? "text-red-600"
-                                                          : "text-yellow-600"
-                                                }`}
-                                            >
-                                                {selectedRequest.statuses}
+                                            ),
+                                        },
+                                        {
+                                            label: "Days Requested",
+                                            value: selectedRequest.days_requested,
+                                        },
+                                        {
+                                            label: "Status",
+                                            value: selectedRequest.statuses,
+                                            isStatus: true,
+                                        },
+                                    ].map((item, index) => (
+                                        <div
+                                            key={index}
+                                            className="grid grid-cols-2 gap-4"
+                                        >
+                                            <span className="text-sm text-neutral-500">
+                                                {item.label}:
                                             </span>
-                                        </p>
-                                    </div>
+                                            {item.isStatus ? (
+                                                <span
+                                                    className={`text-sm font-medium capitalize ${
+                                                        selectedRequest.statuses ===
+                                                        "approved"
+                                                            ? "text-green-600"
+                                                            : selectedRequest.statuses ===
+                                                                "declined"
+                                                              ? "text-red-600"
+                                                              : "text-yellow-600"
+                                                    }`}
+                                                >
+                                                    {item.value}
+                                                </span>
+                                            ) : (
+                                                <span className="text-sm font-medium text-neutral-900">
+                                                    {item.value}
+                                                </span>
+                                            )}
+                                        </div>
+                                    ))}
                                 </div>
 
+                                {/* Action Buttons */}
                                 {user.position === "Human Resource Manager" && (
-                                    <div className="flex justify-center gap-4 mt-8">
-                                        <button
-                                            className={`px-4 py-2 rounded-md transition-colors duration-200 ${
-                                                selectedRequest.statuses ===
-                                                    "approved" ||
-                                                selectedRequest.statuses ===
-                                                    "declined"
-                                                    ? "bg-gray-300 cursor-not-allowed"
-                                                    : "bg-green-700 hover:bg-green-900 text-white"
-                                            }`}
-                                            onClick={() =>
-                                                handleApprove(
-                                                    selectedRequest.id,
-                                                )
-                                            }
-                                            disabled={
-                                                selectedRequest.statuses ===
-                                                    "approved" ||
-                                                selectedRequest.statuses ===
-                                                    "declined"
-                                            }
-                                        >
-                                            Approve Request
-                                        </button>
-                                        <button
-                                            className={`px-4 py-2 rounded-md transition-colors duration-200 ${
-                                                selectedRequest.statuses ===
-                                                    "declined" ||
-                                                selectedRequest.statuses ===
-                                                    "approved"
-                                                    ? "bg-gray-300 cursor-not-allowed"
-                                                    : "bg-red-700 hover:bg-red-900 text-white"
-                                            }`}
-                                            onClick={() =>
-                                                openDeclineModal(
-                                                    selectedRequest.id,
-                                                )
-                                            }
-                                            disabled={
-                                                selectedRequest.statuses ===
-                                                    "declined" ||
-                                                selectedRequest.statuses ===
-                                                    "approved"
-                                            }
-                                        >
-                                            Decline Request
-                                        </button>
+                                    <div className="mt-8 space-y-3">
+                                        <div className="flex flex-col sm:flex-row gap-3">
+                                            <button
+                                                onClick={() =>
+                                                    handleApprove(
+                                                        selectedRequest.id,
+                                                    )
+                                                }
+                                                disabled={
+                                                    selectedRequest.statuses !==
+                                                    "pending"
+                                                }
+                                                className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                                                    selectedRequest.statuses !==
+                                                    "pending"
+                                                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                                        : "bg-green-600 text-white hover:bg-green-700"
+                                                }`}
+                                            >
+                                                Approve Request
+                                            </button>
+                                            <button
+                                                onClick={() =>
+                                                    openDeclineModal(
+                                                        selectedRequest.id,
+                                                    )
+                                                }
+                                                disabled={
+                                                    selectedRequest.statuses !==
+                                                    "pending"
+                                                }
+                                                className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                                                    selectedRequest.statuses !==
+                                                    "pending"
+                                                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                                        : "bg-red-600 text-white hover:bg-red-700"
+                                                }`}
+                                            >
+                                                Decline Request
+                                            </button>
+                                        </div>
+
                                         {selectedRequest.file_path && (
                                             <button
-                                                className="px-4 py-2 bg-blue-700 text-white rounded-md transition-colors duration-200 hover:bg-blue-900"
                                                 onClick={() =>
                                                     handleOpenPdf(
                                                         selectedRequest.file_path,
                                                     )
                                                 }
+                                                className="w-full px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
                                             >
                                                 View Form
                                             </button>
                                         )}
                                     </div>
                                 )}
-                            </div>
-                            <div className="mt-8">
-                                <button
-                                    className="w-full py-2 bg-gray-700 text-white rounded-md transition-colors duration-200 hover:bg-gray-900"
-                                    onClick={closeModal}
-                                >
-                                    Close
-                                </button>
+
+                                {/* Close Button - Always at bottom */}
+                                <div className="mt-6">
+                                    <button
+                                        onClick={closeModal}
+                                        className="w-full px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 )}
 
                 {activeButton === "templateProviderAI" && (
-                    <div className="bg-white rounded-xl p-4 flex flex-col items-center">
-                        <h2 className="titles">AI Letter Template Generator</h2>
-                        <div className="selector-container">
-                            <label className="labels font-kodchasan">
-                                Select Document Type:
-                                <select
-                                    value={documentType}
-                                    onChange={(e) =>
-                                        setDocumentType(e.target.value)
-                                    }
-                                    className="select text-black"
-                                >
-                                    <option value="leaveLetter">
-                                        Leave Letter
-                                    </option>
-                                    <option value="resignationLetter">
-                                        Resignation Letter
-                                    </option>
-                                    <option value="appreciationLetter">
-                                        Appreciation Letter
-                                    </option>
-                                    <option value="ThankyouLetter">
-                                        Thankyou Letter
-                                    </option>
-                                    <option value="complaintLetter">
-                                        Complaint Letter
-                                    </option>
-                                </select>
-                            </label>
-                        </div>
-                        <div className="selector-container">
-                            <label className="labels font-kodchasan">
-                                Select Tone:
-                                <select
-                                    value={tone}
-                                    onChange={(e) => setTone(e.target.value)}
-                                    className="select text-black"
-                                >
-                                    <option value="formal">Formal</option>
-                                    <option value="neutral">Neutral</option>
-                                    <option value="natural">Natural</option>
-                                    <option value="friendly">Friendly</option>
-                                </select>
-                            </label>
-                        </div>
-                        <p className="text-black text-base mt-8 mb-3">
-                            Enter a brief description of the document you want
-                            to generate:
-                        </p>
-                        <textarea
-                            value={reason}
-                            onChange={(e) => setReason(e.target.value)}
-                            rows="3"
-                            cols="50"
-                            placeholder="Enter the reason for the document..."
-                            className="h-40 w-full rounded-lg p-9 text-black border-2 border-green-800 text-base"
-                        />
-                        <button
-                            className="button mt-2 mb-5 font-kodchasan"
-                            onClick={handleGenerate}
-                        >
-                            Generate Document
-                        </button>
-
-                        {isGenerating ? (
-                            <div>
-                                <Spinner size="30" />
-                            </div>
-                        ) : (
-                            <>
+                    <>
+                        <div>
+                            <div className="bg-white rounded-xl flex flex-col items-center">
+                                <h2 className="titles">
+                                    AI Letter Template Generator
+                                </h2>
+                                <div className="selector-container">
+                                    <label className="labels font-kodchasan">
+                                        Select Document Type:
+                                        <select
+                                            value={documentType}
+                                            onChange={(e) =>
+                                                setDocumentType(e.target.value)
+                                            }
+                                            className="select text-black"
+                                        >
+                                            <option value="leaveLetter">
+                                                Leave Letter
+                                            </option>
+                                            <option value="resignationLetter">
+                                                Resignation Letter
+                                            </option>
+                                            <option value="appreciationLetter">
+                                                Appreciation Letter
+                                            </option>
+                                            <option value="ThankyouLetter">
+                                                Thankyou Letter
+                                            </option>
+                                            <option value="complaintLetter">
+                                                Complaint Letter
+                                            </option>
+                                        </select>
+                                    </label>
+                                </div>
+                                <div className="selector-container">
+                                    <label className="labels font-kodchasan">
+                                        Select Tone:
+                                        <select
+                                            value={tone}
+                                            onChange={(e) =>
+                                                setTone(e.target.value)
+                                            }
+                                            className="select text-black"
+                                        >
+                                            <option value="formal">
+                                                Formal
+                                            </option>
+                                            <option value="neutral">
+                                                Neutral
+                                            </option>
+                                            <option value="natural">
+                                                Natural
+                                            </option>
+                                            <option value="friendly">
+                                                Friendly
+                                            </option>
+                                        </select>
+                                    </label>
+                                </div>
+                                <p className="text-black text-base mt-8 mb-3">
+                                    Enter a brief description of the document
+                                    you want to generate:
+                                </p>
                                 <textarea
-                                    value={documentContent}
-                                    onChange={(e) =>
-                                        setDocumentContent(e.target.value)
-                                    }
-                                    rows="10"
+                                    value={reason}
+                                    onChange={(e) => setReason(e.target.value)}
+                                    rows="3"
                                     cols="50"
-                                    placeholder="Wait for the document..."
-                                    className="h-full w-full mb-4 rounded-lg p-9 text-black border-2 border-green-800 text-base"
+                                    placeholder="Enter the reason for the document..."
+                                    className="h-40 w-full rounded-lg p-9 text-black border-2 border-green-800 text-base"
                                 />
                                 <button
-                                    className="button font-kodchasan"
-                                    onClick={handleDownloadPdf}
+                                    className="button mt-2 mb-5 font-kodchasan"
+                                    onClick={handleGenerate}
                                 >
-                                    Download PDF
+                                    Generate Document
                                 </button>
-                            </>
-                        )}
-                    </div>
+
+                                {isGenerating ? (
+                                    <div>
+                                        <Spinner size="30" />
+                                    </div>
+                                ) : (
+                                    <>
+                                        <textarea
+                                            value={documentContent}
+                                            onChange={(e) =>
+                                                setDocumentContent(
+                                                    e.target.value,
+                                                )
+                                            }
+                                            rows="10"
+                                            cols="50"
+                                            placeholder="Wait for the document..."
+                                            className="h-full w-full mb-4 rounded-lg p-9 text-black border-2 border-green-800 text-base"
+                                        />
+                                        <button
+                                            className="button font-kodchasan"
+                                            onClick={handleDownloadPdf}
+                                        >
+                                            Download PDF
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </>
                 )}
 
                 {showDeclineModal && (

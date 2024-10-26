@@ -297,20 +297,20 @@ function Leave_Management() {
 
             <div>
                 {activeButton === "documentGenerator" && (
-                    <div className="bg-white rounded-xl p-4">
-                        <div className="">
-                            <h2 className="titles pt-5">
+                    <div>
+                        <div className="bg-white rounded-xl flex flex-col items-center">
+                            <h2 className="titles">
                                 AI Letter Template Generator
                             </h2>
                             <div className="selector-container">
-                                <label className="labels">
+                                <label className="labels font-kodchasan">
                                     Select Document Type:
                                     <select
                                         value={documentType}
                                         onChange={(e) =>
                                             setDocumentType(e.target.value)
                                         }
-                                        className="select"
+                                        className="select text-black"
                                     >
                                         <option value="leaveLetter">
                                             Leave Letter
@@ -321,43 +321,78 @@ function Leave_Management() {
                                         <option value="appreciationLetter">
                                             Appreciation Letter
                                         </option>
+                                        <option value="ThankyouLetter">
+                                            Thankyou Letter
+                                        </option>
+                                        <option value="complaintLetter">
+                                            Complaint Letter
+                                        </option>
                                     </select>
                                 </label>
                             </div>
-                        </div>
-                        <p className="text-black text-base mt-8 mb-3">
-                            Enter a brief description of the document you want
-                            to generate:
-                        </p>
-                        <textarea
-                            value={reason}
-                            onChange={(e) => setReason(e.target.value)}
-                            rows="3"
-                            cols="50"
-                            placeholder="Enter the reason for the document..."
-                            className="h-40 w-full rounded-lg p-9 text-black border-2 border-green-800 text-base"
-                        />
+                            <div className="selector-container">
+                                <label className="labels font-kodchasan">
+                                    Select Tone:
+                                    <select
+                                        value={tone}
+                                        onChange={(e) =>
+                                            setTone(e.target.value)
+                                        }
+                                        className="select text-black"
+                                    >
+                                        <option value="formal">Formal</option>
+                                        <option value="neutral">Neutral</option>
+                                        <option value="natural">Natural</option>
+                                        <option value="friendly">
+                                            Friendly
+                                        </option>
+                                    </select>
+                                </label>
+                            </div>
+                            <p className="text-black text-base mt-8 mb-3">
+                                Enter a brief description of the document you
+                                want to generate:
+                            </p>
+                            <textarea
+                                value={reason}
+                                onChange={(e) => setReason(e.target.value)}
+                                rows="3"
+                                cols="50"
+                                placeholder="Enter the reason for the document..."
+                                className="h-40 w-full rounded-lg p-9 text-black border-2 border-green-800 text-base"
+                            />
+                            <button
+                                className="button mt-2 mb-5 font-kodchasan"
+                                onClick={handleGenerate}
+                            >
+                                Generate Document
+                            </button>
 
-                        <button
-                            className="button mt-2 mb-5"
-                            onClick={handleGenerate}
-                        >
-                            Generate Document
-                        </button>
-                        <p className="text-black text-base mt-8 mb-3">
-                            Wait for the document to be generated.
-                        </p>
-                        <textarea
-                            value={documentContent}
-                            onChange={(e) => setDocumentContent(e.target.value)}
-                            rows="10"
-                            cols="50"
-                            placeholder="Wait for the document..."
-                            className="h-full w-full rounded-lg p-9 text-black border-2 border-green-800 text-base"
-                        />
-                        <button className="button" onClick={handleDownloadPdf}>
-                            Download PDF
-                        </button>
+                            {isGenerating ? (
+                                <div>
+                                    <Spinner size="30" />
+                                </div>
+                            ) : (
+                                <>
+                                    <textarea
+                                        value={documentContent}
+                                        onChange={(e) =>
+                                            setDocumentContent(e.target.value)
+                                        }
+                                        rows="10"
+                                        cols="50"
+                                        placeholder="Wait for the document..."
+                                        className="h-full w-full mb-4 rounded-lg p-9 text-black border-2 border-green-800 text-base"
+                                    />
+                                    <button
+                                        className="button font-kodchasan"
+                                        onClick={handleDownloadPdf}
+                                    >
+                                        Download PDF
+                                    </button>
+                                </>
+                            )}
+                        </div>
                     </div>
                 )}
                 {/* PDF Modal */}

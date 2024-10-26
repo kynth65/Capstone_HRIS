@@ -17,11 +17,12 @@ import {
     Tooltip,
     Legend,
 } from "recharts";
+import Calendar from "react-calendar";
 import axiosClient from "../axiosClient";
-import "../styles/hrDashboard.css"; // Make sure you update your CSS here
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import "react-calendar/dist/Calendar.css";
+import "../styles/hrDashboard.css";
 import Event from "./Event";
-import { IoNotificationsOutline } from "react-icons/io5";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const Dashboard = () => {
     const [data, setData] = useState({
@@ -37,34 +38,35 @@ const Dashboard = () => {
     const [errorMessage, setErrorMessage] = useState("");
     const [highlightedDates, setHighlightedDates] = useState([]);
     const [currentDate, setCurrentDate] = useState(new Date());
-
     // Fetch attendance records every 5 seconds
     useEffect(() => {
         const fetchAttendanceRecords = async () => {
             try {
-                const response = await axiosClient.get("/sync-attendance");
+                const response = await axiosClient.get("/record-attendance");
                 setData((prevData) => ({
                     ...prevData,
-                    attendanceRecords: Array.isArray(response.data)
-                        ? response.data
-                        : [],
+                    attendanceRecords: response.data || [],
                 }));
             } catch (error) {
                 console.error("Error fetching attendance records:", error);
             }
         };
+
+        // Initial fetch
         fetchAttendanceRecords();
+
         const intervalId = setInterval(() => {
             fetchAttendanceRecords();
-        }, 5000);
+        }, 5000); // Poll every 5 seconds
 
-        return () => clearInterval(intervalId);
+        return () => clearInterval(intervalId); // Clear interval on unmount
     }, []);
 
     useEffect(() => {
         axiosClient
             .get("/dashboard")
             .then((response) => {
+                console.log("Dashboard data:", response.data); // Log the data to verify
                 setData((prevData) => ({
                     ...prevData,
                     ...response.data,
@@ -98,8 +100,8 @@ const Dashboard = () => {
                 );
                 setData((prevData) => ({
                     ...prevData,
-                    expiringCertificates: response.data.expiringCertificates,
-                    expiredCertificates: response.data.expiredCertificates,
+                    expiringCertificates: response.data.expiringCertificates, // Update expiring certificates
+                    expiredCertificates: response.data.expiredCertificates, // Update expired certificates
                 }));
             } catch (error) {
                 console.error("Error fetching certificates:", error);
@@ -191,6 +193,22 @@ const Dashboard = () => {
             return highlight ? highlight.recruitmentStage : null;
         };
 
+        const formatDate = (date) => {
+            return new Date(date).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+            });
+        };
+
+        const formatTime = (time) => {
+            if (!time) return "-";
+            return new Date(`2000-01-01 ${time}`).toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+            });
+        };
+
         return (
             <div className="bg-white rounded-lg p-4 mb-4 mr-2 sm:mr-0">
                 <div className="mb-4 flex items-center justify-between text-black">
@@ -279,24 +297,9 @@ const Dashboard = () => {
         const timeDiff = Math.abs(now - date);
         const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
 
-        if (daysDiff === 0) return "Sent today";
-        if (daysDiff === 1) return "Sent yesterday";
-        return `Sent ${daysDiff} days ago`;
-    };
-
-    const formatToHour = (timestamp) => {
-        if (!timestamp) return "N/A";
-        const date = new Date(timestamp);
-        const hours = date.getHours().toString().padStart(2, "0");
-        const minutes = date.getMinutes().toString().padStart(2, "0");
-        return `${hours}:${minutes}`;
-    };
-
-    const formatDate = (dateString) => {
-        if (!dateString) return "N/A";
-        const date = new Date(dateString);
-        const options = { month: "long", day: "numeric" };
-        return date.toLocaleDateString("en-US", options);
+        if (daysDiff === 0) return "Sent today"; // If sent today
+        if (daysDiff === 1) return "Sent yesterday"; // If sent yesterday
+        return `Sent ${daysDiff} days ago`; // For any other day
     };
 
     return (
@@ -316,22 +319,23 @@ const Dashboard = () => {
                         <span className="font-bold"> {data.leave}</span>
                     </div>
                 </div>
-
                 <div className="lg:grid lg:grid-cols-2 lg:space-x-3">
-                    <div>
-                        <div className="flex flex-col mb-4 mr-2 sm:mr-0 justify-center items-center w-auto lg:h-[313px] xl:h-[334px] bg-white text-black rounded-lg overflow-auto">
+                    <div className="">
+                        <div className="flex flex-col mb-4 mr-2 sm:mr-0 justify-center items-center w-auto lg:h-[313px] xl:h-[334px] bg-white text-black rounded-lg  overflow-auto">
                             <h1 className="font-bold text-lg py-2">
                                 Attendance Records
                             </h1>
                             <div className="employee-list-container w-full h-72">
-                                <table className="employee-table bg-white text-black rounded-xl w-full">
+                                <table className="employee-table bg-white text-black rounded-xl overflow-hidden w-full">
                                     <thead>
-                                        <tr className="sticky top-[-10px]">
+                                        <tr>
                                             <th className="hidden md:table-cell">
                                                 User ID
                                             </th>
                                             <th>Name</th>
-                                            <th>Date</th>
+                                            <th className="hidden md:table-cell">
+                                                Date
+                                            </th>
                                             <th>Time In</th>
                                             <th>Time Out</th>
                                         </tr>
@@ -345,20 +349,14 @@ const Dashboard = () => {
                                                             {record.user_id}
                                                         </td>
                                                         <td>{record.name}</td>
-                                                        <td>
-                                                            {formatDate(
-                                                                record.date,
-                                                            )}
+                                                        <td className="hidden md:table-cell">
+                                                            {record.date}
                                                         </td>
                                                         <td>
-                                                            {formatToHour(
-                                                                record.time_in,
-                                                            )}
+                                                            {record.time_in}
                                                         </td>
                                                         <td>
-                                                            {formatToHour(
-                                                                record.time_out,
-                                                            )}
+                                                            {record.time_out}
                                                         </td>
                                                     </tr>
                                                 ),
@@ -377,10 +375,14 @@ const Dashboard = () => {
                                 </table>
                             </div>
                         </div>
-
                         <div>{renderCalendar()}</div>
+                    </div>
 
-                        <div className="flex space-x-8 mb-4 mr-2 sm:mr-0 justify-center items-center xl:h-80 bg-white text-black rounded-lg">
+                    <div className="grid grid-cols-1">
+                        <div className="flex flex-col md:col-span-3 bg-white text-black rounded-xl">
+                            <Event />
+                        </div>
+                        <div className="flex space-x-8 mt-4 mr-2 sm:mr-0 justify-center items-center  xl:h-80 bg-white text-black rounded-lg">
                             <div>
                                 <h1 className="py-2 font-bold text-lg">
                                     Employee Status
@@ -407,25 +409,19 @@ const Dashboard = () => {
                                         dataKey="FullTime"
                                         name="Full Time"
                                         fill="#079dde"
-                                    />
+                                    />{" "}
                                     <Bar
                                         dataKey="PartTime"
                                         name="Part Time"
                                         fill="#82ca9d"
-                                    />
+                                    />{" "}
                                     <Bar
                                         dataKey="Student"
                                         name="Student"
                                         fill="#FFA500"
-                                    />
+                                    />{" "}
                                 </BarChart>
                             </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <div className="flex flex-col items-center max-h-96 mr-2 sm:mr-0 h-auto lg:h-[313px] xl:h-[333px] bg-white rounded-lg mb-4">
-                            <Event />
                         </div>
                     </div>
                 </div>
