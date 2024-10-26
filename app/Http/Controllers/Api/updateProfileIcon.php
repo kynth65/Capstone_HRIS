@@ -100,6 +100,7 @@ class UpdateProfileIcon extends Controller
                 'current_salary' => 'nullable|numeric|min:0',
                 'pay_frequency' => 'nullable|in:Weekly,Bi-weekly,Monthly',
                 'schedule' => 'nullable|in:7:00 - 16:00,8:00 - 17:00,12:00 - 21:00',  // Added schedule validation
+                'sick_leave_balance' => 'nullable|numeric|min:0', // Added validation for sick_leave_balance
             ]);
 
             // Update user personal information
@@ -126,6 +127,8 @@ class UpdateProfileIcon extends Controller
             $user->current_salary = $request->current_salary ?? $user->current_salary;
             $user->pay_frequency = $request->pay_frequency ?? $user->pay_frequency;
             $user->schedule = $request->schedule ?? $user->schedule;  // Added schedule update
+            $user->sick_leave_balance = $request->sick_leave_balance ?? $user->sick_leave_balance;  // Added sick_leave_balance update
+
 
             // Save the updated user data
             $user->save();

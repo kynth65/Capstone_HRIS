@@ -31,8 +31,8 @@ class SubmitLeaveRequest extends Controller
         $startDate = Carbon::parse($request->start_date);
         $endDate = Carbon::parse($request->end_date);
 
-        // Calculate the number of days, including the start and end date
-        $daysRequested = $endDate->diffInDays($startDate) + 1;
+        // Calculate the number of days, including both start and end date
+        $daysRequested = $startDate->diffInDays($endDate) + 1; // Include start and end dates
 
         $originalFileNameWithExt = $request->file('file')->getClientOriginalName();
         $originalFileName = pathinfo($originalFileNameWithExt, PATHINFO_FILENAME);
@@ -70,6 +70,7 @@ class SubmitLeaveRequest extends Controller
 
         return response()->json(['message' => 'Leave request submitted successfully']);
     }
+
 
     public function getLeaveRequests(Request $request)
     {

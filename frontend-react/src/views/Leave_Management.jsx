@@ -71,28 +71,27 @@ function Leave_Management() {
     const toggleLeaveRequest = () => {
         setActiveButton("leaveRequest");
     };
+    const fetchLeaveRequestStatus = async () => {
+        try {
+            const response = await axiosClient.get("/leave-request-status");
+            const {
+                approvedLeaveRequests,
+                declinedLeaveRequests,
+                pendingLeaveRequests,
+            } = response.data;
+
+            setLeaveRequests({
+                approved: Object.values(approvedLeaveRequests),
+                declined: Object.values(declinedLeaveRequests),
+                pending: Object.values(pendingLeaveRequests),
+            });
+        } catch (error) {
+            console.error("Error fetching leave request status:", error);
+        }
+    };
 
     useEffect(() => {
-        const fetchLeaveRequestStatus = async () => {
-            try {
-                const response = await axiosClient.get("/leave-request-status");
-                const {
-                    approvedLeaveRequests,
-                    declinedLeaveRequests,
-                    pendingLeaveRequests,
-                } = response.data;
-
-                setLeaveRequests({
-                    approved: Object.values(approvedLeaveRequests),
-                    declined: Object.values(declinedLeaveRequests),
-                    pending: Object.values(pendingLeaveRequests),
-                });
-            } catch (error) {
-                console.error("Error fetching leave request status:", error);
-            }
-        };
-
-        fetchLeaveRequestStatus();
+        fetchLeaveRequestStatus(); // Fetch leave requests when the component loads
     }, []);
 
     const handleSubmit = async (e) => {
@@ -123,6 +122,8 @@ function Leave_Management() {
                 start_date: "",
                 end_date: "",
             });
+            // Fetch updated leave requests to show the newly added request
+            fetchLeaveRequestStatus();
         } catch (err) {
             setError(
                 err.response?.data?.error ||
@@ -390,8 +391,7 @@ function Leave_Management() {
                                 Your Leave Requests
                             </h3>
                             <div className="overflow-x-auto">
-                                {/* Limit table height and make it scrollable */}
-                                <div className="overflow-y-auto max-h-64">
+                                <div className="overflow-auto max-h-64">
                                     <table className="min-w-full divide-y divide-gray-200">
                                         <thead className="bg-gray-50 sticky top-0 z-10">
                                             <tr className="text-center">

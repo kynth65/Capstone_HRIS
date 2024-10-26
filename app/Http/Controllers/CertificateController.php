@@ -166,6 +166,8 @@ class CertificateController extends Controller
     // Fetch certificates by category for a specific user
     public function getCertificatesByCategory($userId, $category)
     {
+        Log::info("Fetching certificates for user: $userId and category: $category"); // Debugging log
+
         $certificates = Certificate::where('user_id', $userId)
             ->where('category', $category)
             ->get();
@@ -181,13 +183,15 @@ class CertificateController extends Controller
 
 
 
+
     public function archiveCertificate($id)
     {
         try {
             $certificate = Certificate::findOrFail($id);
 
+            // Archive the certificate, keeping the user_id
             ArchivedCertificate::create([
-                'user_id' => $certificate->user_id,
+                'user_id' => $certificate->user_id,  // Keep user_id even if the user is deleted
                 'certificate_name' => $certificate->certificate_name,
                 'issued_date' => $certificate->issued_date,
                 'expiring_date' => $certificate->expiring_date,
@@ -198,8 +202,10 @@ class CertificateController extends Controller
                 'created_by' => $certificate->created_by,
                 'updated_by' => $certificate->updated_by,
                 'is_archived' => true,
+                'can_update' => $certificate->can_update,
             ]);
 
+            // Optionally, delete the original certificate after archiving
             $certificate->delete();
 
             return response()->json(['message' => 'Certificate archived successfully.']);

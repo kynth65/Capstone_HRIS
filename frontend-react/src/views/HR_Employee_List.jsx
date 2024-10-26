@@ -235,6 +235,10 @@ function User() {
                                         selectedEmployee.email,
                                     )}
                                     {renderField(
+                                        "Sick Leave Balance",
+                                        selectedEmployee.sick_leave_balance,
+                                    )}
+                                    {renderField(
                                         "Age",
                                         calculateAge(
                                             selectedEmployee.date_of_birth,
@@ -409,6 +413,7 @@ function User() {
                                             className="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         />
                                     </div>
+
                                     <div className="flex flex-col">
                                         <label
                                             htmlFor="gender"
@@ -481,6 +486,25 @@ function User() {
                                                 Widowed
                                             </option>
                                         </select>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <label
+                                            htmlFor="sick_leave_balance"
+                                            className="font-semibold mb-1"
+                                        >
+                                            Sick Leave Balance:
+                                        </label>
+                                        <input
+                                            type="number"
+                                            id="sick_leave_balance"
+                                            name="sick_leave_balance"
+                                            value={
+                                                editData.sick_leave_balance ||
+                                                ""
+                                            }
+                                            onChange={handleEditInputChange}
+                                            className="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
                                     </div>
                                 </div>
                             </div>

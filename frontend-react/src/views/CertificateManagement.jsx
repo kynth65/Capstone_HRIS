@@ -388,6 +388,7 @@ function CertificateManagement() {
             fetchCertificatesForEmployee(selectedEmployee.user_id);
         }
     };
+
     const fetchCertificatesForEmployee = (userId) => {
         axiosClient
             .get(`/certificates/${userId}`)
@@ -402,11 +403,14 @@ function CertificateManagement() {
             });
     };
 
+    // Fetch certificates by category for a specific employee
     const fetchCertificatesByCategory = (category) => {
         const userId = selectedEmployee.user_id;
         axiosClient
             .get(`/certificates/${userId}/category/${category}`)
-            .then((response) => {})
+            .then((response) => {
+                setFilteredCertificates(response.data); // Store filtered certificates
+            })
             .catch((error) => {
                 console.error(
                     "Error fetching certificates by category:",
