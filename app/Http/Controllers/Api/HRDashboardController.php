@@ -237,11 +237,12 @@ class HRDashboardController extends Controller
 
     public function getHighlightedDates()
     {
-        // Fetch dates where recruitment stage matches the criteria
+        // Fetch dates with their recruitment stage
         $dates = DB::table('candidates')
             ->whereIn('recruitment_stage', ['Interview', 'Exam', 'Orientation'])
-            ->pluck('date'); // Extract only the date column
+            ->select('date', 'recruitment_stage') // Select both date and recruitment_stage
+            ->get();
 
-        return response()->json($dates); // Return the dates as JSON
+        return response()->json($dates); // Return the data as JSON
     }
 }

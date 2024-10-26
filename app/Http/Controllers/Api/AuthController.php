@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use App\Http\Resources\UserResource;
 use App\Mail\SendEmployeeAccount;
+use App\Models\RfidCard;
+
 
 class AuthController extends Controller
 {
@@ -61,6 +63,14 @@ class AuthController extends Controller
         $data = $request->validated();
 
         try {
+
+            $rfidCard = RfidCard::where('rfid_uid', $data['rfid'])
+                ->where('status', 'available')
+                ->firstOrFail();
+
+            $rfidCard->status = 'assigned';
+            $rfidCard->save();
+
             // Combine first and last name
             // Combine first and last name
             $fullName = trim($data['first_name'] . ' ' . ($data['middle_name'] ?? '') . ' ' . $data['last_name']);

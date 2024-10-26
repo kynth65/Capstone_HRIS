@@ -46,6 +46,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/onboarding/steps', [OnboardingController::class, 'index']);
     Route::post('/onboarding/complete', [OnboardingController::class, 'complete']);
 });
+
+Route::put('/employees/{userId}/update-personal-info', [UpdateProfileIcon::class, 'updatePersonalInfo']);
+
 Route::post('/complete-info', [AuthController::class, 'completeProfile']);
 Route::middleware('auth:sanctum')->post('/leave', [SubmitLeaveRequest::class, 'submitLeaveRequest']);
 Route::post('/refresh', [AuthController::class, 'refresh']);
@@ -250,4 +253,6 @@ Route::middleware(['api'])->group(function () {
     Route::get('/rfid-cards/available', [RfidCardController::class, 'getAvailable']);
     Route::get('/rfid-cards/assigned', [RfidCardController::class, 'getAssigned']);
     Route::put('/rfid-cards/{id}/status', [RfidCardController::class, 'updateStatus']);
+    Route::post('/rfid-cards/{rfid_uid}/assign', [RfidCardController::class, 'assignCard']);
+    Route::put('/rfid-cards/{rfid_uid}/unassign', [RfidCardController::class, 'unassignCard']);
 });

@@ -36,6 +36,7 @@ function EmployeeManagement() {
     const [editModalVisible, setEditModalVisible] = useState(false);
     const [editData, setEditData] = useState({});
     const [isEditing, setIsEditing] = useState(false);
+    const [isRfidLoading, setIsRfidLoading] = useState(false);
 
     const formSections = [
         {
@@ -125,15 +126,8 @@ function EmployeeManagement() {
         return existingUsers.some((user) => user.name === candidateName);
     };
     const departmentPositions = {
-        Admin: ["Admin", "Purchasing"],
-        HR: [
-            "Human Resource Manager",
-            "HR Manager",
-            "Human Resource Assistant",
-            "Accountant",
-            "Marketing",
-            "Book Keeper",
-        ],
+        Admin: ["Admin"],
+        HR: ["Human Resource Manager"],
         Diagnostics: [
             "Medtech",
             "X-ray Tech",
@@ -176,20 +170,22 @@ function EmployeeManagement() {
 
     useEffect(() => {
         if (activeButton === "createAccount") {
-            const fetchRfidCards = async () => {
-                try {
-                    const response = await axiosClient.get("/rfid-cards");
-                    // Use the available cards from the response
-                    const availableCards = response.data.available || [];
-                    setRfidCards(availableCards);
-                } catch (error) {
-                    console.error("Error fetching RFID cards:", error);
-                }
-            };
-
             fetchRfidCards();
         }
     }, [activeButton]);
+
+    const fetchRfidCards = async () => {
+        setIsRfidLoading(true);
+        try {
+            const response = await axiosClient.get("/rfid-cards/available");
+            const availableCards = response.data || [];
+            setRfidCards(availableCards);
+        } catch (error) {
+            console.error("Error fetching RFID cards:", error);
+        } finally {
+            setIsRfidLoading(false);
+        }
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -270,6 +266,9 @@ function EmployeeManagement() {
             setFormData({});
             setConfirmPassword("");
             setCurrentStep(0);
+            if (response.data.user) {
+                fetchRfidCards();
+            }
             return () => clearTimeout(successTimer);
         } catch (err) {
             const responseErrors = err.response?.data?.errors;
@@ -297,14 +296,18 @@ function EmployeeManagement() {
         switch (fieldName) {
             case "rfid":
                 return (
-                    <select {...commonProps}>
+                    <select {...commonProps} disabled={isRfidLoading}>
                         <option value="">Select available RFID</option>
-                        {Array.isArray(rfidCards) &&
+                        {isRfidLoading ? (
+                            <option>Loading...</option>
+                        ) : (
+                            Array.isArray(rfidCards) &&
                             rfidCards.map((card) => (
                                 <option key={card.id} value={card.rfid_uid}>
                                     {card.rfid_uid}
                                 </option>
-                            ))}
+                            ))
+                        )}
                     </select>
                 );
             case "gender":
