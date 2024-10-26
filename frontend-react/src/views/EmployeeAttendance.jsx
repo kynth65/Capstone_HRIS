@@ -7,7 +7,7 @@ function EmployeeAttendance() {
     const [attendanceRecords, setAttendanceRecords] = useState([]);
     const [averageData, setAverageData] = useState({});
     const [filteredRecords, setFilteredRecords] = useState([]);
-    const searchRef = useRef();
+    const inputRef = useRef(null);
 
     const { user } = useStateContext();
     const rfid = user?.rfid;
@@ -112,7 +112,7 @@ function EmployeeAttendance() {
     }, [rfid]);
 
     const handleSearch = () => {
-        const searchTerm = searchRef.current.value.trim().toLowerCase();
+        const searchTerm = inputRef.current.value.trim().toLowerCase();
         const filtered = attendanceRecords.filter(
             (record) =>
                 formatDate(record.date).toLowerCase().includes(searchTerm) ||
@@ -126,6 +126,9 @@ function EmployeeAttendance() {
                         .includes(searchTerm)),
         );
         setFilteredRecords(filtered);
+    };
+    const handleIconClick = () => {
+        inputRef.current?.focus();
     };
 
     return (
@@ -147,57 +150,134 @@ function EmployeeAttendance() {
 
             <div className="animated fadeInDown">
                 {activeButton === "monitoring" && (
-                    <div className="w-full max-w-7xl mx-auto px-4">
-                        <input
-                            type="text"
-                            ref={searchRef}
-                            placeholder="Search by date or time..."
-                            onChange={handleSearch}
-                            className="w-full max-w-md px-4 py-2 mb-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none text-black"
-                        />
+                    <div className="w-full max-w-7xl mx-auto">
+                        {/* Search Bar */}
+                        <div className="relative mb-6 mr-4">
+                            <input
+                                type="text"
+                                ref={inputRef}
+                                placeholder="Search by date or time..."
+                                onChange={handleSearch}
+                                className="w-full px-4 py-3 pl-10 rounded-lg border border-gray-200 focus:ring-1 focus:border-gray-300 outline-none text-black"
+                            />
+                            <button
+                                onClick={handleIconClick}
+                                className="absolute left-3 top-3.5 h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                                aria-label="Focus search"
+                            >
+                                <svg
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
 
-                        <div className="relative rounded-xl overflow-hidden">
-                            <div className="max-h-[500px] overflow-y-auto">
-                                <table className="w-full bg-white text-black">
-                                    <thead className="sticky top-0 bg-white shadow-sm">
+                        {/* Mobile View */}
+                        <div className="md:hidden space-y-4 mr-4">
+                            {filteredRecords.length > 0 ? (
+                                filteredRecords.map((record) => (
+                                    <div
+                                        key={record.id}
+                                        className="p-4 bg-white rounded-lg border border-gray-100"
+                                    >
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <div className="text-sm font-medium text-black/60 mb-1">
+                                                    Date
+                                                </div>
+                                                <div className="text-black">
+                                                    {formatDate(record.date)}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-sm font-medium text-black/60 mb-1">
+                                                    Hours Worked
+                                                </div>
+                                                <div className="text-black">
+                                                    {formatHoursWorked(
+                                                        record.accumulated_time,
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-sm font-medium text-black/60 mb-1">
+                                                    Time In
+                                                </div>
+                                                <div className="text-black">
+                                                    {formatTime(record.time_in)}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-sm font-medium text-black/60 mb-1">
+                                                    Time Out
+                                                </div>
+                                                <div className="text-black">
+                                                    {formatTime(
+                                                        record.time_out,
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="p-8 text-center text-black/60 bg-white rounded-lg border border-gray-100">
+                                    No attendance records found.
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Desktop View */}
+                        <div className="hidden md:block bg-white rounded-lg border border-gray-200">
+                            <div className="max-h-[600px] overflow-y-auto">
+                                <table className="w-full">
+                                    <thead className="bg-gray-50 sticky top-0">
                                         <tr>
-                                            <th className="px-6 py-3 text-center text-sm font-semibold border-b">
+                                            <th className="px-6 py-4 text-left text-sm font-semibold text-black border-b border-gray-200">
                                                 Date
                                             </th>
-                                            <th className="px-6 py-3 text-center text-sm font-semibold border-b">
+                                            <th className="px-6 py-4 text-left text-sm font-semibold text-black border-b border-gray-200">
                                                 Time In
                                             </th>
-                                            <th className="px-6 py-3 text-center text-sm font-semibold border-b">
+                                            <th className="px-6 py-4 text-left text-sm font-semibold text-black border-b border-gray-200">
                                                 Time Out
                                             </th>
-                                            <th className="px-6 py-3 text-center text-sm font-semibold border-b">
+                                            <th className="px-6 py-4 text-left text-sm font-semibold text-black border-b border-gray-200">
                                                 Hours Worked
                                             </th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-200">
+                                    <tbody className="divide-y divide-gray-100">
                                         {filteredRecords.length > 0 ? (
                                             filteredRecords.map((record) => (
                                                 <tr
                                                     key={record.id}
-                                                    className="hover:bg-gray-50"
+                                                    className="hover:bg-gray-50 transition-colors"
                                                 >
-                                                    <td className="px-6 py-4 text-sm">
+                                                    <td className="px-6 py-4 text-black">
                                                         {formatDate(
                                                             record.date,
                                                         )}
                                                     </td>
-                                                    <td className="px-6 py-4 text-sm">
+                                                    <td className="px-6 py-4 text-black">
                                                         {formatTime(
                                                             record.time_in,
                                                         )}
                                                     </td>
-                                                    <td className="px-6 py-4 text-sm">
+                                                    <td className="px-6 py-4 text-black">
                                                         {formatTime(
                                                             record.time_out,
                                                         )}
                                                     </td>
-                                                    <td className="px-6 py-4 text-sm">
+                                                    <td className="px-6 py-4 text-black">
                                                         {formatHoursWorked(
                                                             record.accumulated_time,
                                                         )}
@@ -208,7 +288,7 @@ function EmployeeAttendance() {
                                             <tr>
                                                 <td
                                                     colSpan="4"
-                                                    className="px-6 py-4 text-sm text-center text-gray-500"
+                                                    className="px-6 py-8 text-center text-black/60"
                                                 >
                                                     No attendance records found.
                                                 </td>
@@ -222,35 +302,68 @@ function EmployeeAttendance() {
                 )}
 
                 {activeButton === "averages" && (
-                    <div className="w-full max-w-7xl mx-auto px-4">
-                        <div className="relative rounded-xl overflow-hidden">
-                            <table className="w-full bg-white text-black">
-                                <thead className="bg-white shadow-sm">
+                    <div className="w-full max-w-7xl mx-auto">
+                        {/* Mobile View for Averages */}
+                        <div className="md:hidden bg-white rounded-lg border mr-4 border-gray-200">
+                            <div className="divide-y divide-gray-100">
+                                <div className="p-4">
+                                    <div className="text-sm font-medium text-black/60 mb-1">
+                                        Average Time In
+                                    </div>
+                                    <div className="text-lg text-black">
+                                        {formatTime(averageData.avg_time_in)}
+                                    </div>
+                                </div>
+                                <div className="p-4">
+                                    <div className="text-sm font-medium text-black/60 mb-1">
+                                        Average Time Out
+                                    </div>
+                                    <div className="text-lg text-black">
+                                        {formatTime(averageData.avg_time_out)}
+                                    </div>
+                                </div>
+                                <div className="p-4">
+                                    <div className="text-sm font-medium text-black/60 mb-1">
+                                        Average Hours Worked
+                                    </div>
+                                    <div className="text-lg text-black">
+                                        {formatHoursWorked(
+                                            averageData.avg_hours,
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Desktop View for Averages */}
+                        <div className="hidden md:block bg-white rounded-lg border border-gray-200">
+                            <table className="w-full">
+                                <thead className="bg-gray-50">
                                     <tr>
-                                        <th className="px-6 py-3 text-center text-sm font-semibold border-b">
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-black border-b border-gray-200">
                                             Average Time In
                                         </th>
-                                        <th className="px-6 py-3 text-center text-sm font-semibold border-b">
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-black border-b border-gray-200">
                                             Average Time Out
                                         </th>
-                                        <th className="px-6 py-3 text-center text-sm font-semibold border-b">
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-black border-b border-gray-200">
                                             Average Hours Worked
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 text-sm">
+                                    <tr className="hover:bg-gray-50 transition-colors">
+                                        <td className="px-6 py-4 text-black">
                                             {formatTime(
                                                 averageData.avg_time_in,
                                             )}
                                         </td>
-                                        <td className="px-6 py-4 text-sm">
+                                        <td className="px-6 py-4 text-black">
                                             {formatTime(
                                                 averageData.avg_time_out,
                                             )}
                                         </td>
-                                        <td className="px-6 py-4 text-sm">
+                                        <td className="px-6 py-4 text-black">
                                             {formatHoursWorked(
                                                 averageData.avg_hours,
                                             )}
