@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\HRDashboardController;
-use App\Http\Controllers\Api\SubmitLeaveRequest;
+use App\Http\Controllers\Api\submitLeaveRequest;
 use App\Http\Controllers\Api\UpdateProfileIcon;
 use App\Http\Controllers\Api\OpenFileController;
 use App\Http\Controllers\ArchiveEmployeeController;
@@ -51,7 +51,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::put('/employees/{userId}/update-personal-info', [UpdateProfileIcon::class, 'updatePersonalInfo']);
 
 Route::post('/complete-info', [AuthController::class, 'completeProfile']);
-Route::middleware('auth:sanctum')->post('/leave', [SubmitLeaveRequest::class, 'submitLeaveRequest']);
+Route::middleware('auth:sanctum')->post('/leave', [submitLeaveRequest::class, 'submitLeaveRequest']);
 Route::post('/refresh', [AuthController::class, 'refresh']);
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 //Route::match(['get', 'post'],'/login', [AuthController::class, 'login'])->name('login');
