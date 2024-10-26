@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\CertificateRequestController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AdminNotificationController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\RfidCardController;
 
 
@@ -255,4 +256,10 @@ Route::middleware(['api'])->group(function () {
     Route::put('/rfid-cards/{id}/status', [RfidCardController::class, 'updateStatus']);
     Route::post('/rfid-cards/{rfid_uid}/assign', [RfidCardController::class, 'assignCard']);
     Route::put('/rfid-cards/{rfid_uid}/unassign', [RfidCardController::class, 'unassignCard']);
+    Route::post('/rfid-cards/{id}/acknowledge', [RfidCardController::class, 'acknowledge']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/events/upcoming', [EventController::class, 'upcoming']);
+    Route::apiResource('events', EventController::class);
 });

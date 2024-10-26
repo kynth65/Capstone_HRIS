@@ -8,7 +8,8 @@ class RfidCard extends Model
 {
     protected $fillable = [
         'rfid_uid',
-        'status'
+        'status',
+        'acknowledged'
     ];
 
     protected $casts = [

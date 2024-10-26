@@ -483,12 +483,14 @@ function EmployeeManagement() {
     const handleDelete = async (employeeId) => {
         try {
             await axiosClient.delete(`/employees/${employeeId}`);
-            setEmployees(
-                employees.filter((employee) => employee.id !== employeeId),
+            setEmployees((prevEmployees) =>
+                prevEmployees.filter(
+                    (employee) => employee.user_id !== employeeId,
+                ),
             );
-            setFilteredEmployees(
-                filteredEmployees.filter(
-                    (employee) => employee.id !== employeeId,
+            setFilteredEmployees((prevFiltered) =>
+                prevFiltered.filter(
+                    (employee) => employee.user_id !== employeeId,
                 ),
             );
             setSuccessMessage("Employee successfully deleted and archived.");
@@ -564,6 +566,9 @@ function EmployeeManagement() {
             setArchivedEmployees(
                 archivedEmployees.filter((emp) => emp.id !== employeeId),
             );
+            const employeesResponse = await axiosClient.get("/employees");
+            setEmployees(employeesResponse.data);
+            setFilteredEmployees(employeesResponse.data);
             setSuccessMessage(successMessage);
             setTimeout(() => setSuccessMessage(""), 4000);
         } catch (error) {
@@ -575,11 +580,18 @@ function EmployeeManagement() {
             setTimeout(() => setErrors(""), 4000);
         }
     };
-
     function calculateAge(birthdate) {
-        const birthDate = parseISO(birthdate);
-        const today = new Date();
-        return differenceInYears(today, birthDate);
+        if (!birthdate) {
+            return "N/A"; // Return N/A if birthdate is null or undefined
+        }
+        try {
+            const birthDate = parseISO(birthdate);
+            const today = new Date();
+            return differenceInYears(today, birthDate);
+        } catch (error) {
+            console.error("Error calculating age:", error);
+            return "N/A";
+        }
     }
 
     return (
@@ -1257,6 +1269,10 @@ function EmployeeManagement() {
                                     Employment Details
                                 </h3>
                                 <div className="profile-details text-base">
+                                    {renderField(
+                                        "Rfid card",
+                                        selectedEmployee.rfid,
+                                    )}
                                     {renderField(
                                         "Employee Type",
                                         selectedEmployee.employee_type,

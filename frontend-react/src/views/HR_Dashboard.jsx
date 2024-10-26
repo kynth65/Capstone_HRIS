@@ -20,7 +20,7 @@ import {
 import axiosClient from "../axiosClient";
 import "../styles/hrDashboard.css"; // Make sure you update your CSS here
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
+import Event from "./Event";
 import { IoNotificationsOutline } from "react-icons/io5";
 
 const Dashboard = () => {
@@ -425,45 +425,7 @@ const Dashboard = () => {
 
                     <div>
                         <div className="flex flex-col items-center max-h-96 mr-2 sm:mr-0 h-auto lg:h-[313px] xl:h-[333px] bg-white rounded-lg mb-4">
-                            <span className="font-bold text-black text-lg mb-2 pt-3">
-                                Notification
-                            </span>
-                            <div className="flex-grow overflow-auto md:w-fit">
-                                {Array.isArray(data.notifications) &&
-                                data.notifications.length > 0 ? (
-                                    data.notifications
-                                        .filter(
-                                            (notification) =>
-                                                notification.message,
-                                        )
-                                        .map((notification, index) => (
-                                            <div
-                                                className={`border-2 rounded-lg mb-2 w-auto mx-2   ${
-                                                    notification.type ===
-                                                    "expired"
-                                                        ? "bg-red-100 text-red-900 border-red-500"
-                                                        : "bg-white text-green-900 border-green-900"
-                                                }`}
-                                                key={index}
-                                            >
-                                                <ListItem>
-                                                    <ListItemText
-                                                        primary={
-                                                            notification.message
-                                                        }
-                                                        secondary={formatSentDate(
-                                                            notification.created_at,
-                                                        )}
-                                                    />
-                                                </ListItem>
-                                            </div>
-                                        ))
-                                ) : (
-                                    <ListItem>
-                                        <ListItemText primary="No notifications found" />
-                                    </ListItem>
-                                )}
-                            </div>
+                            <Event />
                         </div>
                     </div>
                 </div>

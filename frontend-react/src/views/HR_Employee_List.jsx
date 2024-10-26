@@ -324,6 +324,10 @@ function User() {
                                 </h3>
                                 <div className="profile-details text-base font-kodchasan">
                                     {renderField(
+                                        "Rfid card",
+                                        selectedEmployee.rfid,
+                                    )}
+                                    {renderField(
                                         "Employee Type",
                                         selectedEmployee.employee_type,
                                     )}

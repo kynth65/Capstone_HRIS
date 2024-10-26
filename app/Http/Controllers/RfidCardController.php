@@ -32,6 +32,13 @@ class RfidCardController extends Controller
         return response()->json($cards);
     }
 
+    public function acknowledge($id)
+    {
+        $card = RfidCard::findOrFail($id);
+        $card->update(['acknowledged' => true]);
+        return response()->json(['message' => 'Card acknowledged successfully']);
+    }
+
     public function assignCard($rfidUid)
     {
         $card = RfidCard::where('rfid_uid', $rfidUid)->first();
@@ -45,7 +52,6 @@ class RfidCardController extends Controller
 
         return response()->json(['message' => 'RFID card assigned successfully']);
     }
-
 
     public function unassignCard($rfidUid)
     {
