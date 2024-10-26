@@ -8,8 +8,16 @@ use App\Models\AddPosition;
 
 class DepartmentController extends Controller
 {
+    public function index()
+    {
+        $departments = Departments::all();
+        return response()->json($departments);
+    }
+
+
     public function store(Request $request)
     {
+
         // Validate the request data
         $validated = $request->validate([
             'department' => 'required|string|max:255',

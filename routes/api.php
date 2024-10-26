@@ -265,3 +265,4 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::post('/departments', [DepartmentController::class, 'store']);
+Route::get('/departments', [DepartmentController::class, 'index']);

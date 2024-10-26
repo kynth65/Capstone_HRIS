@@ -32,8 +32,9 @@ class EventController extends Controller
                     'id' => $event->id,
                     'title' => $event->title,
                     'icon' => $event->icon ?? Event::ICONS[$event->type],
-                    'date' => $event->event_date->format('M jS'),
-                    'time' => $event->event_date->format('H:i'),
+                    'event_date' => $event->event_date->format('Y-m-d H:i:s'),  // Add full datetime
+                    'formatted_date' => $event->event_date->format('M jS'),     // Keep formatted version if needed
+                    'formatted_time' => $event->event_date->format('H:i'),      // Keep formatted version if needed
                     'audience' => $event->audience,
                     'with_person' => $event->with_person,
                     'type' => $event->type
@@ -48,10 +49,11 @@ class EventController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'type' => 'required|string|in:' . implode(',', array_keys(Event::TYPES)),
-            'icon' => 'nullable|string',
             'event_date' => 'required|date',
             'audience' => 'required|string|in:' . implode(',', array_keys(Event::AUDIENCES)),
-            'with_person' => 'nullable|string'
+            'selected_users' => 'sometimes|array',
+            'selected_departments' => 'sometimes|array',
+            'selected_positions' => 'sometimes|array',
         ]);
 
         $event = Event::create([
@@ -59,7 +61,20 @@ class EventController extends Controller
             'created_by' => Auth::id(),
         ]);
 
-        return response()->json($event, 201);
+        // Sync relationships
+        $event->selectedEmployees()->sync($validated['selected_employees']);
+
+        if ($validated['type'] !== 'meeting') {
+            if (isset($validated['selected_departments'])) {
+                $event->selectedDepartments()->sync($validated['selected_departments']);
+            }
+
+            if (isset($validated['selected_positions'])) {
+                $event->selectedPositions()->sync($validated['selected_positions']);
+            }
+        }
+
+        return response()->json($event->load(['selectedEmployees', 'selectedDepartments', 'selectedPositions']), 201);
     }
 
     public function update(Request $request, Event $event)

@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axiosClient from "../axiosClient";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, X } from "lucide-react";
 
 const Event = () => {
-    // Define TYPES and AUDIENCES constants
     const TYPES = {
         meeting: "Meeting",
         party: "Party",
@@ -15,7 +14,6 @@ const Event = () => {
     const AUDIENCES = {
         all_team: "All Team",
         specific_department: "Specific Department",
-        specific_people: "Specific People",
     };
 
     const [events, setEvents] = useState([]);
@@ -23,23 +21,109 @@ const Event = () => {
     const [error, setError] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [editingEvent, setEditingEvent] = useState(null);
+    const [employees, setEmployees] = useState([]);
+    const [departments, setDepartments] = useState([]);
+    const [newDepartment, setNewDepartment] = useState("");
+    const [selectedEmployees, setSelectedEmployees] = useState([]);
+    const [selectedDepartments, setSelectedDepartments] = useState([]);
+
     const [formData, setFormData] = useState({
         title: "",
         type: "",
         event_date: "",
         event_time: "",
         audience: "all_team",
-        with_person: "",
+        selected_users: [],
+        selected_departments: [],
     });
 
     useEffect(() => {
         fetchEvents();
+        fetchEmployees();
+        fetchDepartments();
     }, []);
+
+    const fetchEmployees = async () => {
+        try {
+            const response = await axiosClient.get("/employees");
+            console.log("Fetched employees:", response.data);
+            setEmployees(response.data);
+        } catch (error) {
+            console.error("Error fetching employees:", error);
+        }
+    };
+
+    const fetchDepartments = async () => {
+        try {
+            const response = await axiosClient.get("/departments");
+            setDepartments(response.data);
+        } catch (error) {
+            console.error("Error fetching departments:", error);
+        }
+    };
+
+    const handleEmployeeSelect = (userId) => {
+        const employee = employees.find((emp) => emp.user_id === userId);
+        if (
+            employee &&
+            !selectedEmployees.some((emp) => emp.user_id === userId)
+        ) {
+            setSelectedEmployees([...selectedEmployees, employee]);
+            setFormData({
+                ...formData,
+                selected_users: [...formData.selected_users, userId],
+            });
+        }
+    };
+
+    const handleRemoveEmployee = (userId) => {
+        setSelectedEmployees(
+            selectedEmployees.filter((emp) => emp.user_id !== userId),
+        );
+        setFormData({
+            ...formData,
+            selected_users: formData.selected_users.filter(
+                (id) => id !== userId,
+            ),
+        });
+    };
+
+    const handleDepartmentSelect = (departmentId) => {
+        const department = departments.find((dept) => dept.id === departmentId);
+        if (
+            department &&
+            !selectedDepartments.some((dept) => dept.id === departmentId)
+        ) {
+            setSelectedDepartments([...selectedDepartments, department]);
+            setFormData({
+                ...formData,
+                selected_departments: [
+                    ...formData.selected_departments,
+                    departmentId,
+                ],
+            });
+        }
+    };
+
+    const handleRemoveDepartment = (departmentId) => {
+        setSelectedDepartments(
+            selectedDepartments.filter((dept) => dept.id !== departmentId),
+        );
+        setFormData({
+            ...formData,
+            selected_departments: formData.selected_departments.filter(
+                (id) => id !== departmentId,
+            ),
+        });
+    };
 
     const fetchEvents = async () => {
         try {
             const response = await axiosClient.get("/events/upcoming");
-            setEvents(response.data);
+            const sortedEvents = response.data.sort(
+                (a, b) => new Date(a.event_date) - new Date(b.event_date),
+            );
+            setEvents(sortedEvents);
             setLoading(false);
         } catch (error) {
             console.error("Error fetching events:", error);
@@ -57,10 +141,22 @@ const Event = () => {
                 event_date: eventDateTime,
             };
 
+            let updatedEvent;
             if (editingEvent) {
-                await axiosClient.put(`/events/${editingEvent.id}`, payload);
+                const response = await axiosClient.put(
+                    `/events/${editingEvent.id}`,
+                    payload,
+                );
+                updatedEvent = response.data;
+                setEvents((currentEvents) =>
+                    currentEvents.map((event) =>
+                        event.id === editingEvent.id ? updatedEvent : event,
+                    ),
+                );
             } else {
-                await axiosClient.post("/events", payload);
+                const response = await axiosClient.post("/events", payload);
+                updatedEvent = response.data;
+                setEvents((currentEvents) => [...currentEvents, updatedEvent]);
             }
 
             setShowModal(false);
@@ -71,7 +167,8 @@ const Event = () => {
                 event_date: "",
                 event_time: "",
                 audience: "all_team",
-                with_person: "",
+                selected_users: [],
+                selected_departments: [],
             });
             fetchEvents();
         } catch (error) {
@@ -88,8 +185,27 @@ const Event = () => {
             event_date: eventDate.toISOString().split("T")[0],
             event_time: eventDate.toTimeString().slice(0, 5),
             audience: event.audience,
-            with_person: event.with_person || "",
+            selected_users: event.selected_users || [],
+            selected_departments: event.selected_departments || [],
         });
+
+        if (event.selected_users && event.selected_users.length > 0) {
+            const selectedUsers = employees.filter((emp) =>
+                event.selected_users.includes(emp.user_id),
+            );
+            setSelectedEmployees(selectedUsers);
+        }
+
+        if (
+            event.selected_departments &&
+            event.selected_departments.length > 0
+        ) {
+            const selectedDepts = departments.filter((dept) =>
+                event.selected_departments.includes(dept.id),
+            );
+            setSelectedDepartments(selectedDepts);
+        }
+
         setShowModal(true);
     };
 
@@ -104,15 +220,40 @@ const Event = () => {
         return icons[type] || "📅";
     };
 
+    const formatEventDateTime = (dateTimeStr) => {
+        try {
+            const date = new Date(dateTimeStr);
+            return {
+                date: date.toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                }),
+                time: date.toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                }),
+            };
+        } catch (error) {
+            console.error("Error formatting date:", error);
+            return {
+                date: "Invalid Date",
+                time: "Invalid Date",
+            };
+        }
+    };
+
     if (loading) return <div className="animate-pulse">Loading events...</div>;
     if (error) return <div className="text-red-500">{error}</div>;
 
     return (
         <>
+            {/* Render events and modal */}
             <div className="flex justify-between items-center px-4 mb-4">
                 <div className="flex items-center gap-2">
                     <h1 className="font-bold text-lg text-black">
-                        Upcoming Events
+                        Upcoming Events ({events.length})
                     </h1>
                     <span className="text-gray-400">→</span>
                 </div>
@@ -127,54 +268,35 @@ const Event = () => {
             <div className="w-full px-4 overflow-y-auto max-h-[260px]">
                 {events.length > 0 ? (
                     <div className="space-y-3">
-                        {events.map((event) => (
-                            <div
-                                key={event.id}
-                                className="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
-                                onClick={() => handleEdit(event)}
-                            >
-                                <div className="text-2xl mr-3">
-                                    {getEventIcon(event.type)}
-                                </div>
-                                <div className="flex-grow">
-                                    <div className="flex items-center gap-2">
-                                        <h3 className="font-semibold text-gray-800">
-                                            {event.title}
-                                        </h3>
-                                        {event.with_person && (
-                                            <span className="text-sm text-gray-500">
-                                                with {event.with_person}
-                                            </span>
-                                        )}
+                        {events.map((event) => {
+                            const { date, time } = formatEventDateTime(
+                                event.event_date,
+                            );
+                            return (
+                                <div
+                                    key={event.id}
+                                    className="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                                    onClick={() => handleEdit(event)}
+                                >
+                                    <div className="text-2xl mr-3">
+                                        {getEventIcon(event.type)}
                                     </div>
-                                    <div className="flex items-center gap-1">
-                                        {event.audience === "all_team" && (
-                                            <div className="flex -space-x-2">
-                                                {[...Array(3)].map((_, i) => (
-                                                    <div
-                                                        key={i}
-                                                        className="w-6 h-6 rounded-full bg-gray-300 border-2 border-white"
-                                                    />
-                                                ))}
-                                            </div>
-                                        )}
-                                        <span className="text-sm text-gray-500 ml-1">
-                                            {event.audience === "all_team"
-                                                ? "All Team"
-                                                : event.audience}
-                                        </span>
+                                    <div className="flex-grow">
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="font-semibold text-gray-800">
+                                                {event.title}
+                                            </h3>
+                                        </div>
+                                        <div className="text-sm text-gray-500">
+                                            {date}
+                                        </div>
+                                        <div className="text-sm text-gray-500">
+                                            {time}
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="text-right">
-                                    <div className="text-sm font-medium text-gray-900">
-                                        {event.time}
-                                    </div>
-                                    <div className="text-sm text-gray-500">
-                                        {event.date}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 ) : (
                     <div className="text-center text-gray-500 py-4">
@@ -268,46 +390,135 @@ const Event = () => {
                                     />
                                 </div>
                             </div>
+
+                            {/* Filtered Employee Selection */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">
-                                    With Person
+                                    With Employees
                                 </label>
-                                <input
-                                    type="text"
-                                    value={formData.with_person}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            with_person: e.target.value,
-                                        })
-                                    }
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                />
+                                <div className="flex gap-2 mb-2">
+                                    <select
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        onChange={(e) =>
+                                            handleEmployeeSelect(e.target.value)
+                                        }
+                                        value=""
+                                    >
+                                        <option value="">
+                                            Select employee
+                                        </option>
+                                        {employees
+                                            .filter(
+                                                (emp) =>
+                                                    !selectedEmployees.some(
+                                                        (selected) =>
+                                                            selected.user_id ===
+                                                            emp.user_id,
+                                                    ),
+                                            )
+                                            .map((employee) => (
+                                                <option
+                                                    key={employee.user_id}
+                                                    value={employee.user_id}
+                                                >
+                                                    {employee.first_name}{" "}
+                                                    {employee.last_name}
+                                                </option>
+                                            ))}
+                                    </select>
+                                </div>
+                                <div className="mt-2 space-y-2">
+                                    {selectedEmployees.map((employee) => (
+                                        <div
+                                            key={employee.user_id}
+                                            className="flex items-center justify-between bg-gray-100 p-2 rounded-md"
+                                        >
+                                            <span>
+                                                {employee.first_name}{" "}
+                                                {employee.last_name}
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    handleRemoveEmployee(
+                                                        employee.user_id,
+                                                    )
+                                                }
+                                                className="text-red-500 hover:text-red-700"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Audience
-                                </label>
-                                <select
-                                    value={formData.audience}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            audience: e.target.value,
-                                        })
-                                    }
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    required
-                                >
-                                    {Object.entries(AUDIENCES).map(
-                                        ([key, value]) => (
-                                            <option key={key} value={key}>
-                                                {value}
+
+                            {/* Filtered Department Selection */}
+                            {formData.audience === "specific_department" && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Departments
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <select
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                            onChange={(e) =>
+                                                handleDepartmentSelect(
+                                                    parseInt(e.target.value),
+                                                )
+                                            }
+                                            value=""
+                                        >
+                                            <option value="">
+                                                Select department
                                             </option>
-                                        ),
-                                    )}
-                                </select>
-                            </div>
+                                            {departments
+                                                .filter(
+                                                    (dept) =>
+                                                        !selectedDepartments.some(
+                                                            (selected) =>
+                                                                selected.id ===
+                                                                dept.id,
+                                                        ),
+                                                )
+                                                .map((department) => (
+                                                    <option
+                                                        key={department.id}
+                                                        value={department.id}
+                                                    >
+                                                        {department.name}
+                                                    </option>
+                                                ))}
+                                        </select>
+                                    </div>
+                                    <div className="mt-2 space-y-2">
+                                        {selectedDepartments.map(
+                                            (department) => (
+                                                <div
+                                                    key={department.id}
+                                                    className="flex items-center justify-between bg-gray-100 p-2 rounded-md"
+                                                >
+                                                    <span>
+                                                        {department.name}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            handleRemoveDepartment(
+                                                                department.id,
+                                                            )
+                                                        }
+                                                        className="text-red-500 hover:text-red-700"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ),
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="flex justify-end gap-2 mt-4">
                                 <button
                                     type="button"
@@ -320,8 +531,11 @@ const Event = () => {
                                             event_date: "",
                                             event_time: "",
                                             audience: "all_team",
-                                            with_person: "",
+                                            selected_users: [],
+                                            selected_departments: [],
                                         });
+                                        setSelectedEmployees([]);
+                                        setSelectedDepartments([]);
                                     }}
                                     className="px-4 py-2 text-gray-600 hover:text-gray-700"
                                 >
