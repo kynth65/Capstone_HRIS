@@ -51,7 +51,7 @@ class EventController extends Controller
             'type' => 'required|string|in:' . implode(',', array_keys(Event::TYPES)),
             'event_date' => 'required|date',
             'audience' => 'required|string|in:' . implode(',', array_keys(Event::AUDIENCES)),
-            'selected_users' => 'sometimes|array',
+            'selected_employees' => 'sometimes|array', // Updated key
             'selected_departments' => 'sometimes|array',
             'selected_positions' => 'sometimes|array',
         ]);
@@ -62,7 +62,9 @@ class EventController extends Controller
         ]);
 
         // Sync relationships
-        $event->selectedEmployees()->sync($validated['selected_employees']);
+        if (isset($validated['selected_employees'])) {
+            $event->selectedEmployees()->sync($validated['selected_employees']); // Corrected key
+        }
 
         if ($validated['type'] !== 'meeting') {
             if (isset($validated['selected_departments'])) {
@@ -76,6 +78,7 @@ class EventController extends Controller
 
         return response()->json($event->load(['selectedEmployees', 'selectedDepartments', 'selectedPositions']), 201);
     }
+
 
     public function update(Request $request, Event $event)
     {

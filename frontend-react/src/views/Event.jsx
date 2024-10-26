@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axiosClient from "../axiosClient";
-import { PlusCircle, X } from "lucide-react";
+import { PlusCircle, UserPlus, X, Building } from "lucide-react";
 
 const Event = () => {
     const TYPES = {
@@ -26,6 +26,8 @@ const Event = () => {
     const [newDepartment, setNewDepartment] = useState("");
     const [selectedEmployees, setSelectedEmployees] = useState([]);
     const [selectedDepartments, setSelectedDepartments] = useState([]);
+    const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
+    const [selectedDepartmentId, setSelectedDepartmentId] = useState("");
 
     const [formData, setFormData] = useState({
         title: "",
@@ -62,7 +64,23 @@ const Event = () => {
         }
     };
 
+    const handleAddDepartment = async () => {
+        if (!newDepartment.trim()) return;
+
+        try {
+            const response = await axiosClient.post("/departments", {
+                name: newDepartment,
+            });
+            setDepartments([...departments, response.data]);
+            setNewDepartment("");
+        } catch (error) {
+            console.error("Error adding department:", error);
+        }
+    };
+
     const handleEmployeeSelect = (userId) => {
+        if (!userId) return;
+
         const employee = employees.find((emp) => emp.user_id === userId);
         if (
             employee &&
@@ -74,6 +92,7 @@ const Event = () => {
                 selected_users: [...formData.selected_users, userId],
             });
         }
+        setSelectedEmployeeId(""); // Reset the select input
     };
 
     const handleRemoveEmployee = (userId) => {
@@ -89,20 +108,27 @@ const Event = () => {
     };
 
     const handleDepartmentSelect = (departmentId) => {
-        const department = departments.find((dept) => dept.id === departmentId);
+        if (!departmentId) return;
+
+        const department = departments.find(
+            (dept) => dept.id === parseInt(departmentId),
+        );
         if (
             department &&
-            !selectedDepartments.some((dept) => dept.id === departmentId)
+            !selectedDepartments.some(
+                (dept) => dept.id === parseInt(departmentId),
+            )
         ) {
             setSelectedDepartments([...selectedDepartments, department]);
             setFormData({
                 ...formData,
                 selected_departments: [
                     ...formData.selected_departments,
-                    departmentId,
+                    parseInt(departmentId),
                 ],
             });
         }
+        setSelectedDepartmentId(""); // Reset the select input
     };
 
     const handleRemoveDepartment = (departmentId) => {
@@ -120,6 +146,7 @@ const Event = () => {
     const fetchEvents = async () => {
         try {
             const response = await axiosClient.get("/events/upcoming");
+            // Sort events by date
             const sortedEvents = response.data.sort(
                 (a, b) => new Date(a.event_date) - new Date(b.event_date),
             );
@@ -148,6 +175,8 @@ const Event = () => {
                     payload,
                 );
                 updatedEvent = response.data;
+
+                // Update the specific event in the events array
                 setEvents((currentEvents) =>
                     currentEvents.map((event) =>
                         event.id === editingEvent.id ? updatedEvent : event,
@@ -156,9 +185,12 @@ const Event = () => {
             } else {
                 const response = await axiosClient.post("/events", payload);
                 updatedEvent = response.data;
+
+                // Add the new event to the events array
                 setEvents((currentEvents) => [...currentEvents, updatedEvent]);
             }
 
+            // Clear form and close modal
             setShowModal(false);
             setEditingEvent(null);
             setFormData({
@@ -167,12 +199,14 @@ const Event = () => {
                 event_date: "",
                 event_time: "",
                 audience: "all_team",
-                selected_users: [],
-                selected_departments: [],
+                with_person: "",
             });
+
+            // Refresh the events list to ensure consistency with server
             fetchEvents();
         } catch (error) {
             console.error("Error saving event:", error);
+            // You might want to show an error message to the user here
         }
     };
 
@@ -185,28 +219,15 @@ const Event = () => {
             event_date: eventDate.toISOString().split("T")[0],
             event_time: eventDate.toTimeString().slice(0, 5),
             audience: event.audience,
-            selected_users: event.selected_users || [],
-            selected_departments: event.selected_departments || [],
+            with_person: event.with_person || "",
         });
-
+        setShowModal(true);
         if (event.selected_users && event.selected_users.length > 0) {
             const selectedUsers = employees.filter((emp) =>
                 event.selected_users.includes(emp.user_id),
             );
             setSelectedEmployees(selectedUsers);
         }
-
-        if (
-            event.selected_departments &&
-            event.selected_departments.length > 0
-        ) {
-            const selectedDepts = departments.filter((dept) =>
-                event.selected_departments.includes(dept.id),
-            );
-            setSelectedDepartments(selectedDepts);
-        }
-
-        setShowModal(true);
     };
 
     const getEventIcon = (type) => {
@@ -223,6 +244,16 @@ const Event = () => {
     const formatEventDateTime = (dateTimeStr) => {
         try {
             const date = new Date(dateTimeStr);
+
+            // Check if date is invalid
+            if (isNaN(date.getTime())) {
+                console.error("Invalid date string:", dateTimeStr);
+                return {
+                    date: "Invalid Date",
+                    time: "Invalid Date",
+                };
+            }
+
             return {
                 date: date.toLocaleDateString("en-US", {
                     year: "numeric",
@@ -249,7 +280,6 @@ const Event = () => {
 
     return (
         <>
-            {/* Render events and modal */}
             <div className="flex justify-between items-center px-4 mb-4">
                 <div className="flex items-center gap-2">
                     <h1 className="font-bold text-lg text-black">
@@ -286,12 +316,38 @@ const Event = () => {
                                             <h3 className="font-semibold text-gray-800">
                                                 {event.title}
                                             </h3>
+                                            {event.with_person && (
+                                                <span className="text-sm text-gray-500">
+                                                    with {event.with_person}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            {event.audience === "all_team" && (
+                                                <div className="flex -space-x-2">
+                                                    {[...Array(3)].map(
+                                                        (_, i) => (
+                                                            <div
+                                                                key={i}
+                                                                className="w-6 h-6 rounded-full bg-gray-300 border-2 border-white"
+                                                            />
+                                                        ),
+                                                    )}
+                                                </div>
+                                            )}
+                                            <span className="text-sm text-gray-500 ml-1">
+                                                {event.audience === "all_team"
+                                                    ? "All Team"
+                                                    : event.audience}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-sm font-medium text-gray-900">
+                                            {time}
                                         </div>
                                         <div className="text-sm text-gray-500">
                                             {date}
-                                        </div>
-                                        <div className="text-sm text-gray-500">
-                                            {time}
                                         </div>
                                     </div>
                                 </div>
@@ -305,6 +361,7 @@ const Event = () => {
                 )}
             </div>
 
+            {/* Modal remains the same */}
             {showModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg p-6 w-full max-w-md text-black">
@@ -391,7 +448,6 @@ const Event = () => {
                                 </div>
                             </div>
 
-                            {/* Filtered Employee Selection */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">
                                     With Employees
@@ -402,18 +458,18 @@ const Event = () => {
                                         onChange={(e) =>
                                             handleEmployeeSelect(e.target.value)
                                         }
-                                        value=""
+                                        value={selectedEmployeeId}
                                     >
                                         <option value="">
                                             Select employee
                                         </option>
                                         {employees
                                             .filter(
-                                                (emp) =>
+                                                (employee) =>
                                                     !selectedEmployees.some(
                                                         (selected) =>
                                                             selected.user_id ===
-                                                            emp.user_id,
+                                                            employee.user_id,
                                                     ),
                                             )
                                             .map((employee) => (
@@ -453,68 +509,97 @@ const Event = () => {
                                 </div>
                             </div>
 
-                            {/* Filtered Department Selection */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Audience
+                                </label>
+                                <select
+                                    value={formData.audience}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            audience: e.target.value,
+                                        })
+                                    }
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    required
+                                >
+                                    {Object.entries(AUDIENCES).map(
+                                        ([key, value]) => (
+                                            <option key={key} value={key}>
+                                                {value}
+                                            </option>
+                                        ),
+                                    )}
+                                </select>
+                            </div>
+
+                            {/* Department Selection */}
                             {formData.audience === "specific_department" && (
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">
                                         Departments
                                     </label>
-                                    <div className="flex gap-2">
-                                        <select
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                            onChange={(e) =>
-                                                handleDepartmentSelect(
-                                                    parseInt(e.target.value),
-                                                )
-                                            }
-                                            value=""
-                                        >
-                                            <option value="">
-                                                Select department
-                                            </option>
-                                            {departments
-                                                .filter(
-                                                    (dept) =>
-                                                        !selectedDepartments.some(
-                                                            (selected) =>
-                                                                selected.id ===
-                                                                dept.id,
-                                                        ),
-                                                )
-                                                .map((department) => (
-                                                    <option
+                                    <div className="space-y-2">
+                                        <div className="flex gap-2">
+                                            <select
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                                onChange={(e) =>
+                                                    handleDepartmentSelect(
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                value={selectedDepartmentId}
+                                            >
+                                                <option value="">
+                                                    Select department
+                                                </option>
+                                                {departments
+                                                    .filter(
+                                                        (department) =>
+                                                            !selectedDepartments.some(
+                                                                (selected) =>
+                                                                    selected.id ===
+                                                                    department.id,
+                                                            ),
+                                                    )
+                                                    .map((department) => (
+                                                        <option
+                                                            key={department.id}
+                                                            value={
+                                                                department.id
+                                                            }
+                                                        >
+                                                            {department.name}
+                                                        </option>
+                                                    ))}
+                                            </select>
+                                        </div>
+                                        <div className="mt-2 space-y-2">
+                                            {selectedDepartments.map(
+                                                (department) => (
+                                                    <div
                                                         key={department.id}
-                                                        value={department.id}
+                                                        className="flex items-center justify-between bg-gray-100 p-2 rounded-md"
                                                     >
-                                                        {department.name}
-                                                    </option>
-                                                ))}
-                                        </select>
-                                    </div>
-                                    <div className="mt-2 space-y-2">
-                                        {selectedDepartments.map(
-                                            (department) => (
-                                                <div
-                                                    key={department.id}
-                                                    className="flex items-center justify-between bg-gray-100 p-2 rounded-md"
-                                                >
-                                                    <span>
-                                                        {department.name}
-                                                    </span>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            handleRemoveDepartment(
-                                                                department.id,
-                                                            )
-                                                        }
-                                                        className="text-red-500 hover:text-red-700"
-                                                    >
-                                                        <X className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            ),
-                                        )}
+                                                        <span>
+                                                            {department.name}
+                                                        </span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                handleRemoveDepartment(
+                                                                    department.id,
+                                                                )
+                                                            }
+                                                            className="text-red-500 hover:text-red-700"
+                                                        >
+                                                            <X className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                ),
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             )}
