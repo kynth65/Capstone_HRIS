@@ -199,7 +199,7 @@ const EmployeeEvent = () => {
                 </div>
             </div>
 
-            <div className="w-full px-4 overflow-y-auto max-h-[260px]">
+            <div className="w-full px-4 overflow-y-auto max-h-[360px]">
                 {events.length > 0 ? (
                     <div className="space-y-3">
                         {events.map((event) => {

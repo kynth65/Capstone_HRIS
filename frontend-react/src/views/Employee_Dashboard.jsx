@@ -96,27 +96,24 @@ const EmployeeDashboard = () => {
         return `Sent ${daysDiff} days ago`;
     };
 
+    const BASE_URL = import.meta.env.VITE_BASE_URL; // Access VITE_BASE_URL
+
     return (
         <div className="animated fadeInDown">
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
-                {/* Employee Profile Section */}
-                <div className="flex flex-col md:col-span-1 items-center bg-white text-black p-6 rounded-xl">
-                    <img
-                        src={
-                            employee.profile
-                                ? `http://127.0.0.1:8000/storage/images/${employee.profile}`
-                                : defaultAvatar
-                        }
-                        alt="Profile"
-                        className="p-2 w-40 h-40 mb-4 transition-all"
-                    />
-                    <h1 className="font-bold text-xl mb-2">{employee.name}</h1>
-                    <p className="text-gray-500 text-base">
-                        Position: {employee.position}
-                    </p>
-                </div>
-                {/* Employee Personal Details Section */}
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
                 <div className="flex flex-col md:col-span-2 bg-white text-black p-6 rounded-xl">
+                    <div className="flex justify-center">
+                        <img
+                            src={
+                                employee.profile
+                                    ? `${BASE_URL}/storage/images/${employee.profile}`
+                                    : defaultAvatar
+                            }
+                            alt="Profile"
+                            className="p-2 w-40 h-40 mb-4 transition-all"
+                        />
+                    </div>
+
                     <h2 className="font-bold text-lg mb-4">Personal Details</h2>
                     <div className="profile-details text-base font-kodchasan">
                         {/* Name */}
@@ -207,7 +204,7 @@ const EmployeeDashboard = () => {
                                             <td className="p-2 border border-gray-200">
                                                 {request.file_path ? (
                                                     <a
-                                                        href={`http://localhost:8000/storage/${request.file_path}`}
+                                                        href={`${BASE_URL}/storage/${request.file_path}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="text-blue-600 hover:underline"
