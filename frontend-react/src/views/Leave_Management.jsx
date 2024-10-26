@@ -64,6 +64,14 @@ function Leave_Management() {
         }));
     };
 
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+        });
+    };
+
     const toggleDocumentGenerator = () => {
         setActiveButton("documentGenerator");
     };
@@ -71,6 +79,7 @@ function Leave_Management() {
     const toggleLeaveRequest = () => {
         setActiveButton("leaveRequest");
     };
+
     const fetchLeaveRequestStatus = async () => {
         try {
             const response = await axiosClient.get("/leave-request-status");
@@ -80,14 +89,84 @@ function Leave_Management() {
                 pendingLeaveRequests,
             } = response.data;
 
-            setLeaveRequests({
-                approved: Object.values(approvedLeaveRequests),
-                declined: Object.values(declinedLeaveRequests),
-                pending: Object.values(pendingLeaveRequests),
-            });
+            // Convert the objects to arrays and add status property
+            const approved = Object.values(approvedLeaveRequests).map(
+                (req) => ({
+                    ...req,
+                    status: "approved",
+                }),
+            );
+            const declined = Object.values(declinedLeaveRequests).map(
+                (req) => ({
+                    ...req,
+                    status: "declined",
+                }),
+            );
+            const pending = Object.values(pendingLeaveRequests).map((req) => ({
+                ...req,
+                status: "pending",
+            }));
+
+            // Combine all requests and sort
+            const allRequests = [...approved, ...declined, ...pending].sort(
+                (a, b) => {
+                    // First prioritize pending requests
+                    if (a.status === "pending" && b.status !== "pending")
+                        return -1;
+                    if (a.status !== "pending" && b.status === "pending")
+                        return 1;
+
+                    // For non-pending requests, sort by date (newest first)
+                    if (a.status !== "pending" && b.status !== "pending") {
+                        return new Date(b.start_date) - new Date(a.start_date);
+                    }
+
+                    // For pending requests, sort by date (newest first)
+                    return new Date(b.start_date) - new Date(a.start_date);
+                },
+            );
+
+            // Group the sorted requests by status
+            const groupedRequests = {
+                approved: allRequests.filter(
+                    (req) => req.status === "approved",
+                ),
+                declined: allRequests.filter(
+                    (req) => req.status === "declined",
+                ),
+                pending: allRequests.filter((req) => req.status === "pending"),
+            };
+
+            setLeaveRequests(groupedRequests);
         } catch (error) {
             console.error("Error fetching leave request status:", error);
         }
+    };
+
+    const getSortedRequests = (leaveRequests) => {
+        const allRequests = [
+            ...(leaveRequests.pending || []).map((req) => ({
+                ...req,
+                status: "pending",
+            })),
+            ...(leaveRequests.approved || []).map((req) => ({
+                ...req,
+                status: "approved",
+            })),
+            ...(leaveRequests.declined || []).map((req) => ({
+                ...req,
+                status: "declined",
+            })),
+        ].sort((a, b) => {
+            // Pending requests always come first
+            if (a.status === "pending" && b.status !== "pending") return -1;
+            if (a.status !== "pending" && b.status === "pending") return 1;
+
+            // For non-pending requests, sort by date (newest first)
+            return new Date(b.start_date) - new Date(a.start_date);
+        });
+
+        return allRequests;
     };
 
     useEffect(() => {
@@ -306,74 +385,153 @@ function Leave_Management() {
                     </div>
                 )}
                 {activeButton === "leaveRequest" && (
-                    <div className="bg-white p-6 rounded-xl text-black max-w-4xl mx-auto">
-                        <h2 className="text-2xl font-bold mb-4 text-center">
-                            Submit Leave Request
-                        </h2>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Start Date:
-                                </label>
-                                <input
-                                    type="date"
-                                    name="start_date"
-                                    value={formData.start_date}
-                                    onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm max-w-md mx-auto"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    End Date:
-                                </label>
-                                <input
-                                    type="date"
-                                    name="end_date"
-                                    value={formData.end_date}
-                                    onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm max-w-md mx-auto"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    File:
-                                </label>
-                                <input
-                                    type="file"
-                                    name="file"
-                                    onChange={handleChange}
-                                    className="mt-1 block w-full max-w-md mx-auto"
-                                />
-                            </div>
-                            {formData.filePreview && (
-                                <div className="file-preview mt-2 flex justify-center">
-                                    {formData.file?.type.startsWith(
-                                        "image/",
-                                    ) ? (
-                                        <img
-                                            src={formData.filePreview}
-                                            alt="Preview"
-                                            className="max-w-xs mx-auto"
-                                        />
-                                    ) : (
-                                        <p>{formData.file?.name}</p>
-                                    )}
-                                    <button
-                                        onClick={removeFile}
-                                        className="ml-2 text-red-500"
-                                    >
-                                        Remove
-                                    </button>
-                                </div>
-                            )}
-                            <button
-                                type="submit"
-                                className=" bg-green-600 text-white px-4 py-2 rounded w-full max-w-md mx-auto hover:bg-green-800 transition"
-                            >
+                    <div className="bg-white p-4 md:p-6 rounded-xl text-black max-w-4xl mx-auto">
+                        {/* Mobile Form */}
+                        <div className="md:hidden">
+                            <h2 className="text-xl  mb-4 text-center">
                                 Submit Leave Request
-                            </button>
-                        </form>
+                            </h2>
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm mr-2 font-medium text-neutral-700">
+                                        Start Date:
+                                    </label>
+                                    <input
+                                        type="date"
+                                        name="start_date"
+                                        value={formData.start_date}
+                                        onChange={handleChange}
+                                        className="w-full p-2 rounded-lg border border-neutral-300 focus:ring-2 focus:ring-green-500"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm mr-2 font-medium text-neutral-700">
+                                        End Date:
+                                    </label>
+                                    <input
+                                        type="date"
+                                        name="end_date"
+                                        value={formData.end_date}
+                                        onChange={handleChange}
+                                        className="w-full p-2 rounded-lg border border-neutral-300 focus:ring-2 focus:ring-green-500"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm mr-2 font-medium text-neutral-700">
+                                        File:
+                                    </label>
+                                    <input
+                                        type="file"
+                                        name="file"
+                                        onChange={handleChange}
+                                        className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                                    />
+                                </div>
+                                {formData.filePreview && (
+                                    <div className="mt-2 flex items-center justify-center bg-neutral-50 p-2 rounded-lg">
+                                        <div className="truncate">
+                                            {formData.file?.type.startsWith(
+                                                "image/",
+                                            ) ? (
+                                                <img
+                                                    src={formData.filePreview}
+                                                    alt="Preview"
+                                                    className="h-20 w-auto"
+                                                />
+                                            ) : (
+                                                <p className="text-sm">
+                                                    {formData.file?.name}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={removeFile}
+                                            className="ml-2 p-2 text-red-500 hover:text-red-700"
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                )}
+                                <button
+                                    type="submit"
+                                    className="w-full bg-green-600 text-white p-3 rounded-lg font-medium hover:bg-green-700 transition"
+                                >
+                                    Submit Request
+                                </button>
+                            </form>
+                        </div>
+
+                        {/* Desktop Form */}
+                        <div className="hidden md:block">
+                            <h2 className="text-2xl  mb-4 text-center">
+                                Submit Leave Request
+                            </h2>
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-neutral-700">
+                                        Start Date:
+                                    </label>
+                                    <input
+                                        type="date"
+                                        name="start_date"
+                                        value={formData.start_date}
+                                        onChange={handleChange}
+                                        className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm max-w-md mx-auto"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-neutral-700">
+                                        End Date:
+                                    </label>
+                                    <input
+                                        type="date"
+                                        name="end_date"
+                                        value={formData.end_date}
+                                        onChange={handleChange}
+                                        className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm max-w-md mx-auto"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-neutral-700">
+                                        File:
+                                    </label>
+                                    <input
+                                        type="file"
+                                        name="file"
+                                        onChange={handleChange}
+                                        className="mt-1 block w-full max-w-md mx-auto"
+                                    />
+                                </div>
+                                {formData.filePreview && (
+                                    <div className="py-2 mt-2  flex items-center justify-center">
+                                        {formData.file?.type.startsWith(
+                                            "image/",
+                                        ) ? (
+                                            <img
+                                                src={formData.filePreview}
+                                                alt="Preview"
+                                                className="max-w-xs max-h-lg"
+                                            />
+                                        ) : (
+                                            <p>{formData.file?.name}</p>
+                                        )}
+                                        <button
+                                            onClick={removeFile}
+                                            className="ml-2 text-red-500"
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                )}
+                                <button
+                                    type="submit"
+                                    className="bg-green-600 text-white px-4 py-2 rounded w-full max-w-md mx-auto hover:bg-green-800 transition"
+                                >
+                                    Submit Leave Request
+                                </button>
+                            </form>
+                        </div>
 
                         {message && (
                             <p className="mt-4 text-green-600 text-center">
@@ -387,13 +545,95 @@ function Leave_Management() {
                         )}
 
                         <div className="mt-8">
-                            <h3 className="text-xl font-bold mb-4 text-center">
+                            <h3 className="text-xl mb-4 text-center">
                                 Your Leave Requests
                             </h3>
-                            <div className="overflow-x-auto">
+
+                            {/* Mobile Leave Requests */}
+                            <div className="md:hidden">
+                                <div className="space-y-3 max-h-[360px] overflow-y-auto px-2">
+                                    {getSortedRequests(leaveRequests).map(
+                                        (request, index) => {
+                                            let statusColor = "bg-neutral-50";
+                                            if (request.status === "approved")
+                                                statusColor = "bg-green-50";
+                                            if (request.status === "declined")
+                                                statusColor = "bg-red-50";
+                                            if (request.status === "pending")
+                                                statusColor = "bg-yellow-50";
+
+                                            return (
+                                                <div
+                                                    key={index}
+                                                    className={`${statusColor} p-4 rounded-lg space-y-2 shadow-sm`}
+                                                    onClick={() => {
+                                                        setSelectedRequest(
+                                                            request,
+                                                        );
+                                                        setIsModalOpen(true);
+                                                    }}
+                                                >
+                                                    <div className="flex flex-col justify-between items-start">
+                                                        <div className="space-y-1">
+                                                            <div className="text-sm">
+                                                                {formatDate(
+                                                                    request.start_date,
+                                                                )}{" "}
+                                                                -{" "}
+                                                                {formatDate(
+                                                                    request.end_date,
+                                                                )}
+                                                            </div>
+                                                            <div className="font-medium">
+                                                                {
+                                                                    request.days_requested
+                                                                }{" "}
+                                                                days
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <div className="text-sm font-medium">
+                                                                {
+                                                                    request.statuses
+                                                                }
+                                                            </div>
+                                                            {request.remarks && (
+                                                                <div className="text-xs text-neutral-600 mt-1">
+                                                                    {
+                                                                        request.remarks
+                                                                    }
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="pt-2 flex justify-end border-t border-neutral-200">
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDownloadPdf(
+                                                                    request.file_path,
+                                                                );
+                                                            }}
+                                                            className="p-2 text-sm text-green-600 hover:text-green-800 flex items-center gap-1"
+                                                        >
+                                                            <RiFileDownloadFill
+                                                                size={16}
+                                                            />
+                                                            Download
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        },
+                                    )}
+                                </div>
+                            </div>
+                            {/* Desktop Leave Requests */}
+                            <div className="hidden md:block overflow-x-auto">
                                 <div className="overflow-auto max-h-64">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50 sticky top-0 z-10">
+                                    <table className="min-w-full divide-y divide-neutral-200">
+                                        <thead className="bg-neutral-50 sticky top-[-2px] z-10">
                                             <tr className="text-center">
                                                 <th className="px-6 py-3 text-xs font-medium text-black uppercase tracking-wider">
                                                     Start Date
@@ -415,117 +655,101 @@ function Leave_Management() {
                                                 </th>
                                             </tr>
                                         </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200 text-black">
-                                            {Object.entries(leaveRequests).map(
-                                                ([status, requests]) =>
-                                                    requests.map(
-                                                        (request, index) => {
-                                                            // Determine background color based on status
-                                                            let rowClass = "";
-                                                            if (
-                                                                status ===
-                                                                "approved"
-                                                            ) {
-                                                                rowClass =
-                                                                    "bg-green-100"; // Green background for approved
-                                                            } else if (
-                                                                status ===
-                                                                "declined"
-                                                            ) {
-                                                                rowClass =
-                                                                    "bg-red-100"; // Red background for declined
+                                        <tbody className="bg-white divide-y divide-neutral-200 text-black">
+                                            {getSortedRequests(
+                                                leaveRequests,
+                                            ).map((request, index) => {
+                                                // Determine background color based on the request status
+                                                let rowClass = "";
+                                                if (
+                                                    request.status ===
+                                                    "approved"
+                                                )
+                                                    rowClass = "bg-green-50";
+                                                if (
+                                                    request.status ===
+                                                    "declined"
+                                                )
+                                                    rowClass = "bg-red-50";
+
+                                                return (
+                                                    <tr
+                                                        key={index}
+                                                        className={rowClass}
+                                                    >
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            {formatDate(
+                                                                request.start_date,
+                                                            )}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            {formatDate(
+                                                                request.end_date,
+                                                            )}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            {
+                                                                request.days_requested
                                                             }
-
-                                                            return (
-                                                                <tr
-                                                                    key={`${status}-${index}`}
-                                                                    className={`${rowClass}`} // Apply the dynamic class here
-                                                                >
-                                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                                        {new Date(
-                                                                            request.start_date,
-                                                                        ).toLocaleDateString()}
-                                                                    </td>
-                                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                                        {new Date(
-                                                                            request.end_date,
-                                                                        ).toLocaleDateString()}
-                                                                    </td>
-                                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                                        {
-                                                                            request.days_requested
-                                                                        }
-                                                                    </td>
-                                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                                        {
-                                                                            request.statuses
-                                                                        }
-                                                                    </td>
-                                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                                        {request.remarks ||
-                                                                            "No remarks"}
-                                                                    </td>
-                                                                    <td className="px-6 py-4 whitespace-nowrap lg:flex lg:space-x-2">
-                                                                        <button
-                                                                            onClick={() =>
-                                                                                handleDownloadPdf(
-                                                                                    request.file_path,
-                                                                                )
-                                                                            }
-                                                                            className="inline-flex items-center justify-center p-2 rounded-lg text-white bg-green-800 hover:bg-green-900 transition-colors duration-200 mx-1"
-                                                                            title="Download PDF"
-                                                                        >
-                                                                            <RiFileDownloadFill
-                                                                                size={
-                                                                                    20
-                                                                                }
-                                                                            />
-                                                                        </button>
-
-                                                                        <button
-                                                                            onClick={() => {
-                                                                                setSelectedRequest(
-                                                                                    request,
-                                                                                );
-                                                                                setIsModalOpen(
-                                                                                    true,
-                                                                                );
-                                                                            }}
-                                                                            className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-white bg-green-800 hover:bg-green-900 transition-colors duration-200 text-sm font-medium mx-1"
-                                                                        >
-                                                                            Show
-                                                                            Details
-                                                                        </button>
-                                                                    </td>
-                                                                </tr>
-                                                            );
-                                                        },
-                                                    ),
-                                            )}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            {request.statuses}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            {request.remarks ||
+                                                                "No remarks"}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap flex space-x-2">
+                                                            <button
+                                                                onClick={() =>
+                                                                    handleDownloadPdf(
+                                                                        request.file_path,
+                                                                    )
+                                                                }
+                                                                className="inline-flex items-center justify-center p-2 rounded-lg text-white bg-green-600 hover:bg-green-700"
+                                                                title="Download PDF"
+                                                            >
+                                                                <RiFileDownloadFill
+                                                                    size={20}
+                                                                />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => {
+                                                                    setSelectedRequest(
+                                                                        request,
+                                                                    );
+                                                                    setIsModalOpen(
+                                                                        true,
+                                                                    );
+                                                                }}
+                                                                className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-white bg-green-600 hover:bg-green-700 text-sm font-medium"
+                                                            >
+                                                                Show Details
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
                         </div>
                     </div>
-                )}{" "}
+                )}
                 {isModalOpen && selectedRequest && (
                     <div className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                        <div className="bg-white text-left text- p-6 rounded-xl w-3/4 lg:w-1/3 shadow-lg text-black text-base max-h-96 overflow-auto">
-                            <h2 className="text-xl font-bold mb-4">
+                        <div className="bg-white text-left text- p-6 rounded-xl w-3/4 lg:w-1/3 shadow-lg text-black text-sm md:text-base max-h-96 overflow-auto">
+                            <h2 className="text-xl mb-4">
                                 Leave Request Details
                             </h2>
                             <p>
                                 <strong>Start Date:</strong>{" "}
-                                {new Date(
-                                    selectedRequest.start_date,
-                                ).toLocaleDateString()}
+                                {formatDate(selectedRequest.start_date)}
                             </p>
                             <p>
                                 <strong>End Date:</strong>{" "}
-                                {new Date(
-                                    selectedRequest.end_date,
-                                ).toLocaleDateString()}
+                                {formatDate(selectedRequest.end_date)}
                             </p>
                             <p>
                                 <strong>Days Requested:</strong>{" "}
