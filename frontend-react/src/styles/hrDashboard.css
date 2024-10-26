@@ -179,13 +179,15 @@ h6 {
 }
 .custom-calendar {
     display: grid;
-    width: 400px;
+    width: 100%; /* Full width on mobile */
+    max-width: 400px; /* Max width for larger screens */
     grid-template-rows: auto 1fr;
     background: white;
     border: 1px solid #ddd;
     border-radius: 8px;
-    padding: 16px;
+    padding: 12px; /* Slightly smaller padding on mobile */
     color: #000;
+    margin: 0 auto; /* Center the calendar */
 }
 
 .calendar-header {
@@ -193,49 +195,48 @@ h6 {
     grid-template-columns: repeat(7, 1fr);
     font-weight: bold;
     text-align: center;
+    font-size: 0.875rem; /* 14px on mobile */
 }
 
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
+    gap: 4px; /* Smaller gap on mobile */
+    margin-top: 8px;
 }
 
 .calendar-date {
-    padding: 8px;
+    padding: 4px; /* Smaller padding on mobile */
     text-align: center;
     border-radius: 4px;
     border: 1px solid #ddd;
     position: relative;
-}
-
-.highlighted {
-    background-color: #12518d; /* Gold color for visibility */
-    border-radius: 50%; /* To create a circle around the date */
-    color: white; /* White text for contrast */
-}
-
-.calendar-date {
-    padding: 10px;
-    text-align: center;
-    display: inline-block;
-    width: 40px;
-    height: 40px;
+    width: 32px; /* Smaller size on mobile */
+    height: 32px; /* Smaller size on mobile */
+    font-size: 0.875rem; /* Smaller font on mobile */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .empty-date {
-    width: 40px;
-    height: 40px;
+    width: 32px; /* Match calendar-date width */
+    height: 32px; /* Match calendar-date height */
+}
+
+.highlighted {
+    background-color: #12518d;
+    border-radius: 50%;
+    color: white;
 }
 
 .event {
-    font-size: 0.8em;
-    margin-top: 5px;
+    font-size: 0.75rem; /* Smaller font for events on mobile */
+    margin-top: 2px;
     align-items: center;
     justify-content: center;
     display: flex;
     color: black;
-    margin-top: 5px;
 }
 
 .tooltip {
@@ -243,25 +244,28 @@ h6 {
     background-color: #555;
     color: #fff;
     text-align: center;
-    border-radius: 5px;
-    padding: 5px;
+    border-radius: 4px;
+    padding: 4px 8px;
     position: absolute;
     z-index: 1;
-    bottom: 125%; /* Adjust this depending on your layout */
+    bottom: 120%;
     left: 50%;
     transform: translateX(-50%);
-    min-width: 120px; /* Tooltip minimum width */
+    min-width: 100px; /* Smaller minimum width on mobile */
+    max-width: 200px; /* Add max-width to prevent overflow */
+    font-size: 0.75rem; /* Smaller font for tooltip */
     opacity: 0;
     transition: opacity 0.3s;
+    white-space: nowrap; /* Prevent text wrapping */
 }
 
 .tooltip::after {
     content: "";
     position: absolute;
-    top: 100%; /* Arrow on the bottom */
+    top: 100%;
     left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
+    margin-left: -4px;
+    border-width: 4px;
     border-style: solid;
     border-color: #555 transparent transparent transparent;
 }
@@ -269,4 +273,65 @@ h6 {
 .calendar-date:hover .tooltip {
     visibility: visible;
     opacity: 1;
+}
+
+/* Media query for screens larger than 640px (sm breakpoint) */
+@media (min-width: 640px) {
+    .custom-calendar {
+        padding: 16px;
+    }
+
+    .calendar-header {
+        font-size: 1rem;
+    }
+
+    .calendar-grid {
+        gap: 8px;
+    }
+
+    .calendar-date {
+        padding: 8px;
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .empty-date {
+        width: 40px;
+        height: 40px;
+    }
+
+    .event {
+        font-size: 0.8rem;
+        margin-top: 5px;
+    }
+
+    .tooltip {
+        padding: 5px;
+        min-width: 120px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Handle very small screens */
+@media (max-width: 360px) {
+    .custom-calendar {
+        padding: 8px;
+    }
+
+    .calendar-date {
+        width: 28px;
+        height: 28px;
+        padding: 2px;
+        font-size: 0.75rem;
+    }
+
+    .empty-date {
+        width: 28px;
+        height: 28px;
+    }
+
+    .calendar-header {
+        font-size: 0.75rem;
+    }
 }

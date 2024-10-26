@@ -21,6 +21,7 @@ import Calendar from "react-calendar";
 import axiosClient from "../axiosClient";
 import "react-calendar/dist/Calendar.css";
 import "../styles/hrDashboard.css";
+import Event from "./Event";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const Dashboard = () => {
@@ -192,6 +193,22 @@ const Dashboard = () => {
             return highlight ? highlight.recruitmentStage : null;
         };
 
+        const formatDate = (date) => {
+            return new Date(date).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+            });
+        };
+
+        const formatTime = (time) => {
+            if (!time) return "-";
+            return new Date(`2000-01-01 ${time}`).toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+            });
+        };
+
         return (
             <div className="bg-white rounded-lg p-4 mb-4 mr-2 sm:mr-0">
                 <div className="mb-4 flex items-center justify-between text-black">
@@ -316,7 +333,9 @@ const Dashboard = () => {
                                                 User ID
                                             </th>
                                             <th>Name</th>
-                                            <th>Date</th>
+                                            <th className="hidden md:table-cell">
+                                                Date
+                                            </th>
                                             <th>Time In</th>
                                             <th>Time Out</th>
                                         </tr>
@@ -330,7 +349,9 @@ const Dashboard = () => {
                                                             {record.user_id}
                                                         </td>
                                                         <td>{record.name}</td>
-                                                        <td>{record.date}</td>
+                                                        <td className="hidden md:table-cell">
+                                                            {record.date}
+                                                        </td>
                                                         <td>
                                                             {record.time_in}
                                                         </td>
@@ -354,10 +375,14 @@ const Dashboard = () => {
                                 </table>
                             </div>
                         </div>
-
                         <div>{renderCalendar()}</div>
+                    </div>
 
-                        <div className="flex space-x-8 mb-4 mr-2 sm:mr-0 justify-center items-center  xl:h-80 bg-white text-black rounded-lg">
+                    <div className="grid grid-cols-1">
+                        <div className="flex flex-col md:col-span-3 bg-white text-black rounded-xl">
+                            <Event />
+                        </div>
+                        <div className="flex space-x-8 mt-4 mr-2 sm:mr-0 justify-center items-center  xl:h-80 bg-white text-black rounded-lg">
                             <div>
                                 <h1 className="py-2 font-bold text-lg">
                                     Employee Status
@@ -396,49 +421,6 @@ const Dashboard = () => {
                                         fill="#FFA500"
                                     />{" "}
                                 </BarChart>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <div className="flex flex-col items-center max-h-96 mr-2 sm:mr-0 h-auto lg:h-[313px] xl:h-[333px] bg-white rounded-lg mb-4">
-                            <span className="font-bold text-black text-lg mb-2 pt-3">
-                                Notification
-                            </span>
-                            <div className="flex-grow overflow-auto md:w-fit">
-                                {Array.isArray(data.notifications) &&
-                                data.notifications.length > 0 ? (
-                                    data.notifications
-                                        .filter(
-                                            (notification) =>
-                                                notification.message,
-                                        )
-                                        .map((notification, index) => (
-                                            <div
-                                                className={`border-2 rounded-lg mb-2 w-auto mx-2   ${
-                                                    notification.type ===
-                                                    "expired"
-                                                        ? "bg-red-100 text-red-900 border-red-500"
-                                                        : "bg-white text-green-900 border-green-900"
-                                                }`}
-                                                key={index}
-                                            >
-                                                <ListItem>
-                                                    <ListItemText
-                                                        primary={
-                                                            notification.message
-                                                        }
-                                                        secondary={formatSentDate(
-                                                            notification.created_at,
-                                                        )}
-                                                    />
-                                                </ListItem>
-                                            </div>
-                                        ))
-                                ) : (
-                                    <ListItem>
-                                        <ListItemText primary="No notifications found" />
-                                    </ListItem>
-                                )}
                             </div>
                         </div>
                     </div>

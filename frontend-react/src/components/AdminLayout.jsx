@@ -263,17 +263,14 @@ function AdminLayout() {
                 </div>
             </aside>
             <div className="content">
-                {" "}
-                <header className="flex justify-between">
+                <header className="flex w-56 justify-between">
                     <button
                         className="text-xl md:hamburger xl:hidden "
                         onClick={toggleSidebar}
                     >
                         &#9776;
                     </button>
-                    <div className="text-base md:text-2xl md:ml-16 xl:ml-0">
-                        {headerText}
-                    </div>
+                    <div className="headerText">{headerText}</div>
 
                     <div className="flex items-center gap-4">
                         <div

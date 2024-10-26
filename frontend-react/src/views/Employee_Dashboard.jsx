@@ -110,7 +110,9 @@ const EmployeeDashboard = () => {
         <div className="animated fadeInDown">
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
                 <div className="flex flex-col md:col-span-2 bg-white text-black p-6 rounded-xl">
-                    <h2 className="font-bold text-lg mb-4">Personal Details</h2>
+                    <h2 className="font-bold text-xl md:text-xl mb-4">
+                        Personal Details
+                    </h2>
                     <div className="hidden md:flex justify-center">
                         <img
                             src={

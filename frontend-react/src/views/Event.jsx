@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axiosClient from "../axiosClient";
-import { PlusCircle, UserPlus, X, Building, Lock } from "lucide-react";
+import {
+    PlusCircle,
+    ChevronLeft,
+    ChevronRight,
+    Building,
+    Lock,
+    X,
+} from "lucide-react";
 
 const getEventStatus = (eventDateTime) => {
     const now = new Date();
@@ -408,7 +415,50 @@ const Event = () => {
                 </div>
             </div>
 
-            <div className="w-full px-4 overflow-y-auto max-h-[260px]">
+            <div className="md:hidden w-full px-4 overflow-y-auto max-h-[360px]">
+                {events.length > 0 ? (
+                    <div className="space-y-3">
+                        {events.map((event) => {
+                            const { date, time } = formatEventDateTime(
+                                event.event_date,
+                            );
+                            const status = getEventStatus(event.event_date);
+                            const styles = getStatusStyles(status);
+
+                            return (
+                                <div
+                                    key={event.id}
+                                    onClick={() => handleEdit(event)}
+                                    className={`p-3 rounded-lg transition-colors cursor-pointer relative ${styles.cardStyle} hover:bg-opacity-75`}
+                                >
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="text-xl">
+                                            {getEventIcon(event.type)}
+                                        </span>
+                                        <h3 className="font-semibold text-neutral-800 truncate flex-1">
+                                            {event.title}
+                                        </h3>
+                                        <span
+                                            className={`px-2 py-0.5 text-xs font-medium rounded-full ${styles.badge}`}
+                                        >
+                                            {styles.text}
+                                        </span>
+                                    </div>
+                                    <div className="text-sm text-neutral-600">
+                                        {time} · {date}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div className="text-center text-neutral-600 py-4">
+                        No upcoming events
+                    </div>
+                )}
+            </div>
+
+            <div className="hidden md:block w-full px-4 overflow-y-auto max-h-[360px]">
                 {events.length > 0 ? (
                     <div className="space-y-3">
                         {events.map((event) => {
@@ -424,7 +474,6 @@ const Event = () => {
                                     className={`flex items-center p-3 rounded-lg transition-colors cursor-pointer relative ${styles.cardStyle}`}
                                     onClick={() => handleEdit(event)}
                                 >
-                                    {/* Status indicator dot */}
                                     <div className="absolute -left-1 top-1/2 transform -translate-y-1/2">
                                         <div
                                             className={`w-2 h-2 rounded-full ${styles.dotColor}`}
@@ -436,7 +485,7 @@ const Event = () => {
                                     </div>
                                     <div className="flex-grow min-w-0">
                                         <div className="flex items-center gap-2">
-                                            <h3 className="font-semibold text-gray-800 truncate max-w-[200px]">
+                                            <h3 className="font-semibold text-neutral-800 truncate max-w-[200px]">
                                                 {event.title}
                                             </h3>
                                             <span
@@ -446,7 +495,7 @@ const Event = () => {
                                             </span>
                                             {event.selected_users?.length >
                                                 0 && (
-                                                <span className="text-sm text-gray-500 truncate">
+                                                <span className="text-sm text-neutral-600 truncate">
                                                     with{" "}
                                                     {
                                                         event.selected_users
@@ -466,21 +515,21 @@ const Event = () => {
                                                         (_, i) => (
                                                             <div
                                                                 key={i}
-                                                                className="w-6 h-6 rounded-full bg-gray-300 border-2 border-white"
+                                                                className="w-6 h-6 rounded-full bg-neutral-300 border-2 border-white"
                                                             />
                                                         ),
                                                     )}
                                                 </div>
                                             ) : event.audience === "none" ? (
-                                                <Lock className="w-5 h-5 text-gray-400" /> // Using Lock icon for private meetings
+                                                <Lock className="w-5 h-5 text-neutral-400" />
                                             ) : (
-                                                <Building className="w-5 h-5 text-gray-500" />
+                                                <Building className="w-5 h-5 text-neutral-500" />
                                             )}
-                                            <span className="text-sm text-gray-500 ml-1 truncate max-w-[150px]">
+                                            <span className="text-sm text-neutral-600 ml-1 truncate max-w-[150px]">
                                                 {event.audience === "all_team"
                                                     ? "All Team"
                                                     : event.audience === "none"
-                                                      ? "Private" // or however you want to display it
+                                                      ? "Private"
                                                       : `${event.selected_departments?.length || 0} ${
                                                             event
                                                                 .selected_departments
@@ -492,10 +541,10 @@ const Event = () => {
                                         </div>
                                     </div>
                                     <div className="text-right ml-4">
-                                        <div className="text-sm font-medium text-gray-900">
+                                        <div className="text-sm font-medium text-neutral-900">
                                             {time}
                                         </div>
-                                        <div className="text-sm text-gray-500">
+                                        <div className="text-sm text-neutral-600">
                                             {date}
                                         </div>
                                     </div>
@@ -504,7 +553,7 @@ const Event = () => {
                         })}
                     </div>
                 ) : (
-                    <div className="text-center text-gray-500 py-4">
+                    <div className="text-center text-neutral-600 py-4">
                         No upcoming events
                     </div>
                 )}

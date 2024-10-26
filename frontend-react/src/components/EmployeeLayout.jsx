@@ -208,7 +208,7 @@ function EmployeeLayout() {
                 <div className="flex-col flex gap-4 w-64 px-6 h-screen">
                     <Link
                         to="/employee-dashboard"
-                        onClick={() => handleHeaderChange("Employee Dashboard")}
+                        onClick={() => handleHeaderChange("Dashboard")}
                     >
                         <span className="block h-10 pt-3 cursor-pointer text-white hover:bg-opacity-70 hover:bg-gray-600 rounded-lg transition">
                             Dashboard
@@ -263,7 +263,7 @@ function EmployeeLayout() {
                 </div>
             </aside>
             <div className="content">
-                <header className="flex justify-between">
+                <header className="flex w-56 justify-between">
                     <button
                         className="hamburger xl:hidden"
                         onClick={toggleSidebar}
@@ -276,7 +276,7 @@ function EmployeeLayout() {
                             className="relative cursor-pointer"
                             onClick={toggleNotificationDropdown}
                         >
-                            <div className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200">
+                            <div className="p-2  hover:bg-gray-100 rounded-full transition-colors duration-200">
                                 <IoNotificationsOutline size={24} />
                                 {unreadCount > 0 && (
                                     <span className="absolute -top-1 -right-1 min-w-[20px] h-5 flex items-center justify-center bg-red-500 text-white text-xs rounded-full px-1">
