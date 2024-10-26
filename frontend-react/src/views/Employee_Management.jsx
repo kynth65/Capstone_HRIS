@@ -5,6 +5,7 @@ import "../styles/global.css";
 import "../styles/employeeList.css";
 import defaultAvatar from "../assets/default-avatar.png";
 import { parseISO, differenceInYears, format } from "date-fns";
+import { FaPlus } from "react-icons/fa";
 
 function EmployeeManagement() {
     const [activeButton, setActiveButton] = useState("employeeList");
@@ -37,6 +38,29 @@ function EmployeeManagement() {
     const [editData, setEditData] = useState({});
     const [isEditing, setIsEditing] = useState(false);
     const [isRfidLoading, setIsRfidLoading] = useState(false);
+    const [showDepartmentModal, setShowDepartmentModal] = useState(false); // Modal state
+    const [newDepartment, setNewDepartment] = useState("");
+    const [newPositions, setNewPositions] = useState([""]);
+    const [departmentPositions, setDepartmentPositions] = useState({
+        Admin: ["Admin", "Purchasing"],
+        HR: [
+            "Human Resource Manager",
+            "HR Manager",
+            "Human Resource Assistant",
+            "Accountant",
+            "Marketing",
+            "Book Keeper",
+        ],
+        Diagnostics: [
+            "Medtech",
+            "X-ray Tech",
+            "Ultrasound",
+            "Phlebotomist",
+            "Sonographer",
+        ],
+        Clinic: ["Secretary", "Receptionist", "Physician"],
+        Utility: ["Security", "Janitorial"],
+    });
 
     const formSections = [
         {
@@ -125,19 +149,6 @@ function EmployeeManagement() {
     const checkIfUserExists = (candidateName) => {
         return existingUsers.some((user) => user.name === candidateName);
     };
-    const departmentPositions = {
-        Admin: ["Admin"],
-        HR: ["Human Resource Manager"],
-        Diagnostics: [
-            "Medtech",
-            "X-ray Tech",
-            "Ultrasound",
-            "Phlebotomist",
-            "Sonographer",
-        ],
-        Clinic: ["Secretary", "Receptionist", "Physician"],
-        Utility: ["Security", "Janitorial"],
-    };
 
     const handleSearch = () => {
         const searchTerm = searchRef.current.value.trim().toLowerCase();
@@ -168,23 +179,60 @@ function EmployeeManagement() {
         </>
     );
 
-    useEffect(() => {
-        if (activeButton === "createAccount") {
-            fetchRfidCards();
-        }
-    }, [activeButton]);
+    const handleAddDepartment = () => {
+        setShowDepartmentModal(true); // Open the modal
+    };
+    const handleAddPositionField = () => {
+        setNewPositions([...newPositions, ""]);
+    };
 
-    const fetchRfidCards = async () => {
-        setIsRfidLoading(true);
-        try {
-            const response = await axiosClient.get("/rfid-cards/available");
-            const availableCards = response.data || [];
-            setRfidCards(availableCards);
-        } catch (error) {
-            console.error("Error fetching RFID cards:", error);
-        } finally {
-            setIsRfidLoading(false);
+    const handleCloseDepartmentModal = () => {
+        setShowDepartmentModal(false); // Close the modal
+        setNewDepartment(""); // Reset form fields
+        setNewPositions([""]);
+    };
+
+    const handleSaveDepartment = async () => {
+        if (newDepartment.trim() && newPositions.every((pos) => pos.trim())) {
+            try {
+                // Send POST request to backend API to save department and positions
+                const response = await axiosClient.post("/departments", {
+                    department: newDepartment,
+                    positions: newPositions,
+                });
+
+                // Update the local state with the new department and positions
+                setDepartmentPositions((prev) => ({
+                    ...prev,
+                    [newDepartment]: newPositions,
+                }));
+
+                // Close the modal and reset fields
+                handleCloseDepartmentModal();
+
+                // Show success message (optional)
+                setSuccessMessage(response.data.message);
+                setTimeout(() => setSuccessMessage(""), 3000);
+            } catch (error) {
+                console.error("Error saving department:", error);
+                setErrors("Failed to save department.");
+                setTimeout(() => setErrors(""), 4000);
+            }
+        } else {
+            alert("Please enter a valid department and positions.");
         }
+    };
+
+    const handlePositionChange = (index, value) => {
+        const updatedPositions = [...newPositions];
+        updatedPositions[index] = value;
+        setNewPositions(updatedPositions);
+    };
+
+    const handleRemovePositionField = (index) => {
+        const updatedPositions = [...newPositions];
+        updatedPositions.splice(index, 1); // Remove the position at the given index
+        setNewPositions(updatedPositions); // Update the state
     };
 
     const handleInputChange = (e) => {
@@ -203,6 +251,25 @@ function EmployeeManagement() {
                 ...prevData,
                 position: "", // Reset position when department changes
             }));
+        }
+    };
+
+    useEffect(() => {
+        if (activeButton === "createAccount") {
+            fetchRfidCards();
+        }
+    }, [activeButton]);
+
+    const fetchRfidCards = async () => {
+        setIsRfidLoading(true);
+        try {
+            const response = await axiosClient.get("/rfid-cards/available");
+            const availableCards = response.data || [];
+            setRfidCards(availableCards);
+        } catch (error) {
+            console.error("Error fetching RFID cards:", error);
+        } finally {
+            setIsRfidLoading(false);
         }
     };
 
@@ -330,15 +397,27 @@ function EmployeeManagement() {
                 );
             case "department":
                 return (
-                    <select {...commonProps}>
-                        <option value="">Select Department</option>
-                        {Object.keys(departmentPositions).map((department) => (
-                            <option key={department} value={department}>
-                                {department}
-                            </option>
-                        ))}
-                    </select>
+                    <div className="flex items-center justify-center ml-8">
+                        <select {...commonProps}>
+                            <option value="">Select Department</option>
+                            {Object.keys(departmentPositions).map(
+                                (department) => (
+                                    <option key={department} value={department}>
+                                        {department}
+                                    </option>
+                                ),
+                            )}
+                        </select>
+                        <button
+                            type="button"
+                            onClick={handleAddDepartment}
+                            className="text-green-500 mb-3 ml-3 hover:text-green-700"
+                        >
+                            <FaPlus size={20} />
+                        </button>
+                    </div>
                 );
+
             case "position":
                 return (
                     <select {...commonProps}>
@@ -1834,6 +1913,96 @@ function EmployeeManagement() {
             {successMessage && (
                 <div className="successMessageDiv">
                     <p>{successMessage}</p>
+                </div>
+            )}
+
+            {showDepartmentModal && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                    <div className="bg-white p-8 rounded-lg shadow-lg max-w-lg w-full relative text-black">
+                        <button
+                            className="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-2xl"
+                            onClick={handleCloseDepartmentModal}
+                        >
+                            &times;
+                        </button>
+                        <h2 className="text-2xl font-bold mb-6 text-center">
+                            Add Department and Positions
+                        </h2>
+                        <div className="space-y-6">
+                            <div className="form-group flex flex-col items-start">
+                                <label
+                                    htmlFor="newDepartment"
+                                    className="block font-medium text-gray-700 mb-2"
+                                >
+                                    Department Name
+                                </label>
+                                <input
+                                    type="text"
+                                    id="newDepartment"
+                                    value={newDepartment}
+                                    onChange={(e) =>
+                                        setNewDepartment(e.target.value)
+                                    }
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    placeholder="Enter department name"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label className="block font-medium text-gray-700 mb-2">
+                                    Positions
+                                </label>
+                                {newPositions.map((position, index) => (
+                                    <div
+                                        key={index}
+                                        className="flex items-center mb-2 space-x-2"
+                                    >
+                                        <input
+                                            type="text"
+                                            value={position}
+                                            onChange={(e) =>
+                                                handlePositionChange(
+                                                    index,
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            placeholder="Enter position"
+                                        />
+                                        {newPositions.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    handleRemovePositionField(
+                                                        index,
+                                                    )
+                                                }
+                                                className="text-red-500 hover:text-red-700 font-semibold"
+                                            >
+                                                Remove
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                                <button
+                                    type="button"
+                                    onClick={handleAddPositionField}
+                                    className="mt-2 text-blue-500 hover:text-blue-700 font-semibold"
+                                >
+                                    + Add Another Position
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end mt-6">
+                            <button
+                                onClick={handleSaveDepartment}
+                                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-300"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

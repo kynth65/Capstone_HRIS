@@ -34,7 +34,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AdminNotificationController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\RfidCardController;
-
+use App\Http\Controllers\DepartmentController;
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -263,3 +263,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/events/upcoming', [EventController::class, 'upcoming']);
     Route::apiResource('events', EventController::class);
 });
+
+Route::post('/departments', [DepartmentController::class, 'store']);
