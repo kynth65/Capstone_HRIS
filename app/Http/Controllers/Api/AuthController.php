@@ -20,6 +20,8 @@ use Illuminate\Support\Str;
 use App\Http\Resources\UserResource;
 use App\Mail\SendEmployeeAccount;
 use App\Models\RfidCard;
+use Illuminate\Support\Facades\Storage;
+
 
 
 class AuthController extends Controller
@@ -137,73 +139,61 @@ class AuthController extends Controller
                 'received_user_id' => $request->user_id
             ], 404);
         }
+
         $request->validate([
-            'user_id' => 'required|exists:users,user_id', // Validate using user_id
+            'user_id' => 'required|exists:users,user_id',
             'date_of_birth' => 'required|date',
             'marital_status' => 'required|string',
-            'nationality' => 'nullable|string',
-            'mothers_maiden_name' => 'nullable|string',
-            'fathers_name' => 'nullable|string',
-            'address' => 'nullable|string',
-            'city' => 'nullable|string',
-            'province' => 'nullable|string',
-            'postal_code' => 'nullable|string',
-            'country' => 'nullable|string',
-            'work_email' => 'nullable|email',
-            'home_phone' => 'nullable|string',
-            'emergency_contact_name' => 'nullable|string',
-            'emergency_contact_relationship' => 'nullable|string',
-            'emergency_contact_phone' => 'nullable|string',
-            'work_location' => 'nullable|string',
-            'highest_degree_earned' => 'nullable|string',
-            'field_of_study' => 'nullable|string',
-            'institution_name' => 'nullable|string',
-            'graduation_year' => 'nullable|integer',
-            'work_history' => 'nullable|string',
-            'health_insurance_plan' => 'nullable|string',
-            'suffix' => 'nullable|string',
-            'completed_training_programs' => 'nullable|string',
-            // 'work_permit_expiry_date' => 'nullable|date',
-            'profile' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:204800', // Validate as image
-            'notes' => 'nullable|string',
+            'nationality' => 'required|string',
+            'mothers_maiden_name' => 'required|string',
+            'fathers_name' => 'required|string',
+            'address' => 'required|string',
+            'city' => 'required|string',
+            'province' => 'required|string',
+            'postal_code' => 'required|string',
+            'country' => 'required|string',
+            'personal_email' => 'required|email',
+            'work_email' => 'required|email',
+            'home_phone' => 'required|string',
+            'emergency_contact_name' => 'required|string',
+            'emergency_contact_relationship' => 'required|string',
+            'emergency_contact_phone' => 'required|string',
+            'work_location' => 'required|string',
+            'highest_degree_earned' => 'required|string',
+            'field_of_study' => 'required|string',
+            'institution_name' => 'required|string',
+            'graduation_year' => 'required|integer',
+            'work_history' => 'required|string',
+            'health_insurance_plan' => 'required|string',
+            'completed_training_programs' => 'required|string',
+            'profile' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:204800',
+            'notes' => 'required|string',
         ]);
 
-        $user->date_of_birth = $request->input('date_of_birth');
-        $user->marital_status = $request->input('marital_status');
-        $user->nationality = $request->input('nationality');
-        $user->mothers_maiden_name = $request->input('mothers_maiden_name');
-        $user->fathers_name = $request->input('fathers_name');
-        $user->address = $request->input('address');
-        $user->city = $request->input('city');
-        $user->province = $request->input('province');
-        $user->postal_code = $request->input('postal_code');
-        $user->country = $request->input('country');
-
-        $user->work_email = $request->input('work_email');
-        $user->home_phone = $request->input('home_phone');
-        $user->emergency_contact_name = $request->input('emergency_contact_name');
-        $user->emergency_contact_relationship = $request->input('emergency_contact_relationship');
-        $user->emergency_contact_phone = $request->input('emergency_contact_phone');
-        $user->work_location = $request->input('work_location');
-        $user->highest_degree_earned = $request->input('highest_degree_earned');
-        $user->field_of_study = $request->input('field_of_study');
-        $user->institution_name = $request->input('institution_name');
-        $user->graduation_year = $request->input('graduation_year');
-        $user->work_history = $request->input('work_history');
-        $user->health_insurance_plan = $request->input('health_insurance_plan');
-        $user->suffix = $request->input('suffix');
-        $user->completed_training_programs = $request->input('completed_training_programs');
-        //$user->work_permit_expiry_date = $request->input('work_permit_expiry_date');
-        $user->profile = $request->input('profile');
-        $user->notes = $request->input('notes');
+        // Use fill to mass assign all the fields
+        $user->fill($request->except('profile'));
 
         if ($request->hasFile('profile')) {
-            $profilePath = $request->file('profile')->store('images', 'public');
-            $user->profile = $profilePath;
+            // Delete old image if it exists
+            if ($user->profile) {
+                Storage::disk('public')->delete('images/' . $user->profile);
+            }
+
+            $file = $request->file('profile');
+            $originalName = $file->getClientOriginalName();
+            $filename = time() . $originalName;
+
+            // Store in the images directory
+            $imagePath = $file->storeAs('images', $filename, 'public');
+
+            // Save only the filename, not the full path
+            $user->profile = $filename;  // This will store just the filename without 'images/'
         }
 
         // Save user
         $user->save();
+
+        // Generate new token
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([

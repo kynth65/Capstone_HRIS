@@ -201,9 +201,6 @@ function EmployeeCertificate() {
             <div className="container mx-auto p-4">
                 {activeTab === "myCertificates" && (
                     <div className="max-h-[400px] overflow-y-auto rounded-lg">
-                        <h2 className="text-2xl font-semibold mb-4">
-                            My Certificates
-                        </h2>
                         <table className="bg-white text-black w-full xl:w-full">
                             <thead className="sticky top-0 bg-gray-200 border-b-2">
                                 <tr className="text-base">
@@ -317,9 +314,6 @@ function EmployeeCertificate() {
 
                 {activeTab === "pendingRequests" && (
                     <>
-                        <h2 className="text-2xl font-semibold mb-4">
-                            Pending Requests
-                        </h2>
                         <div className="max-h-[400px] overflow-y-auto rounded-lg">
                             <table className="bg-white text-black w-full xl:w-full">
                                 <thead className="sticky top-0 bg-gray-200 border-b-2">

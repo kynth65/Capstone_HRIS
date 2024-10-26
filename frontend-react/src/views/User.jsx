@@ -259,7 +259,7 @@ function Profile() {
             </div>
             {showModal && (
                 <div className="modal fixed inset-0 flex items-center justify-center z-50 bg-opacity-50 pt-28">
-                    <div className="bg-white p-6 h-[700px] py-20 overflow-auto rounded-lg shadow-lg w-full max-w-4xl text-black">
+                    <div className="bg-white p-6  py-20 overflow-auto rounded-lg shadow-lg w-full max-w-4xl text-black">
                         <h2 className="text-2xl font-semibold mb-4">
                             Edit Profile
                         </h2>
@@ -328,23 +328,6 @@ function Profile() {
                                 </select>
                             </div>
 
-                            {/* Personal Email */}
-                            <div className="mb-4">
-                                <label
-                                    className="block text-sm font-semibold mb-2"
-                                    htmlFor="personal_email"
-                                >
-                                    Personal Email
-                                </label>
-                                <input
-                                    type="email"
-                                    name="personal_email"
-                                    value={formData.personal_email || ""}
-                                    onChange={handleChange}
-                                    className="w-full p-2 border border-gray-300 rounded"
-                                />
-                            </div>
-
                             {/* Emergency Contact Name */}
                             <div className="mb-4">
                                 <label
@@ -372,8 +355,7 @@ function Profile() {
                                 >
                                     Emergency Contact Relationship
                                 </label>
-                                <input
-                                    type="text"
+                                <select
                                     name="emergency_contact_relationship"
                                     value={
                                         formData.emergency_contact_relationship ||
@@ -381,7 +363,17 @@ function Profile() {
                                     }
                                     onChange={handleChange}
                                     className="w-full p-2 border border-gray-300 rounded"
-                                />
+                                >
+                                    <option value="">
+                                        Select Relationship
+                                    </option>
+                                    <option value="Parent">Parent</option>
+                                    <option value="Spouse">Spouse</option>
+                                    <option value="Sibling">Sibling</option>
+                                    <option value="Child">Child</option>
+                                    <option value="Friend">Friend</option>
+                                    <option value="Other">Other</option>
+                                </select>
                             </div>
 
                             {/* Emergency Contact Phone */}
@@ -400,23 +392,6 @@ function Profile() {
                                     }
                                     onChange={handleChange}
                                     className="w-full p-2 border border-gray-300 rounded"
-                                />
-                            </div>
-                            {/* Password */}
-                            <div className="mb-4">
-                                <label
-                                    htmlFor="password"
-                                    className="block text-sm font-semibold mb-2"
-                                >
-                                    Password
-                                </label>
-                                <input
-                                    type="password"
-                                    id="password"
-                                    name="password"
-                                    value={formData.password || ""}
-                                    onChange={handleChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-black"
                                 />
                             </div>
                         </div>
