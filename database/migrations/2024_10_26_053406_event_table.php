@@ -17,7 +17,11 @@ return new class extends Migration
             $table->string('audience'); // all_team, specific_department, etc.
             $table->string('with_person')->nullable(); // For events with specific people
             $table->boolean('is_active')->default(true);
-            $table->foreignId('created_by')->constrained('users');
+
+            // Modify this to match the user_id type (string)
+            $table->string('created_by'); // Use string if 'user_id' is string in 'users' table
+            $table->foreign('created_by')->references('user_id')->on('users')->onDelete('cascade');
+
             $table->timestamps();
         });
     }
