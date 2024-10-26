@@ -19,10 +19,6 @@ const SalaryHistory = () => {
 
     return (
         <div className="bg-white shadow-lg rounded-lg p-6">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4 text-center">
-                Salary History
-            </h2>
-
             {/* Mobile View */}
             <div className="md:hidden max-h-[400px] overflow-y-auto rounded-lg">
                 {payrolls.length > 0 ? (

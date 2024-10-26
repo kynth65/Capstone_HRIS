@@ -200,176 +200,275 @@ function EmployeeCertificate() {
             </div>
             <div className="container mx-auto p-4">
                 {activeTab === "myCertificates" && (
-                    <div className="max-h-[400px] overflow-y-auto rounded-lg">
-                        <table className="bg-white text-black w-full xl:w-full">
-                            <thead className="sticky top-0 bg-gray-200 border-b-2">
-                                <tr className="text-base">
-                                    <th className="px-4 py-2">
-                                        Certificate Name
-                                    </th>
-                                    <th className="px-4 py-2">Date Issued</th>
-                                    <th className="px-4 py-2">Expiring Date</th>
-                                    <th className="px-4 py-2">Status</th>
-                                    <th className="px-4 py-2">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {certificates.length > 0 ? (
-                                    certificates.map((cert) => {
-                                        const status =
-                                            cert.type === "non-expirable"
-                                                ? "Non-Expiring"
-                                                : cert.expiring_date
-                                                  ? new Date(
-                                                        cert.expiring_date,
-                                                    ).toLocaleDateString()
-                                                  : "N/A";
+                    <>
+                        <div className="md:hidden max-h-[400px] overflow-y-auto space-y-4">
+                            {certificates.length > 0 ? (
+                                certificates.map((cert, index) => (
+                                    <div
+                                        key={index}
+                                        className="border border-gray-300 p-4 rounded-lg bg-white shadow-sm space-y-2"
+                                    >
+                                        <div className="flex justify-between items-center">
+                                            <h3 className="text-base font-semibold text-gray-800">
+                                                {cert.certificate_name}
+                                            </h3>
+                                            <span
+                                                className={`text-xs px-2 py-1 rounded-full ${
+                                                    cert.type ===
+                                                    "non-expirable"
+                                                        ? "bg-green-100 text-green-600"
+                                                        : cert.expiring_date &&
+                                                            new Date(
+                                                                cert.expiring_date,
+                                                            ) > new Date()
+                                                          ? "bg-yellow-100 text-yellow-600"
+                                                          : "bg-red-100 text-red-600"
+                                                }`}
+                                            >
+                                                {cert.type === "non-expirable"
+                                                    ? "Non-Expiring"
+                                                    : cert.expiring_date
+                                                      ? new Date(
+                                                            cert.expiring_date,
+                                                        ).toLocaleDateString(
+                                                            "en-US",
+                                                        )
+                                                      : "Expired"}
+                                            </span>
+                                        </div>
+                                        <hr className="my-2" />
+                                        <div className="space-y-1 text-gray-700">
+                                            <p className="text-xs">
+                                                <strong>Date Issued:</strong>{" "}
+                                                {new Date(
+                                                    cert.issued_date,
+                                                ).toLocaleDateString("en-US")}
+                                            </p>
+                                            <p className="text-xs">
+                                                <strong>Expiring Date:</strong>{" "}
+                                                {cert.type === "non-expirable"
+                                                    ? "Non-Expiring"
+                                                    : cert.expiring_date
+                                                      ? new Date(
+                                                            cert.expiring_date,
+                                                        ).toLocaleDateString(
+                                                            "en-US",
+                                                        )
+                                                      : "N/A"}
+                                            </p>
+                                            <p className="text-xs">
+                                                <strong>Status:</strong>{" "}
+                                                {cert.status}
+                                            </p>
+                                        </div>
+                                        <button
+                                            className="mt-2 w-full py-2 bg-green-500 text-white text-xs rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center"
+                                            onClick={() =>
+                                                handleOpenPdf(cert.file_url)
+                                            }
+                                        >
+                                            Download Certificate
+                                        </button>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-4 text-gray-500">
+                                    No certificates found.
+                                </div>
+                            )}
+                        </div>
 
-                                        return (
+                        <div className="hidden md:block">
+                            <table className="w-full bg-white border-collapse overflow-x-auto">
+                                <thead className="bg-gray-100 sticky top-0">
+                                    <tr className="text-left text-sm font-semibold text-gray-700">
+                                        <th className="px-4 py-2">
+                                            Certificate Name
+                                        </th>
+                                        <th className="px-4 py-2">
+                                            Date Issued
+                                        </th>
+                                        <th className="px-4 py-2">
+                                            Expiring Date
+                                        </th>
+                                        <th className="px-4 py-2">Status</th>
+                                        <th className="px-4 py-2">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200 text-gray-900">
+                                    {certificates.length > 0 ? (
+                                        certificates.map((cert) => (
                                             <tr
                                                 key={cert.id}
-                                                className="font-medium hover:bg-gray-100"
+                                                className="hover:bg-gray-100 transition-colors"
                                             >
-                                                <td className="px-4 py-6">
+                                                <td className="px-4 py-4">
                                                     {cert.certificate_name}
                                                 </td>
-                                                <td className="px-4 py-6">
+                                                <td className="px-4 py-4">
                                                     {new Date(
                                                         cert.issued_date,
                                                     ).toLocaleDateString(
                                                         "en-US",
                                                     )}
                                                 </td>
-                                                <td className="px-4 py-6">
+                                                <td className="px-4 py-4">
                                                     {cert.type ===
                                                     "non-expirable"
-                                                        ? "N/A"
+                                                        ? "Non-Expiring"
                                                         : cert.expiring_date
                                                           ? new Date(
                                                                 cert.expiring_date,
                                                             ).toLocaleDateString(
                                                                 "en-US",
                                                             )
-                                                          : ""}
+                                                          : "N/A"}
                                                 </td>
-                                                <td className="px-4 py-6">
-                                                    {status}
+                                                <td className="px-4 py-4">
+                                                    {cert.status}
                                                 </td>
-                                                <td className="px-4 py-6 flex space-x-3">
-                                                    {cert.file_url && (
-                                                        <button
-                                                            className="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                                                            onClick={() =>
-                                                                handleOpenPdf(
-                                                                    cert.file_url,
-                                                                )
-                                                            }
-                                                        >
-                                                            <RiFileDownloadFill
-                                                                size={20}
-                                                            />
-                                                        </button>
-                                                    )}
-                                                    {cert.can_update &&
-                                                    !sentRequests.includes(
-                                                        cert.id,
-                                                    ) ? (
-                                                        <button
-                                                            className="px-3 py-2 bg-yellow-500 text-white rounded"
-                                                            onClick={() =>
-                                                                handleOpenUpdateModal(
-                                                                    cert,
-                                                                )
-                                                            }
-                                                        >
-                                                            Update Certificate
-                                                        </button>
-                                                    ) : (
-                                                        <span className="text-gray-400">
-                                                            {sentRequests.includes(
-                                                                cert.id,
+                                                <td className="px-4 py-4">
+                                                    <button
+                                                        className="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                                                        onClick={() =>
+                                                            handleOpenPdf(
+                                                                cert.file_url,
                                                             )
-                                                                ? "Sent Successfully"
-                                                                : "Update not available"}
-                                                        </span>
-                                                    )}
+                                                        }
+                                                    >
+                                                        <RiFileDownloadFill
+                                                            size={20}
+                                                        />
+                                                        Download
+                                                    </button>
                                                 </td>
                                             </tr>
-                                        );
-                                    })
-                                ) : (
-                                    <tr>
-                                        <td
-                                            colSpan="5"
-                                            className="text-center py-20"
-                                        >
-                                            No certificates found.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td
+                                                colSpan="5"
+                                                className="text-center py-8 text-gray-500"
+                                            >
+                                                No certificates found.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
                 )}
 
                 {activeTab === "pendingRequests" && (
                     <>
-                        <div className="max-h-[400px] overflow-y-auto rounded-lg">
-                            <table className="bg-white text-black w-full xl:w-full">
-                                <thead className="sticky top-0 bg-gray-200 border-b-2">
-                                    <tr className="text-base">
+                        {/* Mobile View */}
+                        <div className="md:hidden max-h-[400px] overflow-y-auto space-y-4">
+                            {pendingRequests.length > 0 ? (
+                                pendingRequests.map((request, index) => (
+                                    <div
+                                        key={index}
+                                        className="border border-gray-300 p-4 rounded-lg bg-white shadow-sm space-y-2"
+                                    >
+                                        <div className="flex justify-between items-center">
+                                            <h3 className="text-base font-semibold text-gray-800">
+                                                {request.certificate_name}
+                                            </h3>
+                                            <span
+                                                className={`text-xs px-2 py-1 rounded-full ${
+                                                    request.status ===
+                                                    "approved"
+                                                        ? "bg-green-100 text-green-600"
+                                                        : request.status ===
+                                                            "pending"
+                                                          ? "bg-yellow-100 text-yellow-600"
+                                                          : "bg-red-100 text-red-600"
+                                                }`}
+                                            >
+                                                {request.status}
+                                            </span>
+                                        </div>
+                                        <hr className="my-2" />
+                                        <div className="space-y-1 text-gray-700">
+                                            <p className="text-xs">
+                                                <strong>Date Requested:</strong>{" "}
+                                                {new Date(
+                                                    request.created_at,
+                                                ).toLocaleDateString("en-US")}
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={() =>
+                                                handleOpenDetailModal(request)
+                                            }
+                                            className="mt-2 w-full py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center"
+                                        >
+                                            View Details
+                                        </button>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-4 text-gray-500">
+                                    No pending requests found.
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Desktop View */}
+                        <div className="hidden md:block">
+                            <table className="w-full bg-white border-collapse overflow-x-auto">
+                                <thead className="bg-gray-100 sticky top-0 text-center">
+                                    {" "}
+                                    {/* Added text-center */}
+                                    <tr className="text-sm font-semibold text-gray-700">
                                         <th className="px-4 py-2">
                                             Certificate Name
                                         </th>
                                         <th className="px-4 py-2">
                                             Date Requested
                                         </th>
-                                        <th className="px-4 py-2">Remarks</th>
+                                        <th className="px-4 py-2">Remarks</th>{" "}
+                                        {/* New column for remarks */}
                                         <th className="px-4 py-2">Status</th>
                                         <th className="px-4 py-2">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody className="divide-y divide-gray-200 text-gray-900">
                                     {pendingRequests.length > 0 ? (
                                         pendingRequests.map((request) => (
                                             <tr
                                                 key={request.id}
-                                                className="font-medium hover:bg-gray-100"
+                                                className="hover:bg-gray-100 transition-colors text-center"
                                             >
-                                                <td className="px-4 py-6">
+                                                {" "}
+                                                {/* Centered text in rows */}
+                                                <td className="px-4 py-4">
                                                     {request.certificate_name}
                                                 </td>
-                                                <td className="px-4 py-6">
+                                                <td className="px-4 py-4">
                                                     {new Date(
                                                         request.created_at,
                                                     ).toLocaleDateString(
                                                         "en-US",
                                                     )}
                                                 </td>
-                                                <td className="px-4 py-6">
-                                                    <span
-                                                        className="block truncate overflow-hidden"
-                                                        title={request.remarks}
-                                                    >
-                                                        {request.remarks &&
-                                                        request.remarks.length >
-                                                            30
-                                                            ? `${request.remarks.slice(0, 30)}...`
-                                                            : request.remarks ||
-                                                              "No remarks"}
-                                                    </span>
+                                                <td className="px-4 py-4">
+                                                    {request.remarks
+                                                        ? request.remarks
+                                                        : "No remarks"}{" "}
+                                                    {/* Display remarks */}
                                                 </td>
-                                                <td className="px-4 py-6">
+                                                <td className="px-4 py-4">
                                                     {request.status}
                                                 </td>
-                                                <td className="px-4 py-6">
+                                                <td className="px-4 py-4">
                                                     <button
-                                                        className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                                                         onClick={() =>
                                                             handleOpenDetailModal(
                                                                 request,
                                                             )
                                                         }
+                                                        className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                                                     >
                                                         View Details
                                                     </button>
@@ -379,9 +478,11 @@ function EmployeeCertificate() {
                                     ) : (
                                         <tr>
                                             <td
-                                                colSpan="4"
-                                                className="text-center py-20"
+                                                colSpan="5"
+                                                className="text-center py-8 text-gray-500"
                                             >
+                                                {" "}
+                                                {/* Updated colspan to 5 */}
                                                 No pending requests found.
                                             </td>
                                         </tr>
@@ -389,12 +490,6 @@ function EmployeeCertificate() {
                                 </tbody>
                             </table>
                         </div>
-                        <button
-                            className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                            onClick={handleRequestModal}
-                        >
-                            Send New Certificate
-                        </button>
                     </>
                 )}
 
