@@ -12,7 +12,7 @@ function EmployeeLayout() {
     const refresh = useRefreshToken();
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const [headerText, setHeaderText] = useState(
-        localStorage.getItem("headerText") || "Employee Dashboard",
+        localStorage.getItem("headerText") || "Dashboard",
     );
     const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
@@ -67,14 +67,24 @@ function EmployeeLayout() {
     }, [headerText]);
 
     useEffect(() => {
-        const handleBeforeUnload = () => {
-            localStorage.removeItem("headerText");
+        const handleBeforeUnload = (event) => {
+            // If page is not reloading, reset headerText
+            if (!sessionStorage.getItem("isReloading")) {
+                localStorage.setItem("headerText", "Dashboard");
+            }
+        };
+
+        // Set session storage flag for reloads
+        const handleUnload = () => {
+            sessionStorage.setItem("isReloading", "true");
         };
 
         window.addEventListener("beforeunload", handleBeforeUnload);
+        window.addEventListener("unload", handleUnload);
 
         return () => {
             window.removeEventListener("beforeunload", handleBeforeUnload);
+            window.removeEventListener("unload", handleUnload);
         };
     }, []);
 
@@ -156,7 +166,8 @@ function EmployeeLayout() {
         setUser({});
         setToken(null);
         window.localStorage.removeItem("isLoggedIn");
-        localStorage.removeItem("headerText");
+        localStorage.setItem("headerText", "Dashboard"); // Clear from localStorage
+        sessionStorage.removeItem("isReloading");
         navigate("/");
     };
 
@@ -331,11 +342,6 @@ function EmployeeLayout() {
                                                                         text: "Employee Certificate",
                                                                     },
                                                                 incident_update:
-                                                                    {
-                                                                        path: "/incident-form",
-                                                                        text: "Incident Form",
-                                                                    },
-                                                                incident_deleted:
                                                                     {
                                                                         path: "/incident-form",
                                                                         text: "Incident Form",

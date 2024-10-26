@@ -46,17 +46,18 @@ function CompleteProfileModal({ show, onClose, onComplete, tempUser }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log("Temp User:", tempUser); // Add a console log to check if tempUser is passed correctly
-
         const payload = {
             ...formData,
-            user_id: tempUser?.user_id, // Pass user_id from tempUser
+            user_id: tempUser?.user_id,
         };
 
         axiosClient
             .post("/complete-info", payload)
-            .then(() => {
-                onComplete();
+            .then(({ data }) => {
+                // Store the new token and user data
+                localStorage.setItem("access_token", data.token);
+                localStorage.setItem("user", JSON.stringify(data.user));
+                onComplete(data.token, data.user); // Pass the new token and user data
             })
             .catch((error) => {
                 setErrors(

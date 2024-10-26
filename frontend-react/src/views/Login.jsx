@@ -204,8 +204,8 @@ function Login() {
             <CompleteProfileModal
                 show={showCompleteProfile}
                 onClose={() => setShowCompleteProfile(false)}
-                onComplete={() => handleLoginSuccess(tempToken, tempUser)} // Log in immediately after completing the profile
-                tempUser={tempUser} // Pass tempUser to the modal
+                onComplete={(token, user) => handleLoginSuccess(token, user)}
+                tempUser={tempUser}
             />
         </div>
     );

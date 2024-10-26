@@ -20,7 +20,7 @@ function AdminLayout() {
         useState(false);
 
     const [headerText, setHeaderText] = useState(
-        localStorage.getItem("headerText") || "Admin Dashboard",
+        localStorage.getItem("headerText") || "Dashboard",
     );
     const [showModal, setShowModal] = useState(false);
 
@@ -31,20 +31,30 @@ function AdminLayout() {
         }
     }, [token, navigate]);
 
-    // Effect to handle initial header text and navigation on token change
+    // Persist the headerText in localStorage on change
     useEffect(() => {
         localStorage.setItem("headerText", headerText);
     }, [headerText]);
 
     useEffect(() => {
-        const handleBeforeUnload = () => {
-            localStorage.removeItem("headerText");
+        const handleBeforeUnload = (event) => {
+            // If page is not reloading, reset headerText
+            if (!sessionStorage.getItem("isReloading")) {
+                localStorage.setItem("headerText", "Dashboard");
+            }
+        };
+
+        // Set session storage flag for reloads
+        const handleUnload = () => {
+            sessionStorage.setItem("isReloading", "true");
         };
 
         window.addEventListener("beforeunload", handleBeforeUnload);
+        window.addEventListener("unload", handleUnload);
 
         return () => {
             window.removeEventListener("beforeunload", handleBeforeUnload);
+            window.removeEventListener("unload", handleUnload);
         };
     }, []);
 
@@ -180,7 +190,8 @@ function AdminLayout() {
         setUser({});
         setToken(null); // Ensure setToken updates the context correctly
         window.localStorage.removeItem("isLoggedIn");
-        localStorage.removeItem("headerText");
+        localStorage.setItem("headerText", "Dashboard"); // Clear from localStorage
+        sessionStorage.removeItem("isReloading");
         navigate("/");
     };
 
@@ -248,13 +259,6 @@ function AdminLayout() {
                         className="h-10 cursor-pointer text-white hover:bg-opacity-70 hover:bg-gray-600 rounded-lg transition flex items-center justify-center"
                     >
                         Employee Management
-                    </Link>
-                    <Link
-                        to="/rfid_management"
-                        onClick={() => handleHeaderChange("RFID Management")}
-                        className="h-10 cursor-pointer text-white hover:bg-opacity-70 hover:bg-gray-600 rounded-lg transition flex items-center justify-center"
-                    >
-                        Rfid Management
                     </Link>
                 </div>
             </aside>

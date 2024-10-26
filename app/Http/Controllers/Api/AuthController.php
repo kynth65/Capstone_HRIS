@@ -204,8 +204,13 @@ class AuthController extends Controller
 
         // Save user
         $user->save();
+        $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json(['message' => 'Profile completed successfully.']);
+        return response()->json([
+            'message' => 'Profile completed successfully',
+            'token' => $token,
+            'user' => $user
+        ]);
     }
 
     public function forgotPassword(Request $request)

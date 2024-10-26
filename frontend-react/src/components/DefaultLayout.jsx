@@ -13,7 +13,9 @@ function DefaultLayout() {
     const { user, token, setToken, setUser } = useStateContext();
     const [isSidebarVisible, setIsSidebarVisible] = useState(false);
     const refresh = useRefreshToken();
-    const [headerText, setHeaderText] = useState("Dashboard");
+    const [headerText, setHeaderText] = useState(
+        localStorage.getItem("headerText") || "Dashboard",
+    );
     const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
     const [notifications, setNotifications] = useState([]);
@@ -30,22 +32,30 @@ function DefaultLayout() {
     }, [token, navigate]);
 
     useEffect(() => {
-        const handleBeforeUnload = () => {
-            localStorage.removeItem("headerText");
+        localStorage.setItem("headerText", headerText);
+    }, [headerText]);
+
+    // Function to reset the headerText when page is closed (not reloaded)
+    useEffect(() => {
+        const handleBeforeUnload = (event) => {
+            // If page is not reloading, reset headerText
+            if (!sessionStorage.getItem("isReloading")) {
+                localStorage.setItem("headerText", "Dashboard");
+            }
+        };
+
+        // Set session storage flag for reloads
+        const handleUnload = () => {
+            sessionStorage.setItem("isReloading", "true");
         };
 
         window.addEventListener("beforeunload", handleBeforeUnload);
+        window.addEventListener("unload", handleUnload);
 
         return () => {
             window.removeEventListener("beforeunload", handleBeforeUnload);
+            window.removeEventListener("unload", handleUnload);
         };
-    }, []);
-
-    useEffect(() => {
-        const storedHeaderText = localStorage.getItem("headerText");
-        if (storedHeaderText) {
-            setHeaderText(storedHeaderText);
-        }
     }, []);
 
     useEffect(() => {
@@ -175,13 +185,13 @@ function DefaultLayout() {
         setUser({});
         setToken(null);
         navigate("/");
-        localStorage.removeItem("headerText");
         window.localStorage.removeItem("isLoggedIn");
+        localStorage.setItem("headerText", "Dashboard"); // Clear from localStorage
+        sessionStorage.removeItem("isReloading");
     };
 
     const handleHeaderChange = (text) => {
         setHeaderText(text);
-        localStorage.setItem("headerText", text);
     };
 
     const toggleSidebar = () => {
