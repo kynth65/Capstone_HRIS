@@ -36,6 +36,8 @@ function Leave_Management() {
     const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedRequest, setSelectedRequest] = useState(null); // Track selected request
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [tone, setTone] = useState("formal"); // Default tone can be 'formal' or any other option
 
     // For Leave Form
     const handleChange = (e) => {
@@ -298,7 +300,7 @@ function Leave_Management() {
             <div>
                 {activeButton === "documentGenerator" && (
                     <div>
-                        <div className="bg-white rounded-xl flex flex-col items-center">
+                        <div className="bg-white p-10 rounded-xl flex flex-col items-center">
                             <h2 className="titles">
                                 AI Letter Template Generator
                             </h2>
@@ -581,7 +583,7 @@ function Leave_Management() {
 
                         <div className="mt-8">
                             <h3 className="text-xl mb-4 text-center">
-                                Your Leave Requests
+                                History
                             </h3>
 
                             {/* Mobile Leave Requests */}

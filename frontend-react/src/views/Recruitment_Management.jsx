@@ -764,125 +764,217 @@ function Recruitment_Management() {
                             </div>
 
                             {showApplicantsModal && (
-                                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-                                    <div className="bg-white p-6 rounded-lg shadow-lg w-3/4 h-[700px] overflow-y-auto text-black relative">
-                                        <span
-                                            className="absolute top-2 right-2 cursor-pointer text-xl font-bold text-gray-600 hover:text-gray-900"
-                                            onClick={() =>
-                                                setShowApplicantsModal(false)
-                                            }
-                                        >
-                                            &times;
-                                        </span>
-                                        <h3 className="text-2xl font-semibold mb-4 text-center">
-                                            Applicants for{" "}
-                                            {currentPosition?.title}
-                                        </h3>
-                                        <p className="text-green-800 text-base mb-3">
-                                            Click "View" to see details and tags
-                                            for each applicant.
-                                        </p>
+                                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 p-4">
+                                    <div className="bg-white rounded-lg shadow-lg w-full md:w-3/4 h-[500px] md:h-[700px] overflow-y-auto text-black relative">
+                                        {/* Header Section */}
+                                        <div className="sticky top-0 bg-white p-4 md:p-6 border-b">
+                                            <span
+                                                className="absolute top-2 right-2 cursor-pointer text-xl font-bold text-gray-600 hover:text-gray-900 h-8 w-8 flex items-center justify-center"
+                                                onClick={() =>
+                                                    setShowApplicantsModal(
+                                                        false,
+                                                    )
+                                                }
+                                            >
+                                                &times;
+                                            </span>
+                                            <h3 className="text-lg md:text-2xl font-semibold text-center pr-8">
+                                                Applicants for{" "}
+                                                {currentPosition?.title}
+                                            </h3>
+                                            <p className="text-green-800 text-sm md:text-base mt-2 text-center">
+                                                Click "View" to see details and
+                                                tags for each applicant.
+                                            </p>
+                                        </div>
 
-                                        <table className="min-h-32 w-full border-collapse text-center">
-                                            <thead>
-                                                <tr>
-                                                    <th className="text-center px-4 py-2 border-b">
-                                                        Rank
-                                                    </th>
-                                                    <th className="text-center px-4 py-2 border-b">
-                                                        File
-                                                    </th>
-                                                    <th className="text-center px-4 py-2 border-b">
-                                                        Percentage
-                                                    </th>
-                                                    <th className="text-center px-4 py-2 border-b">
-                                                        Questions Response
-                                                    </th>
-                                                    <th className="text-center px-4 py-2 border-b">
-                                                        Actions
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {applicants.map(
-                                                    (applicant, index) => (
-                                                        <tr
-                                                            key={index}
-                                                            className="applicant-row hover:bg-gray-100"
-                                                        >
-                                                            <td className="applicant-rank px-4 py-2 border-b">
+                                        {/* Desktop View */}
+                                        <div className="hidden md:block p-4 md:p-6">
+                                            <table className="min-h-32 w-full border-collapse text-center">
+                                                <thead>
+                                                    <tr>
+                                                        <th className="text-center px-4 py-2 border-b">
+                                                            Rank
+                                                        </th>
+                                                        <th className="text-center px-4 py-2 border-b">
+                                                            File
+                                                        </th>
+                                                        <th className="text-center px-4 py-2 border-b">
+                                                            Percentage
+                                                        </th>
+                                                        <th className="text-center px-4 py-2 border-b">
+                                                            Questions Response
+                                                        </th>
+                                                        <th className="text-center px-4 py-2 border-b">
+                                                            Actions
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {applicants.map(
+                                                        (applicant, index) => (
+                                                            <tr
+                                                                key={index}
+                                                                className="hover:bg-gray-100"
+                                                            >
+                                                                <td className="px-4 py-2 border-b">
+                                                                    {index + 1}
+                                                                </td>
+                                                                <td className="px-4 py-2 border-b">
+                                                                    <button
+                                                                        className="text-blue-500 hover:underline"
+                                                                        onClick={() =>
+                                                                            handleOpenPdf(
+                                                                                applicant.file_path,
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            applicant.filename
+                                                                        }
+                                                                    </button>
+                                                                </td>
+                                                                <td className="px-4 py-2 border-b">
+                                                                    {applicant.percentage.toFixed(
+                                                                        2,
+                                                                    )}
+                                                                    %
+                                                                </td>
+                                                                <td className="px-4 py-2 border-b">
+                                                                    <button
+                                                                        className="text-blue-500 hover:underline"
+                                                                        onClick={() =>
+                                                                            handleViewResponses(
+                                                                                applicant,
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        View
+                                                                        response
+                                                                    </button>
+                                                                </td>
+                                                                <td className="px-4 py-2 border-b">
+                                                                    <button
+                                                                        className="text-blue-500 hover:underline"
+                                                                        onClick={() =>
+                                                                            handleViewApplicantDetails(
+                                                                                applicant,
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        View
+                                                                    </button>
+                                                                    <button
+                                                                        className="text-green-500 hover:underline ml-4"
+                                                                        onClick={() =>
+                                                                            handleToOnboarding(
+                                                                                applicant.id,
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        Accept
+                                                                    </button>
+                                                                    <button
+                                                                        className="text-red-500 hover:underline ml-4"
+                                                                        onClick={() =>
+                                                                            handleDeleteApplicant(
+                                                                                applicant.id,
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        Remove
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        ),
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        {/* Mobile View */}
+                                        <div className="md:hidden p-4">
+                                            {applicants.map(
+                                                (applicant, index) => (
+                                                    <div
+                                                        key={index}
+                                                        className="mb-4 p-4 border rounded-lg bg-gray-50 space-y-3"
+                                                    >
+                                                        <div className="flex justify-between items-center">
+                                                            <span className="font-semibold">
+                                                                Rank:{" "}
                                                                 {index + 1}
-                                                            </td>
-                                                            <td>
-                                                                <button
-                                                                    className="text-blue-500 hover:underline"
-                                                                    onClick={() =>
-                                                                        handleOpenPdf(
-                                                                            applicant.file_path,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    {
-                                                                        applicant.filename
-                                                                    }
-                                                                </button>
-                                                            </td>
-                                                            <td className="applicant-percentage px-4 py-2 border-b">
+                                                            </span>
+                                                            <span className="text-sm">
                                                                 {applicant.percentage.toFixed(
                                                                     2,
                                                                 )}
                                                                 %
-                                                            </td>
-                                                            <td className="applicant-response px-4 py-2 border-b">
-                                                                <button
-                                                                    className="text-blue-500 hover:underline"
-                                                                    onClick={() =>
-                                                                        handleViewResponses(
-                                                                            applicant,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    View
-                                                                    response
-                                                                </button>
-                                                            </td>
-                                                            <td className="applicant-actions px-4 py-2 border-b">
-                                                                <button
-                                                                    className="text-blue-500 hover:underline"
-                                                                    onClick={() =>
-                                                                        handleViewApplicantDetails(
-                                                                            applicant,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    View
-                                                                </button>
-                                                                <button
-                                                                    className="text-green-500 hover:underline ml-4"
-                                                                    onClick={() =>
-                                                                        handleToOnboarding(
-                                                                            applicant.id,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Accept
-                                                                </button>
-                                                                <button
-                                                                    className="text-red-500 hover:underline ml-4"
-                                                                    onClick={() =>
-                                                                        handleDeleteApplicant(
-                                                                            applicant.id,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Remove
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    ),
-                                                )}
-                                            </tbody>
-                                        </table>
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="flex flex-col space-y-2">
+                                                            <button
+                                                                className="text-blue-500 hover:underline text-left"
+                                                                onClick={() =>
+                                                                    handleOpenPdf(
+                                                                        applicant.file_path,
+                                                                    )
+                                                                }
+                                                            >
+                                                                {
+                                                                    applicant.filename
+                                                                }
+                                                            </button>
+
+                                                            <button
+                                                                className="text-blue-500 hover:underline text-left"
+                                                                onClick={() =>
+                                                                    handleViewResponses(
+                                                                        applicant,
+                                                                    )
+                                                                }
+                                                            >
+                                                                View Response
+                                                            </button>
+                                                        </div>
+
+                                                        <div className="flex justify-between items-center pt-2 border-t">
+                                                            <button
+                                                                className="text-blue-500 px-3 py-1 rounded-full border border-blue-500"
+                                                                onClick={() =>
+                                                                    handleViewApplicantDetails(
+                                                                        applicant,
+                                                                    )
+                                                                }
+                                                            >
+                                                                View
+                                                            </button>
+                                                            <button
+                                                                className="text-green-500 px-3 py-1 rounded-full border border-green-500"
+                                                                onClick={() =>
+                                                                    handleToOnboarding(
+                                                                        applicant.id,
+                                                                    )
+                                                                }
+                                                            >
+                                                                Accept
+                                                            </button>
+                                                            <button
+                                                                className="text-red-500 px-3 py-1 rounded-full border border-red-500"
+                                                                onClick={() =>
+                                                                    handleDeleteApplicant(
+                                                                        applicant.id,
+                                                                    )
+                                                                }
+                                                            >
+                                                                Remove
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ),
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -930,115 +1022,209 @@ function Recruitment_Management() {
                         )}
 
                         {showModal && (
-                            <div className="modal">
-                                <div className="bg-white overflow-auto h-[600px] w-fit xl:w-3/4 text-sm flex flex-col items-center mx-4 px-7 pb-10 pt-4 rounded-lg">
-                                    <div className="w-full h-fit flex justify-between">
-                                        <h3 className="tags text-xl 2x:pl-[400px] 2xl:text-2xl mb-3 font-bold">
+                            <div className="modal text-black">
+                                <div className="bg-white overflow-auto h-[600px] w-full md:w-fit xl:w-3/4 text-sm flex flex-col items-center mx-2 md:mx-4 px-4 md:px-7 pb-6 md:pb-10 pt-4 rounded-lg">
+                                    {/* Header */}
+                                    <div className="w-full h-fit flex justify-between items-center mb-4">
+                                        <h3 className="text-lg md:text-xl 2xl:text-2xl font-bold">
                                             ADD NEW POSITION
                                         </h3>
                                         <span
-                                            className="px-4 py-2 rounded-full place-self-end cursor-pointer bg-red-700 hover:bg-opacity-75 w-5 flex justify-center"
+                                            className="p-2 md:px-4 md:py-2 rounded-full cursor-pointer bg-red-700 hover:bg-opacity-75 w-8 md:w-10 h-8 md:h-10 flex items-center justify-center text-white"
                                             onClick={() => setShowModal(false)}
                                         >
                                             &times;
                                         </span>
                                     </div>
 
-                                    <div className="flex flex-col w-full gap-4 ">
-                                        {/*Title select input*/}
-                                        <div className="title-select flex justify-center items-center">
-                                            <label className="tags mr-5 font-bold">
-                                                Title:
-                                            </label>
-                                            <select
-                                                className="hover:border-green-700 mb-0 text-black rounded-lg"
-                                                name="title"
-                                                value={newPosition.title}
-                                                onChange={handleInputChange}
-                                            >
-                                                <option value="">
-                                                    Select Role Title
-                                                </option>
-                                                <option value="Accounting">
-                                                    Accounting
-                                                </option>
-                                                <option value="Anatomical">
-                                                    Anatomical
-                                                </option>
-                                                <option value="RMT">RMT</option>
-                                                <option value="XRay Tech">
-                                                    XRay Tech
-                                                </option>
-                                                <option value="Ultrasound">
-                                                    Ultrasound
-                                                </option>
-                                                <option value="Medical Secretary">
-                                                    Medical Secretary
-                                                </option>
-                                                <option value="Receptionist">
-                                                    Receptionist
-                                                </option>
-                                                <option value="Rider">
-                                                    Rider
-                                                </option>
-                                                <option value="Security">
-                                                    Security
-                                                </option>
-                                                <option value="Maintenance">
-                                                    Maintenance
-                                                </option>
-                                                <option value="Purchasing Clerk">
-                                                    Purchasing Clerk
-                                                </option>
-                                            </select>
-                                        </div>
-                                        {/*Type select input*/}
-                                        <div className="type-select flex justify-center items-center">
-                                            <label className="tags mr-4 font-bold">
-                                                Type:
-                                            </label>
-                                            <select
-                                                className="text-black mb-0 hover:border-green-700 rounded-lg"
-                                                name="type"
-                                                value={newPosition.type}
-                                                onChange={handleInputChange}
-                                            >
-                                                <option value="">
-                                                    Select Type
-                                                </option>
-                                                <option value="Full-time">
-                                                    Full-time
-                                                </option>
-                                                <option value="Part-time">
-                                                    Part-time
-                                                </option>
-                                            </select>
-                                        </div>
-                                        <div className="salary flex justify-center items-center">
-                                            <label
-                                                htmlFor="base_salary"
-                                                className="text-black font-kodchasan font-bold mr-4"
-                                            >
-                                                Base Salary:
-                                            </label>
-                                            <input
-                                                className="text-black rounded-lg hover:border-green-700 mb-0 mr-12"
-                                                type="text"
-                                                id="base_salary"
-                                                name="base_salary"
-                                                value={newPosition.base_salary}
-                                                onChange={handleInputChange}
-                                            />
+                                    <div className="flex flex-col w-full gap-4">
+                                        {/* Mobile View Form Fields */}
+                                        <div className="flex flex-col md:hidden space-y-4 w-full">
+                                            {/* Title */}
+                                            <div className="flex flex-col gap-2">
+                                                <label className="font-bold">
+                                                    Title:
+                                                </label>
+                                                <select
+                                                    className="w-full hover:border-green-700 text-black rounded-lg p-2 border-2"
+                                                    name="title"
+                                                    value={newPosition.title}
+                                                    onChange={handleInputChange}
+                                                >
+                                                    <option value="">
+                                                        Select Role Title
+                                                    </option>
+                                                    <option value="Accounting">
+                                                        Accounting
+                                                    </option>
+                                                    <option value="Anatomical">
+                                                        Anatomical
+                                                    </option>
+                                                    <option value="RMT">
+                                                        RMT
+                                                    </option>
+                                                    <option value="XRay Tech">
+                                                        XRay Tech
+                                                    </option>
+                                                    <option value="Ultrasound">
+                                                        Ultrasound
+                                                    </option>
+                                                    <option value="Medical Secretary">
+                                                        Medical Secretary
+                                                    </option>
+                                                    <option value="Receptionist">
+                                                        Receptionist
+                                                    </option>
+                                                    <option value="Rider">
+                                                        Rider
+                                                    </option>
+                                                    <option value="Security">
+                                                        Security
+                                                    </option>
+                                                    <option value="Maintenance">
+                                                        Maintenance
+                                                    </option>
+                                                    <option value="Purchasing Clerk">
+                                                        Purchasing Clerk
+                                                    </option>
+                                                </select>
+                                            </div>
+
+                                            {/* Type */}
+                                            <div className="flex flex-col gap-2">
+                                                <label className="font-bold">
+                                                    Type:
+                                                </label>
+                                                <select
+                                                    className="w-full text-black hover:border-green-700 rounded-lg p-2 border-2"
+                                                    name="type"
+                                                    value={newPosition.type}
+                                                    onChange={handleInputChange}
+                                                >
+                                                    <option value="">
+                                                        Select Type
+                                                    </option>
+                                                    <option value="Full-time">
+                                                        Full-time
+                                                    </option>
+                                                    <option value="Part-time">
+                                                        Part-time
+                                                    </option>
+                                                </select>
+                                            </div>
+
+                                            {/* Salary */}
+                                            <div className="flex flex-col gap-2">
+                                                <label className="font-bold">
+                                                    Base Salary:
+                                                </label>
+                                                <input
+                                                    className="w-full text-black rounded-lg hover:border-green-700 p-2 border-2"
+                                                    type="text"
+                                                    name="base_salary"
+                                                    value={
+                                                        newPosition.base_salary
+                                                    }
+                                                    onChange={handleInputChange}
+                                                />
+                                            </div>
                                         </div>
 
-                                        <div className="lg:flex lg:flex-col lg:gap-6 2xl:flex-row 2xl:justify-center">
-                                            {/*Description select input*/}
-                                            <div className="description-textarea flex flex-col items-center">
-                                                <label className="tags font-bold">
+                                        {/* Desktop View Form Fields */}
+                                        <div className="hidden md:flex flex-col gap-4 w-full">
+                                            <div className="title-select flex justify-center items-center">
+                                                <label className="tags mr-5 font-bold">
+                                                    Title:
+                                                </label>
+                                                <select
+                                                    className="hover:border-green-700 mb-0 text-black rounded-lg"
+                                                    name="title"
+                                                    value={newPosition.title}
+                                                    onChange={handleInputChange}
+                                                >
+                                                    <option value="">
+                                                        Select Role Title
+                                                    </option>
+                                                    <option value="Accounting">
+                                                        Accounting
+                                                    </option>
+                                                    <option value="Anatomical">
+                                                        Anatomical
+                                                    </option>
+                                                    <option value="RMT">
+                                                        RMT
+                                                    </option>
+                                                    <option value="XRay Tech">
+                                                        XRay Tech
+                                                    </option>
+                                                    <option value="Ultrasound">
+                                                        Ultrasound
+                                                    </option>
+                                                    <option value="Medical Secretary">
+                                                        Medical Secretary
+                                                    </option>
+                                                    <option value="Receptionist">
+                                                        Receptionist
+                                                    </option>
+                                                    <option value="Rider">
+                                                        Rider
+                                                    </option>
+                                                    <option value="Security">
+                                                        Security
+                                                    </option>
+                                                    <option value="Maintenance">
+                                                        Maintenance
+                                                    </option>
+                                                    <option value="Purchasing Clerk">
+                                                        Purchasing Clerk
+                                                    </option>
+                                                </select>
+                                            </div>
+                                            <div className="type-select flex justify-center items-center">
+                                                <label className="tags mr-4 font-bold">
+                                                    Type:
+                                                </label>
+                                                <select
+                                                    className="text-black mb-0 hover:border-green-700 rounded-lg"
+                                                    name="type"
+                                                    value={newPosition.type}
+                                                    onChange={handleInputChange}
+                                                >
+                                                    <option value="">
+                                                        Select Type
+                                                    </option>
+                                                    <option value="Full-time">
+                                                        Full-time
+                                                    </option>
+                                                    <option value="Part-time">
+                                                        Part-time
+                                                    </option>
+                                                </select>
+                                            </div>
+                                            <div className="salary flex justify-center items-center">
+                                                <label className="text-black font-bold mr-4">
+                                                    Base Salary:
+                                                </label>
+                                                <input
+                                                    className="text-black rounded-lg hover:border-green-700 mb-0 mr-12"
+                                                    type="text"
+                                                    name="base_salary"
+                                                    value={
+                                                        newPosition.base_salary
+                                                    }
+                                                    onChange={handleInputChange}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Description and Qualifications - Responsive for both views */}
+                                        <div className="flex flex-col lg:flex-col 2xl:flex-row gap-4 2xl:gap-6 2xl:justify-center w-full">
+                                            <div className="description-textarea flex flex-col items-center w-full 2xl:w-auto">
+                                                <label className="font-bold mb-2">
                                                     Job Description:
                                                 </label>
                                                 <textarea
-                                                    className="px-4 py-4 w-[400px] font-medium h-36 lg:h-96 lg:w-[500px] border-2 text-black hover:border-green-700 rounded-lg"
+                                                    className="px-4 py-4 w-full 2xl:w-[500px] font-medium h-36 lg:h-96 border-2 text-black hover:border-green-700 rounded-lg"
                                                     name="description"
                                                     value={
                                                         newPosition.description
@@ -1046,14 +1232,13 @@ function Recruitment_Management() {
                                                     onChange={handleInputChange}
                                                 />
                                             </div>
-                                            {/*Qualification select input*/}
-                                            <div className="qualifications-textarea flex flex-col items-center">
-                                                <label className="tags font-bold">
+                                            <div className="qualifications-textarea flex flex-col items-center w-full 2xl:w-auto">
+                                                <label className="font-bold mb-2">
                                                     Qualifications &
                                                     Requirements:
                                                 </label>
                                                 <textarea
-                                                    className="px-4 py-4 w-[400px] font-medium h-36 lg:h-96 lg:w-[500px] border-2 text-black hover:border-green-700 rounded-lg"
+                                                    className="px-4 py-4 w-full 2xl:w-[500px] font-medium h-36 lg:h-96 border-2 text-black hover:border-green-700 rounded-lg"
                                                     name="qualifications"
                                                     value={
                                                         newPosition.qualifications
@@ -1063,19 +1248,14 @@ function Recruitment_Management() {
                                             </div>
                                         </div>
 
-                                        {/*Human Resource Tags select input*/}
-                                        <div className="HR-Tags">
-                                            {/* HR Tags Input */}
-
-                                            <div className="2xl:flex justify-center gap-6">
-                                                <div className="flex flex-col items-center">
-                                                    <label
-                                                        htmlFor="hr_tags"
-                                                        className="tags font-bold"
-                                                    >
+                                        {/* Tags Section - Responsive for both views */}
+                                        <div className="HR-Tags w-full">
+                                            <div className="flex flex-col 2xl:flex-row justify-center gap-4 2xl:gap-6">
+                                                <div className="flex flex-col items-center w-full 2xl:w-auto">
+                                                    <label className="font-bold mb-2">
                                                         Selected Tags
                                                     </label>
-                                                    <div className="selectedTags border-2 w-[360px] lg:w-[500px] min-h-10 max-h-56 rounded-lg overflow-auto text-black font-kodchasan font-semibold">
+                                                    <div className="selectedTags border-2 w-full 2xl:w-[500px] min-h-10 max-h-56 rounded-lg overflow-auto text-black font-semibold p-2">
                                                         {newPosition.hr_tags
                                                             .split(",")
                                                             .map(
@@ -1085,11 +1265,11 @@ function Recruitment_Management() {
                                                                             key={
                                                                                 index
                                                                             }
-                                                                            className="tagItem"
+                                                                            className="tagItem inline-flex items-center m-1 px-3 py-1 bg-gray-100 rounded-full"
                                                                         >
                                                                             {tag.trim()}
                                                                             <span
-                                                                                className="ml-1 px-2 py-1 flex justify-center hover:bg-red-500 text-black hover:text-white rounded-full"
+                                                                                className="ml-2 hover:bg-red-500 hover:text-white rounded-full w-5 h-5 flex items-center justify-center cursor-pointer"
                                                                                 onClick={() =>
                                                                                     handleRemoveTag(
                                                                                         tag.trim(),
@@ -1104,14 +1284,11 @@ function Recruitment_Management() {
                                                     </div>
                                                 </div>
 
-                                                <div className="suggestedTags flex flex-col items-center">
-                                                    <label
-                                                        htmlFor="tags"
-                                                        className="font-bold text-black font-kodchasan"
-                                                    >
+                                                <div className="flex flex-col items-center w-full 2xl:w-auto">
+                                                    <label className="font-bold mb-2">
                                                         Available Tags
                                                     </label>
-                                                    <div className="border-2 w-[360px] lg:w-[500px] min-h-10 max-h-56 rounded-lg text-black font-kodchasan">
+                                                    <div className="border-2 w-full 2xl:w-[500px] min-h-10 max-h-56 rounded-lg text-black p-2">
                                                         {availableTags.map(
                                                             (tag, index) => (
                                                                 <span
@@ -1121,7 +1298,7 @@ function Recruitment_Management() {
                                                                             tag,
                                                                         )
                                                                     }
-                                                                    className="cursor-pointer hover:bg-gray-100 px-2 py-1 inline-block"
+                                                                    className="cursor-pointer hover:bg-gray-100 px-3 py-1 m-1 inline-block rounded-full"
                                                                 >
                                                                     {tag}
                                                                 </span>
@@ -1131,11 +1308,11 @@ function Recruitment_Management() {
                                                 </div>
                                             </div>
                                         </div>
-
-                                        {/*Salary select input*/}
                                     </div>
+
+                                    {/* Save Button */}
                                     <button
-                                        className="bg-green-900 px-10 py-2 border-2 border-white rounded-lg font-normal hover:bg-white hover:border-green-900 hover:text-green-900 transition font-kodchasan z-1001 mt-10"
+                                        className="bg-green-900 px-10 py-2 border-2 border-white rounded-lg font-normal hover:bg-white hover:border-green-900 hover:text-green-900 transition mt-10 text-white"
                                         onClick={handleAddPosition}
                                     >
                                         Save
@@ -1172,11 +1349,7 @@ function Recruitment_Management() {
                         </div>
                     </div>
                 )}
-                {activeButton === "suggestTags" && (
-                    <div className="bg-white p-4 rounded-lg shadow-md">
-                        <HRTagSuggestion />
-                    </div>
-                )}
+                {activeButton === "suggestTags" && <HRTagSuggestion />}
             </div>
         </div>
     );
