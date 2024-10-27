@@ -147,246 +147,400 @@ function Attendance() {
 
             <div className="animated fadeInDown">
                 {activeButton === "monitoring" && (
-                    <div className="w-full max-w-7xl mx-auto px-4">
+                    <div className="w-full max-w-7xl mx-auto ml-[-5px] sm:ml-0 px-4 text-black">
+                        {/* Search Bar */}
                         <input
-                            key={activeButton} // Key based on the active tab to reset state properly
+                            key={activeButton}
                             type="text"
                             ref={searchRef}
                             placeholder="Search by name or ID..."
                             onChange={handleSearch}
                             className="w-full max-w-md text-black px-4 py-2 mb-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                         />
-                        <div className="relative rounded-xl overflow-hidden">
-                            {/* Table container with fixed height and scroll */}
-                            <div className="max-h-[500px] overflow-y-auto">
-                                <table className="w-full bg-white text-black">
-                                    {/* Fixed header */}
-                                    <thead className="sticky top-0 bg-white shadow-sm">
-                                        <tr>
-                                            <th className="hidden md:table-cell px-6 py-3 text-center text-sm font-semibold border-b">
-                                                User ID
-                                            </th>
-                                            <th className="px-6 py-3 text-center text-sm font-semibold border-b">
-                                                Name
-                                            </th>
-                                            <th className="px-6 py-3 text-center text-sm font-semibold border-b">
-                                                Date
-                                            </th>
-                                            <th className="hidden md:table-cell px-6 py-3 text-center text-sm font-semibold border-b">
-                                                Time In
-                                            </th>
-                                            <th className="hidden md:table-cell px-6 py-3 text-center text-sm font-semibold border-b">
-                                                Time Out
-                                            </th>
-                                            <th className="md:hidden px-6 py-3 text-center text-sm font-semibold border-b">
-                                                Action
-                                            </th>
-                                        </tr>
-                                    </thead>
 
-                                    {/* Scrollable body */}
-                                    <tbody className="divide-y divide-gray-200">
-                                        {filteredMonitoringEmployees.length >
-                                        0 ? (
-                                            filteredMonitoringEmployees.map(
-                                                (employee, index) => (
-                                                    <tr
-                                                        key={`${employee.user_id}-${employee.date}-${index}`} // Add `index` to ensure uniqueness
-                                                        className="hover:bg-gray-50"
-                                                    >
-                                                        <td className="hidden md:table-cell px-6 py-4 text-sm">
-                                                            {employee.user_id}
-                                                        </td>
-                                                        <td className="px-6 py-4 text-sm font-medium">
-                                                            {employee.name}
-                                                        </td>
-                                                        <td className="px-6 py-4 text-sm">
+                        <div className="bg-white shadow-lg rounded-lg p-6">
+                            {/* Mobile View */}
+                            <div className="md:hidden max-h-[500px] overflow-y-auto">
+                                {filteredMonitoringEmployees.length > 0 ? (
+                                    filteredMonitoringEmployees.map(
+                                        (employee, index) => (
+                                            <div
+                                                key={`${employee.user_id}-${employee.date}-${index}`}
+                                                className="border border-gray-200 p-4 rounded-lg mb-4 bg-gray-50 space-y-2"
+                                            >
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm font-medium text-black">
+                                                        {employee.name}
+                                                    </span>
+                                                    <span className="text-xs text-gray-500">
+                                                        ID: {employee.user_id}
+                                                    </span>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-2 text-sm">
+                                                    <div>
+                                                        <p className="text-gray-500 text-xs">
+                                                            Date
+                                                        </p>
+                                                        <p className="font-medium">
                                                             {formatDate(
                                                                 employee.date,
                                                             )}
-                                                        </td>
-                                                        <td className="hidden md:table-cell px-6 py-4 text-sm">
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-gray-500 text-xs">
+                                                            Time In
+                                                        </p>
+                                                        <p className="font-medium">
                                                             {formatToHour(
                                                                 employee.time_in,
                                                             )}
-                                                        </td>
-                                                        <td className="hidden md:table-cell px-6 py-4 text-sm">
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-gray-500 text-xs">
+                                                            Time Out
+                                                        </p>
+                                                        <p className="font-medium">
                                                             {formatToHour(
                                                                 employee.time_out,
                                                             )}
-                                                        </td>
-                                                        <td className="md:hidden px-6 py-4">
-                                                            <button
-                                                                className="w-full py-2 px-4 rounded-md text-white bg-green-800 hover:bg-green-900 transition-colors"
-                                                                onClick={() =>
-                                                                    openModal(
-                                                                        employee,
-                                                                    )
-                                                                }
-                                                            >
-                                                                View
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                ),
-                                            )
-                                        ) : (
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-end justify-end">
+                                                        <button
+                                                            onClick={() =>
+                                                                openModal(
+                                                                    employee,
+                                                                )
+                                                            }
+                                                            className="bg-green-800 text-white px-4 py-1 rounded-md text-sm hover:bg-green-900 transition-colors"
+                                                        >
+                                                            Details
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ),
+                                    )
+                                ) : (
+                                    <div className="text-center py-8 text-gray-500">
+                                        No employees found.
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Desktop View */}
+                            <div className="hidden md:block">
+                                <div className="max-h-[500px] overflow-y-auto rounded-lg">
+                                    <table className="w-full bg-white">
+                                        <thead className="bg-gray-50 sticky top-0">
                                             <tr>
-                                                <td
-                                                    colSpan="5"
-                                                    className="px-6 py-4 text-sm text-center text-gray-500"
-                                                >
-                                                    No employees found.
-                                                </td>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    User ID
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Name
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Date
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Time In
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Time Out
+                                                </th>
                                             </tr>
-                                        )}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {filteredMonitoringEmployees.length >
+                                            0 ? (
+                                                filteredMonitoringEmployees.map(
+                                                    (employee, index) => (
+                                                        <tr
+                                                            key={`${employee.user_id}-${employee.date}-${index}`}
+                                                            className="hover:bg-gray-50 cursor-pointer"
+                                                            onClick={() =>
+                                                                openModal(
+                                                                    employee,
+                                                                )
+                                                            }
+                                                        >
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                                {
+                                                                    employee.user_id
+                                                                }
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                                {employee.name}
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                                {formatDate(
+                                                                    employee.date,
+                                                                )}
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                                {formatToHour(
+                                                                    employee.time_in,
+                                                                )}
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                                {formatToHour(
+                                                                    employee.time_out,
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    ),
+                                                )
+                                            ) : (
+                                                <tr>
+                                                    <td
+                                                        colSpan="5"
+                                                        className="px-6 py-4 text-sm text-center text-gray-500"
+                                                    >
+                                                        No employees found.
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
                 )}
 
                 {activeButton === "allEmployees" && (
-                    <div className="w-full max-w-7xl mx-auto px-4">
-                        <div className="flex flex-col gap-2 md:grid md:grid-cols-3 md:justify-between mt-5">
-                            <div className="flex flex-col items-center gap-1">
-                                <label>Select Month:</label>
-                                <select
-                                    className="text-black mb-0 rounded-lg"
-                                    value={selectedMonth}
-                                    onChange={(e) =>
-                                        setSelectedMonth(e.target.value)
-                                    }
-                                >
-                                    {[...Array(12).keys()].map((m) => (
-                                        <option key={m + 1} value={m + 1}>
-                                            {new Date(0, m).toLocaleString(
-                                                "default",
-                                                {
-                                                    month: "long",
-                                                },
-                                            )}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="flex flex-col items-center gap-1">
-                                <label>Select Year:</label>
-                                <select
-                                    className="text-black mb-0 rounded-lg"
-                                    value={selectedYear}
-                                    onChange={(e) =>
-                                        setSelectedYear(e.target.value)
-                                    }
-                                >
-                                    {[2023, 2024, 2025, 2026].map((year) => (
-                                        <option key={year} value={year}>
-                                            {year}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="flex flex-col items-center gap-1">
-                                <label className="md:mr-2 md:mt-0">
-                                    Search:
-                                </label>
-                                <input
-                                    type="text"
-                                    ref={searchRef}
-                                    placeholder="Search by name or ID..."
-                                    onChange={handleSearch}
-                                    className="w-full max-w-md text-black px-4 py-2 mb-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-                                />
+                    <div className="w-full max-w-7xl mx-auto ml-[-7px] sm:ml-0 px-4 text-black">
+                        {/* Filters Section */}
+                        <div className="bg-white rounded-lg p-4 mb-4 shadow-sm">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="flex flex-col">
+                                    <label className="text-sm text-gray-600 mb-1">
+                                        Select Month:
+                                    </label>
+                                    <select
+                                        className="text-black rounded-lg border border-gray-200 p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                        value={selectedMonth}
+                                        onChange={(e) =>
+                                            setSelectedMonth(e.target.value)
+                                        }
+                                    >
+                                        {[...Array(12).keys()].map((m) => (
+                                            <option key={m + 1} value={m + 1}>
+                                                {new Date(0, m).toLocaleString(
+                                                    "default",
+                                                    { month: "long" },
+                                                )}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="flex flex-col">
+                                    <label className="text-sm text-gray-600 mb-1">
+                                        Select Year:
+                                    </label>
+                                    <select
+                                        className="text-black rounded-lg border border-gray-200 p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                        value={selectedYear}
+                                        onChange={(e) =>
+                                            setSelectedYear(e.target.value)
+                                        }
+                                    >
+                                        {[2023, 2024, 2025, 2026].map(
+                                            (year) => (
+                                                <option key={year} value={year}>
+                                                    {year}
+                                                </option>
+                                            ),
+                                        )}
+                                    </select>
+                                </div>
+                                <div className="flex flex-col">
+                                    <label className="text-sm text-gray-600 mb-1">
+                                        Search:
+                                    </label>
+                                    <input
+                                        type="text"
+                                        ref={searchRef}
+                                        placeholder="Search by name or ID..."
+                                        onChange={handleSearch}
+                                        className="text-black rounded-lg border border-gray-200 p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                    />
+                                </div>
                             </div>
                         </div>
 
-                        <div className="relative rounded-xl overflow-hidden">
-                            <div className="max-h-[500px] overflow-y-auto">
-                                <table className="w-full bg-white text-black">
-                                    <thead className="sticky top-0 bg-white shadow-sm">
-                                        <tr>
-                                            <th className="hidden md:table-cell px-6 py-3 text-center text-sm  border-b">
-                                                User ID
-                                            </th>
-                                            <th className="px-6 py-3 text-center text-sm  border-b">
-                                                Name
-                                            </th>
-                                            <th className="px-6 py-3 text-center text-sm  border-b">
-                                                Average Time In
-                                            </th>
-                                            <th className="px-6 py-3 text-center text-sm  border-b">
-                                                Average Time Out
-                                            </th>
-                                            <th className="px-6 py-3 text-center text-sm  border-b">
-                                                Average Hours Per Day
-                                            </th>
-                                            <th className="px-6 py-3 text-center text-sm  border-b">
-                                                Total Hours This Month
-                                            </th>
-                                            <th className="md:hidden px-6 py-3 text-center text-sm  border-b">
-                                                Action
-                                            </th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody className="divide-y divide-gray-200">
-                                        {filteredAllEmployeesData.length > 0 ? (
-                                            filteredAllEmployeesData.map(
-                                                (employee) => (
-                                                    <tr
-                                                        key={employee.user_id}
-                                                        className="hover:bg-gray-50"
-                                                    >
-                                                        <td className="hidden md:table-cell px-6 py-4 text-sm">
-                                                            {employee.user_id}
-                                                        </td>
-                                                        <td className="px-6 py-4 text-sm font-medium">
-                                                            {employee.name}
-                                                        </td>
-                                                        <td className="px-6 py-4 text-sm">
-                                                            {employee.avg_time_in ||
-                                                                "N/A"}
-                                                        </td>
-                                                        <td className="px-6 py-4 text-sm">
-                                                            {employee.avg_time_out ||
-                                                                "N/A"}
-                                                        </td>
-                                                        <td className="px-6 py-4 text-sm">
-                                                            {employee.avg_hours ||
-                                                                "N/A"}
-                                                        </td>
-                                                        <td className="px-6 py-4 text-sm">
-                                                            {employee.total_hours ||
-                                                                "0 minutes"}
-                                                        </td>
-                                                        <td className="md:hidden px-6 py-4">
-                                                            <button
-                                                                className="w-full py-2 px-4 rounded-md text-white bg-green-800 hover:bg-green-900 transition-colors"
-                                                                onClick={() =>
-                                                                    openModal(
-                                                                        employee,
-                                                                    )
-                                                                }
-                                                            >
-                                                                View
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                ),
-                                            )
-                                        ) : (
-                                            <tr>
-                                                <td
-                                                    colSpan="7"
-                                                    className="px-6 py-4 text-sm text-center text-gray-500"
+                        <div className="bg-white shadow-lg rounded-lg">
+                            {/* Mobile View */}
+                            <div className="md:hidden">
+                                <div className="max-h-[500px] overflow-y-auto p-4">
+                                    {filteredAllEmployeesData.length > 0 ? (
+                                        filteredAllEmployeesData.map(
+                                            (employee) => (
+                                                <div
+                                                    key={employee.user_id}
+                                                    className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
                                                 >
-                                                    No employees found.
-                                                </td>
+                                                    <div className="flex justify-between items-center mb-3">
+                                                        <div>
+                                                            <h3 className="font-medium text-black">
+                                                                {employee.name}
+                                                            </h3>
+                                                            <p className="text-xs text-gray-500">
+                                                                ID:{" "}
+                                                                {
+                                                                    employee.user_id
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                        <button
+                                                            className="bg-green-800 text-white px-4 py-1.5 rounded-md text-sm hover:bg-green-900 transition-colors"
+                                                            onClick={() =>
+                                                                openModal(
+                                                                    employee,
+                                                                )
+                                                            }
+                                                        >
+                                                            Details
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        <div>
+                                                            <p className="text-xs text-gray-500">
+                                                                Average Time In
+                                                            </p>
+                                                            <p className="text-sm font-medium">
+                                                                {employee.avg_time_in ||
+                                                                    "N/A"}
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-xs text-gray-500">
+                                                                Average Time Out
+                                                            </p>
+                                                            <p className="text-sm font-medium">
+                                                                {employee.avg_time_out ||
+                                                                    "N/A"}
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-xs text-gray-500">
+                                                                Average
+                                                                Hours/Day
+                                                            </p>
+                                                            <p className="text-sm font-medium">
+                                                                {employee.avg_hours ||
+                                                                    "N/A"}
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-xs text-gray-500">
+                                                                Total Hours This
+                                                                Month
+                                                            </p>
+                                                            <p className="text-sm font-medium">
+                                                                {employee.total_hours ||
+                                                                    "0 minutes"}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ),
+                                        )
+                                    ) : (
+                                        <div className="text-center py-8 text-gray-500">
+                                            No employees found.
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Desktop View */}
+                            <div className="hidden md:block">
+                                <div className="max-h-[500px] overflow-y-auto">
+                                    <table className="w-full">
+                                        <thead className="bg-gray-50 sticky top-0">
+                                            <tr>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    User ID
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Name
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Average Time In
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Average Time Out
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Average Hours/Day
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Total Hours
+                                                </th>
                                             </tr>
-                                        )}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {filteredAllEmployeesData.length >
+                                            0 ? (
+                                                filteredAllEmployeesData.map(
+                                                    (employee) => (
+                                                        <tr
+                                                            key={
+                                                                employee.user_id
+                                                            }
+                                                            className="hover:bg-gray-50 cursor-pointer"
+                                                            onClick={() =>
+                                                                openModal(
+                                                                    employee,
+                                                                )
+                                                            }
+                                                        >
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                                {
+                                                                    employee.user_id
+                                                                }
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                                {employee.name}
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                                {employee.avg_time_in ||
+                                                                    "N/A"}
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                                {employee.avg_time_out ||
+                                                                    "N/A"}
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                                {employee.avg_hours ||
+                                                                    "N/A"}
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                                {employee.total_hours ||
+                                                                    "0 minutes"}
+                                                            </td>
+                                                        </tr>
+                                                    ),
+                                                )
+                                            ) : (
+                                                <tr>
+                                                    <td
+                                                        colSpan="6"
+                                                        className="px-6 py-4 text-sm text-center text-gray-500"
+                                                    >
+                                                        No employees found.
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>

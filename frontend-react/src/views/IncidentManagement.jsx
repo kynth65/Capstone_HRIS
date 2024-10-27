@@ -186,118 +186,288 @@ const IncidentManagement = () => {
         }
     };
     const renderIncidentTable = (incidents) => (
-        <table className="employee-table min-w-full border-collapse w-full">
-            <thead className="bg-gray-100 text-black sticky top-0 z-1">
-                <tr>
-                    <th className="p-2 hidden md:table-cell">Name</th>
-                    <th className="p-2">Title</th>
-                    <th className="p-2 hidden md:table-cell">Description</th>
-                    <th className="p-2 hidden md:table-cell">Severity</th>
-                    <th className="p-2 hidden lg:table-cell">
-                        Reported Employees
-                    </th>
-                    <th className="p-2">Response</th>
-                    <th className="p-2">Actions</th>
-                </tr>
-            </thead>
-            <tbody className="text-black">
-                {incidents && incidents.length > 0 ? (
-                    incidents.map((incident) => (
-                        <tr key={incident.id} className="text-center">
-                            <td className="p-2 hidden md:table-cell">
-                                {incident.name}
-                            </td>
-                            <td className="p-2">{incident.title}</td>
-                            <td className="p-2 max-w-xs truncate overflow-hidden hidden md:table-cell">
-                                <span title={incident.description}>
-                                    {incident.description}
-                                </span>
-                            </td>
-
-                            <td className="p-2 hidden md:table-cell">
-                                {incident.severity}
-                            </td>
-
-                            <td className="p-2 hidden lg:table-cell">
-                                {incident.reported_employee_ids &&
-                                incident.reported_employee_ids.length > 0
-                                    ? incident.reported_employee_ids.map(
-                                          (employeeId, index) => (
-                                              <span key={employeeId}>
-                                                  {
-                                                      employees.find(
-                                                          (e) =>
-                                                              e.user_id ===
-                                                              employeeId,
-                                                      )?.name
-                                                  }
-                                                  {index <
-                                                  incident.reported_employee_ids
-                                                      .length -
-                                                      1
-                                                      ? ", "
-                                                      : ""}
-                                              </span>
-                                          ),
-                                      )
-                                    : "None"}
-                            </td>
-                            <td className="p-2">
-                                {incident.compliance_reports_count > 0 ? (
-                                    <span className="text-green-600 font-bold">
-                                        {incident.compliance_reports_count}
-                                    </span>
-                                ) : (
-                                    <span className="text-red-600">
-                                        No response
-                                    </span>
-                                )}
-                            </td>
-                            <td>
-                                <div className="flex justify-center items-center space-x-2 ">
-                                    {incident.status === "investigating" &&
-                                        incident.reported_employee_ids.length >
-                                            0 && (
-                                            <button
-                                                onClick={() =>
-                                                    handleSendComplianceClick(
-                                                        incident,
-                                                    )
-                                                }
-                                                className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                                            >
-                                                <BsSendExclamationFill
-                                                    size={20}
-                                                />
-                                            </button>
-                                        )}
-                                    <button
-                                        onClick={() => handleView(incident)}
-                                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                                    >
-                                        <IoMdEye size={20} />
-                                    </button>
-                                    <button
-                                        onClick={() =>
-                                            handleDeleteClick(incident)
-                                        }
-                                        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                                    >
-                                        <MdDelete size={20} />
-                                    </button>
+        <div className="md:bg-white md:shadow-lg rounded-lg mr-3 text-black ml-[-15px]   sm:ml-0">
+            {/* Mobile View */}
+            <div className="md:hidden">
+                <div className="max-h-[500px] overflow-y-auto p-4">
+                    {incidents && incidents.length > 0 ? (
+                        incidents.map((incident) => (
+                            <div
+                                key={incident.id}
+                                className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
+                            >
+                                <div className="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h3 className="font-medium text-black">
+                                            {incident.title}
+                                        </h3>
+                                        <p className="text-sm text-gray-600">
+                                            {incident.name}
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        {incident.status === "investigating" &&
+                                            incident.reported_employee_ids
+                                                .length > 0 && (
+                                                <button
+                                                    onClick={() =>
+                                                        handleSendComplianceClick(
+                                                            incident,
+                                                        )
+                                                    }
+                                                    className="p-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600"
+                                                >
+                                                    <BsSendExclamationFill
+                                                        size={18}
+                                                    />
+                                                </button>
+                                            )}
+                                        <button
+                                            onClick={() => handleView(incident)}
+                                            className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
+                                        >
+                                            <IoMdEye size={18} />
+                                        </button>
+                                        <button
+                                            onClick={() =>
+                                                handleDeleteClick(incident)
+                                            }
+                                            className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600"
+                                        >
+                                            <MdDelete size={18} />
+                                        </button>
+                                    </div>
                                 </div>
-                            </td>
-                        </tr>
-                    ))
-                ) : (
-                    <tr>
-                        <td colSpan="9" className="text-center py-4">
+
+                                <div className="space-y-2">
+                                    <div>
+                                        <p className="text-xs text-gray-500">
+                                            Description
+                                        </p>
+                                        <p className="text-sm">
+                                            {incident.description}
+                                        </p>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <div>
+                                            <p className="text-xs text-gray-500">
+                                                Severity
+                                            </p>
+                                            <p className="text-sm font-medium">
+                                                {incident.severity}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-500">
+                                                Response
+                                            </p>
+                                            {incident.compliance_reports_count >
+                                            0 ? (
+                                                <p className="text-green-600 font-bold text-sm">
+                                                    {
+                                                        incident.compliance_reports_count
+                                                    }
+                                                </p>
+                                            ) : (
+                                                <p className="text-red-600 text-sm">
+                                                    No response
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-500">
+                                            Reported Employees
+                                        </p>
+                                        <p className="text-sm">
+                                            {incident.reported_employee_ids &&
+                                            incident.reported_employee_ids
+                                                .length > 0
+                                                ? incident.reported_employee_ids.map(
+                                                      (employeeId, index) => (
+                                                          <span
+                                                              key={employeeId}
+                                                          >
+                                                              {
+                                                                  employees.find(
+                                                                      (e) =>
+                                                                          e.user_id ===
+                                                                          employeeId,
+                                                                  )?.name
+                                                              }
+                                                              {index <
+                                                              incident
+                                                                  .reported_employee_ids
+                                                                  .length -
+                                                                  1
+                                                                  ? ", "
+                                                                  : ""}
+                                                          </span>
+                                                      ),
+                                                  )
+                                                : "None"}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="text-center py-8 text-gray-500">
                             No incidents currently
-                        </td>
-                    </tr>
-                )}
-            </tbody>
-        </table>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Desktop View */}
+            <div className="hidden md:block">
+                <div className="max-h-[500px] overflow-y-auto">
+                    <table className="w-full">
+                        <thead className="bg-gray-50 sticky top-0">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Name
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Title
+                                </th>
+                                <th className="hidden px-6 py-3 text-left text-xs font-medium  text-gray-500 uppercase tracking-wider">
+                                    Description
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Severity
+                                </th>
+                                <th className="hidden lg:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Reported Employees
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Response
+                                </th>
+                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {incidents && incidents.length > 0 ? (
+                                incidents.map((incident) => (
+                                    <tr
+                                        key={incident.id}
+                                        className="hover:bg-gray-50"
+                                    >
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {incident.name}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {incident.title}
+                                        </td>
+                                        <td className="hidden px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                                            <span title={incident.description}>
+                                                {incident.description}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {incident.severity}
+                                        </td>
+                                        <td className="hidden lg:table-cell px-6 py-4 text-sm text-gray-900">
+                                            {incident.reported_employee_ids &&
+                                            incident.reported_employee_ids
+                                                .length > 0
+                                                ? incident.reported_employee_ids.map(
+                                                      (employeeId, index) => (
+                                                          <span
+                                                              key={employeeId}
+                                                          >
+                                                              {
+                                                                  employees.find(
+                                                                      (e) =>
+                                                                          e.user_id ===
+                                                                          employeeId,
+                                                                  )?.name
+                                                              }
+                                                              {index <
+                                                              incident
+                                                                  .reported_employee_ids
+                                                                  .length -
+                                                                  1
+                                                                  ? ", "
+                                                                  : ""}
+                                                          </span>
+                                                      ),
+                                                  )
+                                                : "None"}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                            {incident.compliance_reports_count >
+                                            0 ? (
+                                                <span className="text-green-600 font-bold">
+                                                    {
+                                                        incident.compliance_reports_count
+                                                    }
+                                                </span>
+                                            ) : (
+                                                <span className="text-red-600">
+                                                    No response
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                            <div className="flex justify-center items-center space-x-2">
+                                                {incident.status ===
+                                                    "investigating" &&
+                                                    incident
+                                                        .reported_employee_ids
+                                                        .length > 0 && (
+                                                        <button
+                                                            onClick={() =>
+                                                                handleSendComplianceClick(
+                                                                    incident,
+                                                                )
+                                                            }
+                                                            className="p-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600"
+                                                        >
+                                                            <BsSendExclamationFill
+                                                                size={18}
+                                                            />
+                                                        </button>
+                                                    )}
+                                                <button
+                                                    onClick={() =>
+                                                        handleView(incident)
+                                                    }
+                                                    className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
+                                                >
+                                                    <IoMdEye size={18} />
+                                                </button>
+                                                <button
+                                                    onClick={() =>
+                                                        handleDeleteClick(
+                                                            incident,
+                                                        )
+                                                    }
+                                                    className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600"
+                                                >
+                                                    <MdDelete size={18} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td
+                                        colSpan="7"
+                                        className="px-6 py-4 text-sm text-center text-gray-500"
+                                    >
+                                        No incidents currently
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     );
 
     const formatDate = (dateString) => {
@@ -312,7 +482,7 @@ const IncidentManagement = () => {
     return (
         <>
             {" "}
-            <nav className="grid grid-cols-3 space-x-4 mb-4">
+            <nav className="grid grid-cols-3 ">
                 <button
                     className={`navButton ${
                         activeStatus === "pending" ? "active" : ""
@@ -340,7 +510,7 @@ const IncidentManagement = () => {
                     Resolved
                 </button>
             </nav>
-            <div className="pt-5 md:p-6 bg-white rounded-xl shadow-md mx-auto">
+            <div className="pt-5 md:p-6 md:bg-white md:rounded-xl md:shadow-md mx-auto">
                 {successMessage && (
                     <p className="text-green-600 mb-4">{successMessage}</p>
                 )}
@@ -360,7 +530,7 @@ const IncidentManagement = () => {
                 {viewMode && selectedIncident && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                         <div className="bg-white p-6 rounded-xl py-12 shadow-md w-full max-w-4xl text-black overflow-y-auto max-h-[90vh]">
-                            <h3 className="text-xl font-semibold mb-4 text-center">
+                            <h3 className="text-xl font-semibold mb-4 text-center text-black">
                                 Incident Details
                             </h3>
                             <div className="space-y-2 mb-4 text-base text-start">
