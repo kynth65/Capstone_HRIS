@@ -186,7 +186,7 @@ const IncidentManagement = () => {
         }
     };
     const renderIncidentTable = (incidents) => (
-        <div className="md:bg-white md:shadow-lg rounded-lg mr-3 text-black ml-[-15px]   sm:ml-0">
+        <div className="md:bg-white md:shadow-lg rounded-lg mr-3 text-black sm:ml-0">
             {/* Mobile View */}
             <div className="md:hidden">
                 <div className="max-h-[500px] overflow-y-auto p-4">

@@ -379,7 +379,7 @@ const Dashboard = () => {
                     </div>
 
                     <div className="grid grid-cols-1">
-                        <div className="flex flex-col md:col-span-3 bg-white text-black rounded-xl">
+                        <div className="flex flex-col md:col-span-3 bg-white text-black rounded-xl mr-2">
                             <Event />
                         </div>
                         <div className="flex space-x-8 mt-4 mr-2 sm:mr-0 justify-center items-center  xl:h-80 bg-white text-black rounded-lg">

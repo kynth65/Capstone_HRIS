@@ -74,7 +74,7 @@ const HRTagSuggestion = () => {
 
     return (
         <>
-            <div className="mr-6">
+            <div className="">
                 <div className="bg-white p-6 rounded-lg text-black">
                     <h2 className="text-2xl font-bold mb-4">Suggest New Tag</h2>
                     <div className="flex flex-col md:grid md:grid-cols-2">

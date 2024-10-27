@@ -825,7 +825,7 @@ function CertificateManagement() {
             </div>
 
             {activeButton === "employeeList" && (
-                <div className="w-full max-w-7xl mx-auto px-4 animated fadeInDown ml-[-14px]   sm:ml-0 text-black">
+                <div className="w-full max-w-7xl mx-auto px-4 animated fadeInDown   sm:ml-0 text-black">
                     {/* Filters and Controls Section */}
                     <div className="bg-white rounded-lg p-4 mb-4 shadow-sm">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -986,7 +986,7 @@ function CertificateManagement() {
             {activeButton === "employeeCertificate" && (
                 <div className="w-full max-w-7xl mx-auto px-4 animated fadeInDown">
                     {/* Filters and Controls Section */}
-                    <div className="bg-white rounded-lg p-4 mb-4 shadow-sm ml-[-26px] sm:ml-0 text-black">
+                    <div className="bg-white rounded-lg p-4 mb-4 shadow-sm sm:ml-0 text-black">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="flex flex-col">
                                 <label className="text-sm text-gray-600 mb-1">
@@ -1038,7 +1038,7 @@ function CertificateManagement() {
                         </div>
                     </div>
 
-                    <div className="bg-white shadow-lg rounded-lg ml-[-26px] sm:ml-0 text-black">
+                    <div className="bg-white shadow-lg rounded-lg sm:ml-0 text-black">
                         {/* Mobile View */}
                         <div className="md:hidden">
                             <div className="max-h-[500px] overflow-y-auto p-4">
@@ -3194,7 +3194,7 @@ function CertificateManagement() {
             )}
 
             {activeButton === "certificateRequests" && (
-                <div className="w-full max-w-7xl mx-auto px-4 animated fadeInDown ml-[-12px] sm:ml-0">
+                <div className="w-full max-w-7xl mx-auto px-4 animated fadeInDown sm:ml-0">
                     <div className="bg-white shadow-lg rounded-lg text-black ">
                         {/* Mobile View */}
                         <div className="md:hidden">

@@ -827,7 +827,7 @@ function User() {
                                 )}
 
                                 {/* Action Buttons */}
-                                <div className="sticky bottom-0 bg-white p-4 border-t flex flex-col sm:flex-row gap-3 justify-end">
+                                <div className="sticky bottom-[-15px] bg-white p-4 border-t flex flex-col sm:flex-row gap-3 justify-end">
                                     <button
                                         type="button"
                                         onClick={handleCloseModal}
