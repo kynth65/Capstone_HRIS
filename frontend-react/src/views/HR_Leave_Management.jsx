@@ -229,7 +229,7 @@ const HR_Leave_Management = () => {
 
             <div className="">
                 {activeButton === "leaveFormList" && (
-                    <div className="flex bg-white rounded-lg sm:ml-0 flex-col w-full px-4">
+                    <div className="flex bg-white rounded-lg sm:ml-0 flex-col w-full pb-4 px-4">
                         {/* Messages */}
                         <div className="mb-4">
                             {successMessage && (
@@ -666,7 +666,7 @@ const HR_Leave_Management = () => {
 
                 {activeButton === "templateProviderAI" && (
                     <>
-                        <div className=" md:mr-0">
+                        <div className="md:mr-0">
                             <div className="bg-white p-6 rounded-xl flex flex-col items-center">
                                 <h2 className="titles">
                                     AI Letter Template Generator
