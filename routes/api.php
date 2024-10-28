@@ -225,6 +225,16 @@ Route::get('/archived-certificates', function () {
     ]);
 });
 
+Route::get('/rejected-certificates', function () {
+    $certificates = DB::table('certificate_update_requests')
+        ->where('status', 'rejected')
+        ->get();
+
+    return response()->json([
+        'count' => $certificates->count(),
+        'data' => $certificates
+    ]);
+});
 
 //Notifications for Human Resource Manager
 Route::middleware('auth:sanctum')->group(function () {

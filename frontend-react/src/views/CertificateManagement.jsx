@@ -25,6 +25,10 @@ function CertificateManagement() {
     const [certificateRequests, setCertificateRequests] = useState([]);
     const [isRemarkModalOpen, setIsRemarkModalOpen] = useState(false);
     const [selectedRequestId, setSelectedRequestId] = useState(null);
+    const [isRejectedModalOpen, setIsRejectedModalOpen] = useState(false);
+    const [rejectedDocuments, setRejectedDocuments] = useState([]);
+    const [isRemarksModalOpen, setIsRemarksModalOpen] = useState(false);
+    const [selectedRemarks, setSelectedRemarks] = useState(null);
     const [remark, setRemark] = useState("");
     const [newCertificate, setNewCertificate] = useState({
         user_id: "",
@@ -52,7 +56,11 @@ function CertificateManagement() {
     const [newIssuedDate, setNewIssuedDate] = useState("");
     const [newExpiringDate, setNewExpiringDate] = useState("");
     const [newCategory, setNewCategory] = useState("");
-    const [newType, setNewType] = useState("expirable"); // Default to expirable
+    const [newType, setNewType] = useState("expirable"); // Default to expirable\
+    const [filteredRequests, setFilteredRequests] = useState([]);
+    const [requestSearchQuery, setRequestSearchQuery] = useState("");
+    const [selectedRequestDepartment, setSelectedRequestDepartment] =
+        useState("");
     const [newCertificateName, setNewCertificateName] = useState(
         selectedRequest?.certificate_name || "",
     );
@@ -204,9 +212,19 @@ function CertificateManagement() {
                 { remarks: remark },
             );
             alert("Certificate request denied successfully.");
+
+            // Update the local state of certificateRequests to reflect the change
+            setCertificateRequests((prev) =>
+                prev.map((req) =>
+                    req.id === selectedRequestId
+                        ? { ...req, status: "rejected", remarks: remark }
+                        : req,
+                ),
+            );
+
             setIsRemarkModalOpen(false);
             setRemark("");
-            fetchCertificateRequests();
+            fetchCertificateRequests(); // Refresh the list
         } catch (error) {
             console.error("Error denying certificate request:", error);
             alert("Failed to deny certificate request.");
@@ -760,6 +778,147 @@ function CertificateManagement() {
         setCertificateToDelete(certificate);
         setIsDeleteConfirmModalOpen(true);
     };
+
+    // functions for certificate requests filtering
+    const handleRequestDepartmentChange = (event) => {
+        const department = event.target.value;
+        setSelectedRequestDepartment(department);
+
+        let filtered = [...certificateRequests];
+
+        if (department !== "") {
+            filtered = filtered.filter((request) => {
+                // Find the employee matching the request's user_id
+                const employee = employees.find(
+                    (emp) => emp.user_id === request.user_id,
+                );
+                return employee && employee.department === department;
+            });
+        }
+
+        // Apply search filter if exists
+        if (requestSearchQuery) {
+            filtered = filtered.filter(
+                (request) =>
+                    request.employee_name
+                        .toLowerCase()
+                        .includes(requestSearchQuery.toLowerCase()) ||
+                    request.certificate_name
+                        .toLowerCase()
+                        .includes(requestSearchQuery.toLowerCase()) ||
+                    request.user_id?.toString().includes(requestSearchQuery) ||
+                    new Date(request.issued_date)
+                        .toLocaleDateString()
+                        .includes(requestSearchQuery),
+            );
+        }
+
+        setFilteredRequests(filtered);
+    };
+
+    const handleRequestSearchChange = (event) => {
+        const query = event.target.value.toLowerCase();
+        setRequestSearchQuery(query);
+
+        let filtered = [...certificateRequests];
+
+        // Apply department filter if selected
+        if (selectedRequestDepartment) {
+            filtered = filtered.filter((request) => {
+                const employee = employees.find(
+                    (emp) => emp.user_id === request.user_id,
+                );
+                return (
+                    employee &&
+                    employee.department === selectedRequestDepartment
+                );
+            });
+        }
+
+        // Apply search filter
+        if (query) {
+            filtered = filtered.filter(
+                (request) =>
+                    request.employee_name.toLowerCase().includes(query) ||
+                    request.certificate_name.toLowerCase().includes(query) ||
+                    request.user_id?.toString().includes(query) ||
+                    new Date(request.issued_date)
+                        .toLocaleDateString()
+                        .includes(query),
+            );
+        }
+
+        setFilteredRequests(filtered);
+    };
+
+    // initialize filteredRequests when certificateRequests changes
+    useEffect(() => {
+        if (activeButton === "certificateRequests") {
+            fetchCertificateRequests();
+        }
+    }, [activeButton]);
+
+    // When certificate requests are fetched, initialize filtered requests
+    useEffect(() => {
+        if (certificateRequests.length > 0) {
+            const requestsWithDepartment = certificateRequests.map(
+                (request) => {
+                    const employee = employees.find(
+                        (emp) => emp.user_id === request.user_id,
+                    );
+                    return {
+                        ...request,
+                        department: employee?.department || "Unknown",
+                    };
+                },
+            );
+            setFilteredRequests(requestsWithDepartment);
+            setSelectedRequestDepartment("");
+            setRequestSearchQuery("");
+        }
+    }, [certificateRequests, employees]);
+
+    useEffect(() => {
+        if (certificateRequests.length > 0 && selectedRequestDepartment) {
+            handleRequestDepartmentChange({
+                target: { value: selectedRequestDepartment },
+            });
+        }
+    }, [selectedRequestDepartment, certificateRequests]);
+
+    const fetchRejectedDocuments = () => {
+        // Filter only the rejected requests from certificateRequests
+        const rejected = certificateRequests.filter(
+            (request) =>
+                request.status && request.status.toLowerCase() === "rejected",
+        );
+
+        console.log("Rejected documents:", rejected); // Debug log to check
+        setRejectedDocuments(rejected);
+    };
+
+    // Trigger fetching rejected documents when the modal is opened
+    useEffect(() => {
+        if (isRejectedModalOpen) {
+            fetchRejectedDocuments(); // Filter rejected documents when modal opens
+        }
+    }, [isRejectedModalOpen, certificateRequests]); // Ensure it runs when modal is opened and requests change
+
+    const handleViewRemarks = (doc) => {
+        setSelectedRemarks(doc.remarks);
+        setIsRemarksModalOpen(true);
+    };
+
+    useEffect(() => {
+        if (isRejectedModalOpen) {
+            console.log("Certificate Requests:", certificateRequests); // Debug log
+            const rejected = certificateRequests.filter(
+                (request) => request.status.toLowerCase() === "rejected",
+            );
+            console.log("Filtered Rejected:", rejected); // Debug log
+            setRejectedDocuments(rejected);
+        }
+    }, [isRejectedModalOpen, certificateRequests]);
 
     const handlePermanentDelete = async () => {
         if (!certificateToDelete) return;
@@ -3193,263 +3352,279 @@ function CertificateManagement() {
             )}
 
             {activeButton === "certificateRequests" && (
-                <div className="w-full max-w-7xl mx-auto px-4 animated fadeInDown sm:ml-0">
-                    <div className="bg-white shadow-lg rounded-lg text-black ">
-                        {/* Mobile View */}
-                        <div className="md:hidden">
-                            <div className="max-h-[500px] overflow-y-auto p-4 text-black ">
-                                {certificateRequests.length > 0 ? (
-                                    certificateRequests.map((request) => (
-                                        <div
-                                            key={request.id}
-                                            className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
-                                        >
-                                            <div className="flex justify-between items-start mb-3">
-                                                <div>
-                                                    <h3 className="font-medium text-black">
-                                                        {request.employee_name}
-                                                    </h3>
-                                                    <p className="text-sm text-gray-600">
-                                                        {
-                                                            request.certificate_name
-                                                        }
-                                                    </p>
-                                                </div>
-                                                <span className="px-2 py-1 text-sm font-medium bg-gray-200 rounded">
-                                                    {request.status}
-                                                </span>
-                                            </div>
+                <div className="w-full max-w-5xl mx-auto px-4 animated fadeInDown sm:ml-0 text-black">
+                    {/* Filters Section - Shown in both Desktop and Mobile */}
+                    <div className="bg-white rounded-lg p-4 mb-4 shadow-sm">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                            <div className="flex flex-col">
+                                <label className="text-sm text-gray-600 mb-1">
+                                    Department
+                                </label>
+                                <select
+                                    value={selectedRequestDepartment} // Changed from selectedDepartment
+                                    onChange={handleRequestDepartmentChange}
+                                    className="w-full p-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                >
+                                    <option value="">Select Department</option>
+                                    {departments.map((dept) => (
+                                        <option key={dept} value={dept}>
+                                            {dept}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
-                                            <div className="grid grid-cols-2 gap-3 mb-4">
-                                                <div>
-                                                    <p className="text-xs text-gray-500">
-                                                        Type
-                                                    </p>
-                                                    <p className="text-sm font-medium">
-                                                        {request.type}
-                                                    </p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs text-gray-500">
-                                                        Category
-                                                    </p>
-                                                    <p className="text-sm font-medium">
-                                                        {request.category}
-                                                    </p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs text-gray-500">
-                                                        Date Issued
-                                                    </p>
-                                                    <p className="text-sm">
-                                                        {new Date(
-                                                            request.issued_date,
-                                                        ).toLocaleDateString(
-                                                            "en-US",
-                                                        )}
-                                                    </p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs text-gray-500">
-                                                        Expiring Date
-                                                    </p>
-                                                    <p className="text-sm">
-                                                        {request.type ===
-                                                        "non-expirable"
-                                                            ? "N/A"
-                                                            : request.expiring_date
-                                                              ? new Date(
-                                                                    request.expiring_date,
-                                                                ).toLocaleDateString(
-                                                                    "en-US",
-                                                                )
-                                                              : ""}
-                                                    </p>
-                                                </div>
-                                            </div>
+                            <div className="flex flex-col">
+                                <label className="text-sm text-gray-600 mb-1">
+                                    Search
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="Search certificate, name, ID, or date"
+                                    value={requestSearchQuery} // Changed from searchQuery
+                                    onChange={handleRequestSearchChange}
+                                    className="w-full p-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                />
+                            </div>
 
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={() =>
-                                                        handleApprove(
-                                                            request.id,
-                                                        )
-                                                    }
-                                                    className="flex-1 py-2 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-                                                >
-                                                    Approve
-                                                </button>
-                                                <button
-                                                    onClick={() =>
-                                                        handleOpenRemarkModal(
-                                                            request.id,
-                                                        )
-                                                    }
-                                                    className="flex-1 py-2 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                                                >
-                                                    Deny
-                                                </button>
-                                                {request.certificate_file_path && (
-                                                    <button
-                                                        onClick={() =>
-                                                            handleOpenPdf(
-                                                                request.certificate_file_path,
-                                                            )
-                                                        }
-                                                        className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                                                    >
-                                                        <RiFileDownloadFill
-                                                            size={20}
-                                                        />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="text-center py-8 text-gray-500">
-                                        No document requests found.
-                                    </div>
-                                )}
+                            <div className="flex flex-col">
+                                <label className="text-sm text-gray-600 mb-1">
+                                    &nbsp;
+                                </label>
+                                <button
+                                    onClick={() => setIsRejectedModalOpen(true)}
+                                    className="w-full p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors relative"
+                                >
+                                    Rejected Documents
+                                    {rejectedDocuments.length > 0 && (
+                                        <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                            {rejectedDocuments.length}
+                                        </span>
+                                    )}
+                                </button>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Desktop View */}
-                        <div className="hidden md:block">
-                            <div className="max-h-[500px] overflow-y-auto">
-                                <table className="w-full">
-                                    <thead className="bg-gray-50 sticky top-0">
-                                        <tr>
-                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Employee Name
-                                            </th>
-                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Document Name
-                                            </th>
-                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Type
-                                            </th>
-                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Category
-                                            </th>
-                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Date Issued
-                                            </th>
-                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Expiring Date
-                                            </th>
-                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Status
-                                            </th>
-                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Actions
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
-                                        {certificateRequests.length > 0 ? (
-                                            certificateRequests.map(
-                                                (request) => (
-                                                    <tr
-                                                        key={request.id}
-                                                        className="hover:bg-gray-50"
-                                                    >
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                            {
-                                                                request.employee_name
-                                                            }
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                            {
-                                                                request.certificate_name
-                                                            }
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                            {request.type}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                            {request.category}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                            {new Date(
-                                                                request.issued_date,
-                                                            ).toLocaleDateString(
-                                                                "en-US",
-                                                            )}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                            {request.type ===
-                                                            "non-expirable"
-                                                                ? "N/A"
-                                                                : request.expiring_date
-                                                                  ? new Date(
-                                                                        request.expiring_date,
-                                                                    ).toLocaleDateString(
-                                                                        "en-US",
-                                                                    )
-                                                                  : ""}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            <span className="px-2 py-1 text-sm font-medium bg-gray-200 rounded">
-                                                                {request.status}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                            <div className="flex justify-center items-center space-x-2">
-                                                                <button
-                                                                    onClick={() =>
-                                                                        handleApprove(
-                                                                            request.id,
-                                                                        )
-                                                                    }
-                                                                    className="px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-                                                                >
-                                                                    Approve
-                                                                </button>
-                                                                <button
-                                                                    onClick={() =>
-                                                                        handleOpenRemarkModal(
-                                                                            request.id,
-                                                                        )
-                                                                    }
-                                                                    className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-                                                                >
-                                                                    Deny
-                                                                </button>
-                                                                {request.certificate_file_path && (
-                                                                    <button
-                                                                        onClick={() =>
-                                                                            handleOpenPdf(
-                                                                                request.certificate_file_path,
-                                                                            )
-                                                                        }
-                                                                        className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                                                                    >
-                                                                        <RiFileDownloadFill
-                                                                            size={
-                                                                                18
-                                                                            }
-                                                                        />
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ),
-                                            )
-                                        ) : (
-                                            <tr>
-                                                <td
-                                                    colSpan="8"
-                                                    className="px-6 py-4 text-sm text-center text-gray-500"
+                    {/* Mobile View */}
+                    <div className="md:hidden">
+                        <div className="space-y-4">
+                            {filteredRequests.length > 0 ? (
+                                filteredRequests.map((request) => (
+                                    <div
+                                        key={request.id}
+                                        className="bg-white rounded-lg shadow-sm p-4"
+                                    >
+                                        <div className="flex justify-between items-start mb-3">
+                                            <div>
+                                                <h3 className="text-base font-medium">
+                                                    {request.employee_name}
+                                                </h3>
+                                                <p className="text-sm text-gray-600">
+                                                    ID: {request.id}
+                                                </p>
+                                            </div>
+                                            <span className="px-2 py-1 text-sm bg-gray-200 rounded-full">
+                                                {request.status}
+                                            </span>
+                                        </div>
+
+                                        <div className="mb-3">
+                                            <p className="text-sm font-medium">
+                                                Document:{" "}
+                                                {request.certificate_name}
+                                            </p>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
+                                            <div>
+                                                <p className="text-gray-600">
+                                                    Issued Date
+                                                </p>
+                                                <p>
+                                                    {new Date(
+                                                        request.issued_date,
+                                                    ).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-gray-600">
+                                                    Expiring Date
+                                                </p>
+                                                <p>
+                                                    {request.type ===
+                                                    "non-expirable"
+                                                        ? "N/A"
+                                                        : request.expiring_date
+                                                          ? new Date(
+                                                                request.expiring_date,
+                                                            ).toLocaleDateString()
+                                                          : ""}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() =>
+                                                    handleApprove(request.id)
+                                                }
+                                                className="flex-1 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                                            >
+                                                Approve
+                                            </button>
+                                            <button
+                                                onClick={() =>
+                                                    handleOpenRemarkModal(
+                                                        request.id,
+                                                    )
+                                                }
+                                                className="flex-1 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                                            >
+                                                Deny
+                                            </button>
+                                            {request.certificate_file_path && (
+                                                <button
+                                                    onClick={() =>
+                                                        handleOpenPdf(
+                                                            request.certificate_file_path,
+                                                        )
+                                                    }
+                                                    className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
                                                 >
-                                                    No document requests found.
+                                                    <RiFileDownloadFill
+                                                        size={20}
+                                                    />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="bg-white rounded-lg p-8 text-center text-gray-500">
+                                    No document requests found
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Desktop View */}
+                    <div className="hidden md:block bg-white rounded-lg shadow-sm">
+                        <div className="max-h-[600px] overflow-y-auto">
+                            <table className="w-full">
+                                <thead className="bg-gray-50 sticky top-0">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            User ID
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Employee Name
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Document Name
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Date Issued
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Expiring Date
+                                        </th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {filteredRequests.length > 0 ? (
+                                        filteredRequests.map((request) => (
+                                            <tr
+                                                key={request.id}
+                                                className="hover:bg-gray-50"
+                                            >
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                    {request.user_id}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                    {request.employee_name}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                    {request.certificate_name}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className="px-2 py-1 text-sm bg-gray-200 rounded-full">
+                                                        {request.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                    {new Date(
+                                                        request.issued_date,
+                                                    ).toLocaleDateString()}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                    {request.type ===
+                                                    "non-expirable"
+                                                        ? "N/A"
+                                                        : request.expiring_date
+                                                          ? new Date(
+                                                                request.expiring_date,
+                                                            ).toLocaleDateString()
+                                                          : ""}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                                    <div className="flex justify-center items-center space-x-2">
+                                                        <button
+                                                            onClick={() =>
+                                                                handleApprove(
+                                                                    request.id,
+                                                                )
+                                                            }
+                                                            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                                                        >
+                                                            Approve
+                                                        </button>
+                                                        <button
+                                                            onClick={() =>
+                                                                handleOpenRemarkModal(
+                                                                    request.id,
+                                                                )
+                                                            }
+                                                            className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                                                        >
+                                                            Deny
+                                                        </button>
+                                                        {request.certificate_file_path && (
+                                                            <button
+                                                                onClick={() =>
+                                                                    handleOpenPdf(
+                                                                        request.certificate_file_path,
+                                                                    )
+                                                                }
+                                                                className="p-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                                            >
+                                                                <RiFileDownloadFill
+                                                                    size={18}
+                                                                />
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </td>
                                             </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td
+                                                colSpan="7"
+                                                className="px-6 py-4 text-center text-gray-500"
+                                            >
+                                                No document requests found
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -3493,12 +3668,12 @@ function CertificateManagement() {
                     </div>
 
                     {/* Desktop View */}
-                    <div className="hidden md:block p-6">
+                    <div className="hidden md:block w-2/4 p-6 rounded-lg bg-white">
                         <h2 className="text-xl font-bold mb-4 text-gray-900">
                             Enter Remark for Denial
                         </h2>
                         <textarea
-                            className="w-full p-3 border border-gray-200 rounded-lg mb-6 text-gray-900 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                            className="w-full h-60 p-3 border border-gray-200 rounded-lg mb-6 text-gray-900 focus:ring-2 focus:ring-red-500 focus:border-transparent"
                             rows="4"
                             value={remark}
                             onChange={(e) => setRemark(e.target.value)}
@@ -3516,6 +3691,163 @@ function CertificateManagement() {
                                 onClick={() => setIsRemarkModalOpen(false)}
                             >
                                 Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isRejectedModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-semibold">
+                                Rejected Documents
+                            </h2>
+                            <button
+                                onClick={() => setIsRejectedModalOpen(false)}
+                                className="text-gray-500 hover:text-gray-700"
+                            >
+                                <svg
+                                    className="w-6 h-6"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M6 18L18 6M6 6l12 12"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Employee Name
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Document Name
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Date Requested
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {rejectedDocuments.length > 0 ? (
+                                        rejectedDocuments.map((doc) => (
+                                            <tr
+                                                key={doc.id}
+                                                className="hover:bg-gray-50"
+                                            >
+                                                <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">
+                                                    {doc.employee_name}
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">
+                                                    {doc.certificate_name}
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">
+                                                    {new Date(
+                                                        doc.issued_date,
+                                                    ).toLocaleDateString()}
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap">
+                                                    <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
+                                                        {doc.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap text-xs">
+                                                    <div className="flex space-x-2">
+                                                        <button
+                                                            onClick={() =>
+                                                                handleViewRemarks(
+                                                                    doc,
+                                                                )
+                                                            }
+                                                            className="p-1 px-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                                                        >
+                                                            View Remarks
+                                                        </button>
+                                                        {doc.certificate_file_path && (
+                                                            <button
+                                                                onClick={() =>
+                                                                    handleOpenPdf(
+                                                                        doc.certificate_file_path,
+                                                                    )
+                                                                }
+                                                                className="p-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                                            >
+                                                                View PDF
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td
+                                                colSpan="5"
+                                                className="px-4 py-2 text-center text-gray-500"
+                                            >
+                                                No rejected documents found.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isRemarksModalOpen && selectedRemarks && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-lg">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold">
+                                Rejection Remarks
+                            </h3>
+                            <button
+                                onClick={() => setIsRemarksModalOpen(false)}
+                                className="text-gray-500 hover:text-gray-700"
+                            >
+                                <svg
+                                    className="w-6 h-6"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M6 18L18 6M6 6l12 12"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                            <p className="text-gray-700">{selectedRemarks}</p>
+                        </div>
+                        <div className="mt-4 flex justify-end">
+                            <button
+                                onClick={() => setIsRemarksModalOpen(false)}
+                                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                            >
+                                Close
                             </button>
                         </div>
                     </div>

@@ -12,7 +12,7 @@ import { MdDelete, MdEdit, MdExpandMore, MdExpandLess } from "react-icons/md";
 import { jsPDF } from "jspdf";
 import HRTagSuggestion from "./HRTagSuggestion";
 import { riderQuestions } from "../views/questions/RiderQuestions";
-//import { accountingQuestions } from "../views/questions/AccountingQuestions";
+import { accountingQuestions } from "../views/questions/AccountingQuestions";
 import { anatomicalQuestions } from "../views/questions/AnatomicalQuestions";
 import { maintenanceQuestions } from "../views/questions/MaintenanceQuestions";
 import { medicalSecretaryQuestions } from "../views/questions/MedicalSecretaryQuestions";
