@@ -58,8 +58,8 @@ function Login() {
             "province",
             "postal_code",
             "country",
-            "personal_email",
-            "work_email",
+            // "personal_email",
+            // "work_email",
             "home_phone",
             "emergency_contact_name",
             "emergency_contact_relationship",
@@ -72,7 +72,7 @@ function Login() {
             "work_history",
             "health_insurance_plan",
             "completed_training_programs",
-            "profile",
+            // "profile",
             "notes",
         ];
 

@@ -152,8 +152,8 @@ class AuthController extends Controller
             'province' => 'required|string',
             'postal_code' => 'required|string',
             'country' => 'required|string',
-            'personal_email' => 'required|email',
-            'work_email' => 'required|email',
+            // 'personal_email' => 'required|email',
+            // 'work_email' => 'required|email',
             'home_phone' => 'required|string',
             'emergency_contact_name' => 'required|string',
             'emergency_contact_relationship' => 'required|string',
@@ -166,7 +166,7 @@ class AuthController extends Controller
             'work_history' => 'required|string',
             'health_insurance_plan' => 'required|string',
             'completed_training_programs' => 'required|string',
-            'profile' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:204800',
+            // 'profile' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:204800',
             'notes' => 'required|string',
         ]);
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Applicant;
+use App\Models\Google;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -236,12 +237,25 @@ class ApplicantController extends Controller
                 'question9_response' => 'nullable|string',
                 'question10_response' => 'nullable|string',
                 'resume_text' => 'required|string',
+                'google_id' => 'required|string',
             ]);
 
-            // Fetch hr_tags from open_positions table
+            // First, check if user has already applied for this position
+            $existingApplication = ResumeRanking::where('email', $validatedData['email'])
+                ->where('position_id', $validatedData['position_id'])
+                ->first();
+
+            if ($existingApplication) {
+                return response()->json([
+                    'error' => 'You have already submitted an application for this position.'
+                ], 400);
+            }
+
+            // Fetch position and hr_tags
             $position = Position::findOrFail($validatedData['position_id']);
             $hr_tags = $position->hr_tags;
 
+            // Handle file upload
             if ($request->hasFile('files')) {
                 $file = $request->file('files');
                 $filename = time() . '_' . $file->getClientOriginalName();
@@ -249,7 +263,7 @@ class ApplicantController extends Controller
                 $validatedData['file_path'] = $filePath;
             }
 
-            // Rank the resume using OpenAI
+            // OpenAI API call
             $apiKey = env('OPENAI_API_KEY');
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $apiKey,
@@ -281,20 +295,15 @@ class ApplicantController extends Controller
 
             $aiResponse = $response->json()['choices'][0]['message']['content'];
 
-            // Extract percentage, matched words, and comments
+            // Extract data from AI response
             preg_match('/Match Percentage: (\d+)%/', $aiResponse, $percentageMatch);
-            $percentage = $percentageMatch[1] ?? 0;
-
             preg_match('/Matched Words: (.+)/', $aiResponse, $matchedWordsMatch);
-            $matchedWords = $matchedWordsMatch[1] ?? '';
-
-            // Extract explanation (everything after "Explanation:")
             preg_match('/Explanation: (.+)/s', $aiResponse, $explanationMatch);
-            $comments = $explanationMatch[1] ?? '';
-            $comments = trim($comments);
 
-            // Prepend percentage to comments
-            $comments = "Match Percentage: {$percentage}%\n\n" . $comments;
+            $percentage = $percentageMatch[1] ?? 0;
+            $matchedWords = $matchedWordsMatch[1] ?? '';
+            $comments = $explanationMatch[1] ?? '';
+            $comments = trim("Match Percentage: {$percentage}%\n\n" . ($comments ?? ''));
 
             // Create ResumeRanking
             $resumeRanking = ResumeRanking::create([
@@ -321,7 +330,8 @@ class ApplicantController extends Controller
                 'question10_response' => $validatedData['question10_response'],
             ]);
 
-            $notificationData = [
+            // Create notification
+            Notification::create([
                 'type' => 'new_application',
                 'data' => [
                     'applicant_name' => $validatedData['name'],
@@ -329,16 +339,28 @@ class ApplicantController extends Controller
                     'position_id' => $validatedData['position_id'],
                     'resume_ranking_id' => $resumeRanking->id
                 ],
-                'notifiable_id' => 1, // Assuming admin/HR has user ID 1, adjust as needed
+                'notifiable_id' => 1,
                 'notifiable_type' => 'App\Models\User',
-                'user_id' => 1, // Recipient user ID (admin/HR)
+                'user_id' => 1,
                 'message' => "Applicant {$validatedData['name']} applied for the position: {$validatedData['position_name']}",
                 'isRead' => false,
-            ];
+            ]);
 
-            // Store the notification
-            Notification::create($notificationData);
+            // Update or create Google record
+            $google = Google::updateOrCreate(
+                ['google_id' => $validatedData['google_id']],
+                [
+                    'google_name' => $validatedData['name'],
+                    'google_email' => $validatedData['email'],
+                    'has_uploaded' => true
+                ]
+            );
 
+            // Force update has_uploaded if it's still false
+            if (!$google->has_uploaded) {
+                $google->has_uploaded = true;
+                $google->save();
+            }
 
             return response()->json([
                 'message' => 'Resume uploaded and ranked successfully',
@@ -349,27 +371,30 @@ class ApplicantController extends Controller
             return response()->json(['error' => 'Failed to upload and rank resume: ' . $e->getMessage()], 500);
         }
     }
-
-    // Update upload status for an applicant based on Google ID
-    public function updateUploadStatus(Request $request)
+    public function updateHasUploaded(Request $request)
     {
-        $validatedData = $request->validate([
-            'google_id' => 'required|string',
-            'google_name' => 'required|string',
-            'google_email' => 'required|email',
-            'has_uploaded' => 'required|boolean',
-        ]);
+        try {
+            $validatedData = $request->validate([
+                'google_id' => 'required|string'
+            ]);
 
-        $applicant = Applicant::updateOrCreate(
-            ['google_id' => $validatedData['google_id']],
-            [
-                'name' => $validatedData['google_name'],
-                'email' => $validatedData['google_email'],
-                'has_uploaded' => $validatedData['has_uploaded'],
-            ]
-        );
+            $applicant = Google::where('google_id', $validatedData['google_id'])->first();
 
-        return response()->json(['message' => 'Upload status updated successfully']);
+            if (!$applicant) {
+                return response()->json(['error' => 'Applicant not found'], 404);
+            }
+
+            $applicant->has_uploaded = true;
+            $applicant->save();
+
+            return response()->json([
+                'message' => 'Has uploaded status updated successfully',
+                'status' => $applicant->has_uploaded
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error updating has_uploaded status: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to update has_uploaded status'], 500);
+        }
     }
 
     public function getApplicantResponses($applicantId)

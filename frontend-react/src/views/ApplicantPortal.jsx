@@ -342,27 +342,14 @@ const ApplicantPortal = () => {
         try {
             // Extract text from PDF
             const text = await extractTextFromPdf(file);
-            console.log("Raw extracted text:", text);
-
             const cleanedText = text
                 .replace(/\s+/g, " ")
                 .replace(/\s*-\s*/g, "")
                 .replace(/\s*\|\s*/g, "|")
                 .trim();
-            console.log("Cleaned text:", cleanedText);
-
-            const firstLine = cleanedText.split("\n")[0];
-            console.log("First line for name extraction:", firstLine);
 
             const extractedName = extractName(cleanedText);
-            console.log("Final extracted name:", extractedName);
-
-            if (!extractedName) {
-                console.warn("Failed to extract name from resume");
-            }
-
             const email = extractEmail(text);
-            console.log("Extracted email:", email);
 
             formData.append("filename", file.name);
             formData.append("email", email || contactInfo.email);
@@ -381,11 +368,7 @@ const ApplicantPortal = () => {
             formData.append("question10_response", questions.question10 || "");
             formData.append("resume_text", cleanedText);
             formData.append("hr_tags", selectedPosition.hr_tags);
-
-            // For debugging, log what's being sent
-            for (let [key, value] of formData.entries()) {
-                console.log(`${key}:`, value);
-            }
+            formData.append("google_id", userData?.sub); // Add Google ID to form data
 
             const uploadResponse = await axiosClient.post(
                 "/applicants/upload-and-rank",
@@ -404,19 +387,10 @@ const ApplicantPortal = () => {
             closeViewAllModal();
             setShowSuccessMessage("Application submitted successfully!");
             setTimeout(() => setShowSuccessMessage(""), 5000);
-
-            await axiosClient.post("/applicants/update-upload-status", {
-                google_id: userData?.sub,
-                google_name: userData?.name,
-                google_email: userData?.email,
-                has_uploaded: true,
-            });
         } catch (error) {
             console.error("Error uploading resume:", error);
-            console.error("Error details:", error.response?.data);
             setErrorMessage(
-                "Failed to submit your resume: " +
-                    (error.response?.data?.error || error.message),
+                error.response?.data?.error || "Failed to submit your resume",
             );
             setTimeout(() => setErrorMessage(""), 5000);
         } finally {

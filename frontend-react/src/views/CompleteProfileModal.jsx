@@ -14,8 +14,8 @@ function CompleteProfileModal({ show, onClose, onComplete, tempUser }) {
         province: tempUser?.province || "",
         postal_code: tempUser?.postal_code || "",
         country: tempUser?.country || "",
-        personal_email: tempUser?.personal_email || "",
-        work_email: tempUser?.work_email || "",
+        // personal_email: tempUser?.personal_email || "",
+        //  work_email: tempUser?.work_email || "",
         home_phone: tempUser?.home_phone || "",
         emergency_contact_name: tempUser?.emergency_contact_name || "",
         emergency_contact_relationship:
@@ -31,7 +31,7 @@ function CompleteProfileModal({ show, onClose, onComplete, tempUser }) {
         suffix: tempUser?.suffix || "",
         completed_training_programs:
             tempUser?.completed_training_programs || "",
-        profile: "", // Profile is handled separately since it's a file
+        //  profile: "", // Profile is handled separately since it's a file
         notes: tempUser?.notes || "",
     }));
 
@@ -52,9 +52,9 @@ function CompleteProfileModal({ show, onClose, onComplete, tempUser }) {
                 province: tempUser.province || prevData.province,
                 postal_code: tempUser.postal_code || prevData.postal_code,
                 country: tempUser.country || prevData.country,
-                personal_email:
-                    tempUser.personal_email || prevData.personal_email,
-                work_email: tempUser.work_email || prevData.work_email,
+                // personal_email:
+                //     tempUser.personal_email || prevData.personal_email,
+                //  work_email: tempUser.work_email || prevData.work_email,
                 home_phone: tempUser.home_phone || prevData.home_phone,
                 emergency_contact_name:
                     tempUser.emergency_contact_name ||
@@ -347,7 +347,7 @@ function CompleteProfileModal({ show, onClose, onComplete, tempUser }) {
                             />
                         </div>
 
-                        <div className="mb-4">
+                        {/* <div className="mb-4">
                             <label
                                 htmlFor="personal_email"
                                 className="block text-sm font-medium text-gray-700 mb-1"
@@ -362,9 +362,9 @@ function CompleteProfileModal({ show, onClose, onComplete, tempUser }) {
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-black"
                             />
-                        </div>
+                        </div> */}
 
-                        <div className="mb-4">
+                        {/* <div className="mb-4">
                             <label
                                 htmlFor="profile"
                                 className="block text-sm font-medium text-gray-700 mb-1"
@@ -379,9 +379,9 @@ function CompleteProfileModal({ show, onClose, onComplete, tempUser }) {
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-black"
                             />
-                        </div>
+                        </div> */}
 
-                        <div className="mb-4">
+                        {/* <div className="mb-4">
                             <label
                                 htmlFor="work_email"
                                 className="block text-sm font-medium text-gray-700 mb-1"
@@ -396,7 +396,7 @@ function CompleteProfileModal({ show, onClose, onComplete, tempUser }) {
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-black"
                             />
-                        </div>
+                        </div> */}
 
                         <div className="mb-4">
                             <label
@@ -609,24 +609,6 @@ function CompleteProfileModal({ show, onClose, onComplete, tempUser }) {
                                 id="work_permit_expiry_date"
                                 name="work_permit_expiry_date"
                                 value={formData.work_permit_expiry_date}
-                                onChange={handleChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-black"
-                            />
-                        </div> */}
-
-                        {/* <div className="mb-4">
-                            <label
-                                htmlFor="profile"
-                                className="block text-sm font-medium text-gray-700 mb-1"
-                            >
-                                Profile Picture
-                            </label>
-                            <input
-                                type="file"
-                                id="profile"
-                                name="profile"
-                                accept="image/*"
-                                value={formData.profile}
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-black"
                             />

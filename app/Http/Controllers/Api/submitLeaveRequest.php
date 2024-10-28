@@ -112,13 +112,16 @@ class SubmitLeaveRequest extends Controller
             $leaveRequest = LeaveRequest::findOrFail($requestId);
             $user = User::findOrFail($leaveRequest->user_id);
 
-            // Check if the requested days exceed the available leave balance
-            if ($user->sick_leave_balance >= $leaveRequest->days_requested) {
-                // Deduct the requested days from the balance
-                $user->sick_leave_balance -= $leaveRequest->days_requested;
-            } else {
-                // Set the leave balance to 0 if the requested days exceed available balance
-                $user->sick_leave_balance = 0;
+            // Determine if this will be a paid or unpaid leave
+            $isUnpaidLeave = $user->sick_leave_balance === 0;
+
+            // If user has leave balance, deduct it
+            if (!$isUnpaidLeave) {
+                if ($user->sick_leave_balance >= $leaveRequest->days_requested) {
+                    $user->sick_leave_balance -= $leaveRequest->days_requested;
+                } else {
+                    $user->sick_leave_balance = 0;
+                }
             }
 
             // Update the leave request status to 'approved'
@@ -128,15 +131,21 @@ class SubmitLeaveRequest extends Controller
             // Save the updated user balance
             $user->save();
 
+            // Prepare notification message based on leave type
+            $notificationMessage = $isUnpaidLeave
+                ? "Your leave request for {$leaveRequest->days_requested} day(s) has been approved. Note: This will be processed as No Pay Leave due to insufficient leave balance."
+                : "Your leave request for {$leaveRequest->days_requested} day(s) has been approved.";
+
             EmployeeNotification::create([
                 'id' => Str::uuid(),
                 'user_id' => $leaveRequest->user_id,
                 'type' => 'leave_response',
-                'message' => "Your leave request for {$leaveRequest->days_requested} day(s) has been approved.",
+                'message' => $notificationMessage,
                 'data' => json_encode([
                     'leave_request_id' => $leaveRequest->id,
                     'days_requested' => $leaveRequest->days_requested,
                     'status' => 'approved',
+                    'is_unpaid' => $isUnpaidLeave,
                     'remaining_balance' => $user->sick_leave_balance,
                     'start_date' => $leaveRequest->start_date,
                     'end_date' => $leaveRequest->end_date

@@ -290,7 +290,10 @@ const HR_Leave_Management = () => {
                                         <th className="px-6 py-3 text-center text-xs font-medium text-neutral-900 tracking-wider border-b">
                                             Days Requested
                                         </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-neutral-900 tracking-wider border-b">
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-neutral-900 tracking-wider border-b">
+                                            Leave Balance
+                                        </th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-neutral-900 tracking-wider border-b ">
                                             Actions
                                         </th>
                                     </tr>
@@ -325,6 +328,9 @@ const HR_Leave_Management = () => {
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-center text-neutral-600">
                                                     {request.days_requested}
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-center text-neutral-600">
+                                                    {request.sick_leave_balance}
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex justify-end items-center gap-2">
@@ -441,6 +447,12 @@ const HR_Leave_Management = () => {
                                                             Days:
                                                         </span>{" "}
                                                         {request.days_requested}
+                                                    </p>
+                                                    <p className="text-sm text-neutral-600">
+                                                        <span className="font-medium">
+                                                            Days:
+                                                        </span>{" "}
+                                                        {request.leave}
                                                     </p>
                                                 </div>
                                             </div>

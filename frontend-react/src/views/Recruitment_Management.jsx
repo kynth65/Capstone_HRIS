@@ -12,7 +12,7 @@ import { MdDelete, MdEdit, MdExpandMore, MdExpandLess } from "react-icons/md";
 import { jsPDF } from "jspdf";
 import HRTagSuggestion from "./HRTagSuggestion";
 import { riderQuestions } from "../views/questions/RiderQuestions";
-import { accountingQuestions } from "../views/questions/AccountingQuestions";
+//import { accountingQuestions } from "../views/questions/AccountingQuestions";
 import { anatomicalQuestions } from "../views/questions/AnatomicalQuestions";
 import { maintenanceQuestions } from "../views/questions/MaintenanceQuestions";
 import { medicalSecretaryQuestions } from "../views/questions/MedicalSecretaryQuestions";
@@ -797,6 +797,9 @@ function Recruitment_Management() {
                                                             Rank
                                                         </th>
                                                         <th className="text-center px-4 py-2 border-b">
+                                                            Name
+                                                        </th>
+                                                        <th className="text-center px-4 py-2 border-b">
                                                             File
                                                         </th>
                                                         <th className="text-center px-4 py-2 border-b">
@@ -819,6 +822,11 @@ function Recruitment_Management() {
                                                             >
                                                                 <td className="px-4 py-2 border-b">
                                                                     {index + 1}
+                                                                </td>
+                                                                <td className="px-4 py-2 border-b">
+                                                                    {
+                                                                        applicant.name
+                                                                    }
                                                                 </td>
                                                                 <td className="px-4 py-2 border-b">
                                                                     <button

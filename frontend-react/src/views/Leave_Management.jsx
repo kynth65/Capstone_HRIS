@@ -195,6 +195,9 @@ function Leave_Management() {
                 },
             });
             setMessage(response.data.message);
+            setTimeout(() => {
+                setMessage(null);
+            }, 2000);
             setError("");
             // Reset form
             setFormData({
@@ -428,6 +431,16 @@ function Leave_Management() {
                             <h2 className="text-xl  mb-4 text-center">
                                 Submit Leave Request
                             </h2>
+                            {message && (
+                                <p className="success-message px-36 bg-green-100 text-green-700 p-2 rounded mb-4">
+                                    {message}
+                                </p>
+                            )}
+                            {error && (
+                                <p className="mt-4 text-red-600 text-center">
+                                    {error}
+                                </p>
+                            )}
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div className="space-y-2">
                                     <label className="text-sm mr-2 font-medium text-neutral-700">
@@ -504,6 +517,16 @@ function Leave_Management() {
                             <h2 className="text-2xl  mb-4 text-center">
                                 Submit Leave Request
                             </h2>
+                            {message && (
+                                <p className="success-message px-36 bg-green-100 text-green-700 p-2 rounded mb-4">
+                                    {message}
+                                </p>
+                            )}
+                            {error && (
+                                <div className="error-message bg-red-100 text-red-700 p-2 rounded mb-4">
+                                    {error}
+                                </div>
+                            )}
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-neutral-700">
@@ -569,17 +592,6 @@ function Leave_Management() {
                                 </button>
                             </form>
                         </div>
-
-                        {message && (
-                            <p className="mt-4 text-green-600 text-center">
-                                {message}
-                            </p>
-                        )}
-                        {error && (
-                            <p className="mt-4 text-red-600 text-center">
-                                {error}
-                            </p>
-                        )}
 
                         <div className="mt-8">
                             <h3 className="text-xl mb-4 text-center">

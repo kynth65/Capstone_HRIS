@@ -92,6 +92,7 @@ class HRDashboardController extends Controller
             ->select(
                 'leave_requests.id',
                 'users.name as user_name', // Rename for clarity
+                'users.sick_leave_balance',
                 'leave_requests.file_name',
                 'leave_requests.file_path',
                 'leave_requests.statuses', // Match the frontend field name
