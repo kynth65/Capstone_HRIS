@@ -886,15 +886,20 @@ function CertificateManagement() {
         }
     }, [selectedRequestDepartment, certificateRequests]);
 
-    const fetchRejectedDocuments = () => {
-        // Filter only the rejected requests from certificateRequests
-        const rejected = certificateRequests.filter(
-            (request) =>
-                request.status && request.status.toLowerCase() === "rejected",
-        );
+    const fetchRejectedDocuments = async () => {
+        try {
+            // Fetch the rejected certificate requests from the backend API
+            const response = await axiosClient.get("/rejected-certificates");
+            const { count, data } = response.data;
 
-        console.log("Rejected documents:", rejected); // Debug log to check
-        setRejectedDocuments(rejected);
+            console.log("Rejected documents count:", count); // Log the count
+            console.log("Rejected documents:", data); // Log the data
+
+            // Set the rejected documents to the state
+            setRejectedDocuments(data);
+        } catch (error) {
+            console.error("Error fetching rejected documents:", error);
+        }
     };
 
     // Trigger fetching rejected documents when the modal is opened
@@ -905,20 +910,13 @@ function CertificateManagement() {
     }, [isRejectedModalOpen, certificateRequests]); // Ensure it runs when modal is opened and requests change
 
     const handleViewRemarks = (doc) => {
-        setSelectedRemarks(doc.remarks);
+        if (doc.remarks) {
+            setSelectedRemarks(doc.remarks);
+        } else {
+            setSelectedRemarks("No remarks available for this request."); // Provide a default message
+        }
         setIsRemarksModalOpen(true);
     };
-
-    useEffect(() => {
-        if (isRejectedModalOpen) {
-            console.log("Certificate Requests:", certificateRequests); // Debug log
-            const rejected = certificateRequests.filter(
-                (request) => request.status.toLowerCase() === "rejected",
-            );
-            console.log("Filtered Rejected:", rejected); // Debug log
-            setRejectedDocuments(rejected);
-        }
-    }, [isRejectedModalOpen, certificateRequests]);
 
     const handlePermanentDelete = async () => {
         if (!certificateToDelete) return;
@@ -3699,7 +3697,7 @@ function CertificateManagement() {
 
             {isRejectedModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto text-black">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-semibold">
                                 Rejected Documents

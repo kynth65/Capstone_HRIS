@@ -226,8 +226,17 @@ Route::get('/archived-certificates', function () {
 });
 
 Route::get('/rejected-certificates', function () {
-    $certificates = DB::table('certificate_update_requests')
-        ->where('status', 'rejected')
+    $certificates = DB::table('certificate_requests')
+        ->join('users', 'certificate_requests.user_id', '=', 'users.user_id')
+        ->select(
+            'certificate_requests.*',
+            'users.name as employee_name',
+            'certificate_requests.certificate_name', // Assuming certificate_name is in certificate_requests
+            'certificate_requests.issued_date',
+            'certificate_requests.certificate_file_path',
+            'certificate_requests.remarks' // Fetch remarks from certificate_requests table
+        )
+        ->where('certificate_requests.status', 'rejected')
         ->get();
 
     return response()->json([

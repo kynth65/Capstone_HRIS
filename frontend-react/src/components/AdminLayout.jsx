@@ -261,6 +261,14 @@ function AdminLayout() {
                         Employee Management
                     </Link>
                     <Link
+                        to="/rfid_management"
+                        onClick={() => handleHeaderChange("RFID Management")}
+                    >
+                        <span className="block h-10 pt-3 cursor-pointer text-white hover:bg-opacity-70 hover:bg-gray-600 rounded-lg transition">
+                            RFID Management
+                        </span>
+                    </Link>
+                    <Link
                         to="/admin-chat"
                         onClick={() => handleHeaderChange("Chat")}
                     >
