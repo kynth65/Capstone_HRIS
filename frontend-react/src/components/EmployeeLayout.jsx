@@ -234,12 +234,10 @@ function EmployeeLayout() {
                     </Link>
                     <Link
                         to="/employee-certificate"
-                        onClick={() =>
-                            handleHeaderChange("Employee Certificate")
-                        }
+                        onClick={() => handleHeaderChange("Document")}
                     >
                         <span className="block h-10 pt-3 cursor-pointer text-white hover:bg-opacity-70 hover:bg-gray-600 rounded-lg transition">
-                            Certificate
+                            Document
                         </span>
                     </Link>
                     <Link
@@ -252,12 +250,18 @@ function EmployeeLayout() {
                     </Link>
                     <Link
                         to="/employee-attendance"
-                        onClick={() =>
-                            handleHeaderChange("Employee Attendance")
-                        }
+                        onClick={() => handleHeaderChange("Attendance")}
                     >
                         <span className="block h-10 pt-3 cursor-pointer text-white hover:bg-opacity-70 hover:bg-gray-600 rounded-lg transition">
                             Attendance
+                        </span>
+                    </Link>
+                    <Link
+                        to="/employee-chat"
+                        onClick={() => handleHeaderChange("Chat")}
+                    >
+                        <span className="block h-10 pt-3 cursor-pointer text-white hover:bg-opacity-70 hover:bg-gray-600 rounded-lg transition">
+                            Chat
                         </span>
                     </Link>
                 </div>

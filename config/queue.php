@@ -72,6 +72,14 @@ return [
             'after_commit' => false,
         ],
 
+        'chat' => [
+            'driver' => 'redis',
+            'connection' => 'default',
+            'queue' => 'chat',
+            'retry_after' => 90,
+            'block_for' => null,
+        ],
+
     ],
 
     /*

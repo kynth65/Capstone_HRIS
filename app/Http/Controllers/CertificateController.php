@@ -208,7 +208,7 @@ class CertificateController extends Controller
             // Optionally, delete the original certificate after archiving
             $certificate->delete();
 
-            return response()->json(['message' => 'Certificate archived successfully.']);
+            return response()->json(['message' => 'Document archived successfully.']);
         } catch (\Exception $e) {
             Log::error('Error archiving certificate:', ['error' => $e->getMessage()]);
             return response()->json(['message' => 'Error archiving certificate'], 500);
@@ -242,7 +242,7 @@ class CertificateController extends Controller
         // Send a Laravel notification
         $employee->notify(new CertificateUpdateAccessGranted($certificate));
 
-        $message = "You have been granted access to update the certificate: '{$certificate->certificate_name}'.";
+        $message = "You have been granted access to update the document: '{$certificate->certificate_name}'.";
 
         // Store notification only in the employee's notifications table
         DB::table('employee_notifications')->insert([
@@ -254,7 +254,7 @@ class CertificateController extends Controller
             'updated_at' => now(),
         ]);
 
-        return response()->json(['message' => 'Update access granted for certificate and notification sent.']);
+        return response()->json(['message' => 'Update access granted for document and notification sent.']);
     }
 
 
@@ -302,7 +302,7 @@ class CertificateController extends Controller
             ->first();
 
         if ($existingRequest) {
-            return response()->json(['message' => 'You already have a pending update request for this certificate.'], 400);
+            return response()->json(['message' => 'You already have a pending update request for this document.'], 400);
         }
 
         // Insert a new update request
@@ -331,7 +331,7 @@ class CertificateController extends Controller
             'notifiable_id' => $certificateRequest, // Associate with the certificate request
             'notifiable_type' => CertificateRequest::class, // Related to the CertificateRequest model
             'user_id' => null, // Can be null if not specific to a user
-            'message' => "Update request for expiring certificates: {$certificate->certificate_name}. From: {$user->name}", // Updated message
+            'message' => "Update request for expiring documents: {$certificate->certificate_name}. From: {$user->name}", // Updated message
             'data' => json_encode([
                 'certificate_name' => $certificate->certificate_name,
                 'issued_date' => $certificate->issued_date,
@@ -345,7 +345,7 @@ class CertificateController extends Controller
             'updated_at' => now(),
         ]);
 
-        return response()->json(['message' => 'Certificate update request submitted successfully.']);
+        return response()->json(['message' => 'Documents update request submitted successfully.']);
     }
 
     public function approveUpdateRequest($requestId)
@@ -396,7 +396,7 @@ class CertificateController extends Controller
 
         $certificate = Certificate::findOrFail($updateRequest->certificate_id);
         $employee = User::findOrFail($updateRequest->user_id);
-        $message = "Your update request for certificate '{$certificate->certificate_name}' has been rejected.";
+        $message = "Your update request for document '{$certificate->certificate_name}' has been rejected.";
 
         // Send notification to the employee
         $employee->notify(new CertificateUpdateRequestStatus($certificate, 'rejected'));
@@ -444,7 +444,7 @@ class CertificateController extends Controller
         $certificate->can_update = false; // Revoke access after update
         $certificate->save();
 
-        return response()->json(['message' => 'Update access revoked for certificate.']);
+        return response()->json(['message' => 'Update access revoked for document.']);
     }
     public function showCertificate($id)
     {
@@ -477,10 +477,10 @@ class CertificateController extends Controller
             // Delete the ArchivedCertificate
             $archivedCertificate->delete();
 
-            return response()->json(['message' => 'Certificate recovered successfully.']);
+            return response()->json(['message' => 'Document recovered successfully.']);
         } catch (\Exception $e) {
-            Log::error('Error recovering certificate:', ['error' => $e->getMessage()]);
-            return response()->json(['message' => 'Error recovering certificate'], 500);
+            Log::error('Error recovering document:', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Error recovering document'], 500);
         }
     }
 
@@ -497,13 +497,13 @@ class CertificateController extends Controller
             // Delete the ArchivedCertificate
             $archivedCertificate->delete();
 
-            return response()->json(['message' => 'Certificate permanently deleted.']);
+            return response()->json(['message' => 'Document permanently deleted.']);
         } catch (\Exception $e) {
             Log::error(
                 'Error permanently deleting certificate:',
                 ['error' => $e->getMessage()]
             );
-            return response()->json(['message' => 'Error permanently deleting certificate'], 500);
+            return response()->json(['message' => 'Error permanently deleting document'], 500);
         }
     }
 }

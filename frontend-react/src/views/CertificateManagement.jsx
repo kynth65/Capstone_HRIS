@@ -813,13 +813,13 @@ function CertificateManagement() {
                         }`}
                         onClick={() => setActiveButton("employeeCertificate")}
                     >
-                        Employee Certificates
+                        Employee Documents
                     </button>
                     <button
                         className={`navButton ${activeButton === "certificateRequests" ? "active" : ""}`}
                         onClick={() => setActiveButton("certificateRequests")}
                     >
-                        Certificate Requests
+                        Documents Requests
                     </button>
                 </nav>
             </div>
@@ -868,7 +868,7 @@ function CertificateManagement() {
                                     className="relative w-full p-2 bg-green-700 text-white rounded-lg hover:bg-green-800 transition-colors"
                                     onClick={handleOpenUpdateRequestModal}
                                 >
-                                    Certificate Update Requests
+                                    Documents Update Requests
                                     {certificateUpdateRequestCount > 0 && (
                                         <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                                             {certificateUpdateRequestCount}
@@ -925,10 +925,10 @@ function CertificateManagement() {
                                 <table className="w-full">
                                     <thead className="bg-gray-50 sticky top-0">
                                         <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 ID
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Name
                                             </th>
                                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -1027,7 +1027,7 @@ function CertificateManagement() {
                                     className="relative w-full p-2 bg-green-700 text-white rounded-lg hover:bg-green-800 transition-colors"
                                     onClick={handleOpenArchiveModal}
                                 >
-                                    View Archived Certificates
+                                    View Archived Documents
                                     {archivedCertificateCount > 0 && (
                                         <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                                             {archivedCertificateCount}
@@ -1084,7 +1084,7 @@ function CertificateManagement() {
                                                 <div className="space-y-2 mb-4">
                                                     <div>
                                                         <p className="text-xs text-gray-500">
-                                                            Certificate
+                                                            Document
                                                         </p>
                                                         <p className="text-sm font-medium">
                                                             {
@@ -1166,7 +1166,7 @@ function CertificateManagement() {
                                     })
                                 ) : (
                                     <div className="text-center py-8 text-gray-500">
-                                        No certificates found.
+                                        No documents found.
                                     </div>
                                 )}
                             </div>
@@ -1178,22 +1178,22 @@ function CertificateManagement() {
                                 <table className="w-full">
                                     <thead className="bg-gray-50 sticky top-0">
                                         <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 User ID
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Employee Name
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Certificate Name
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Document Name
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Date Issued
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Expiring Date
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Status
                                             </th>
                                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -1270,7 +1270,7 @@ function CertificateManagement() {
                                                                             cert.id,
                                                                         )
                                                                     }
-                                                                    className="p-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+                                                                    className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                                                                 >
                                                                     View Details
                                                                 </button>
@@ -1315,7 +1315,7 @@ function CertificateManagement() {
                                                     colSpan="7"
                                                     className="px-6 py-4 text-sm text-center text-gray-500"
                                                 >
-                                                    No certificates found.
+                                                    No documents found.
                                                 </td>
                                             </tr>
                                         )}
@@ -1340,7 +1340,7 @@ function CertificateManagement() {
                         {/* Mobile View */}
                         <div className="md:hidden">
                             <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
-                                Certificate Details
+                                Document Details
                             </h3>
                             <div className="space-y-3">
                                 <div className="bg-gray-50 rounded-lg p-4">
@@ -1419,7 +1419,7 @@ function CertificateManagement() {
                                         </button>
                                     )}
                                     <button
-                                        className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg transition-colors"
+                                        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors"
                                         onClick={() =>
                                             handleOpenDetailModal(
                                                 selectedCertificate.id,
@@ -1444,7 +1444,7 @@ function CertificateManagement() {
                         <div className="hidden md:block">
                             <div className="mt-3">
                                 <h3 className="text-lg leading-6 font-semibold text-gray-900 mb-4 text-center">
-                                    Certificate Details
+                                    Document Details
                                 </h3>
                                 <div className="bg-gray-50 rounded-lg p-6">
                                     <div className="grid grid-cols-2 gap-4">
@@ -1460,7 +1460,7 @@ function CertificateManagement() {
                                         </div>
                                         <div>
                                             <label className="text-sm text-gray-600">
-                                                Certificate Name
+                                                Document Name
                                             </label>
                                             <p className="font-medium text-gray-900">
                                                 {
@@ -1522,7 +1522,7 @@ function CertificateManagement() {
                                         </button>
                                     )}
                                     <button
-                                        className="bg-purple-600 hover:bg-purple-700 text-white py-2 px-6 rounded-lg transition-colors"
+                                        className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg transition-colors"
                                         onClick={() =>
                                             handleOpenDetailModal(
                                                 selectedCertificate.id,
@@ -1548,34 +1548,34 @@ function CertificateManagement() {
 
             {/* View Certificates Modal */}
             {isViewModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+                <div className="fixed inset-0 bg-black/50 flex justify-center items-center p-4 z-50 text-black">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
                         {/* Header */}
-                        <div className="p-4 border-b">
-                            <h2 className="text-xl font-bold text-black">
-                                Certificates for {selectedEmployee?.name}
+                        <div className="px-6 py-4 border-b">
+                            <h2 className="text-2xl font-semibold text-gray-900">
+                                Documents for {selectedEmployee?.name}
                             </h2>
                             {successMessage && (
-                                <div className="bg-green-200 text-green-800 p-3 mt-3 rounded">
+                                <div className="mt-2 p-3 bg-green-100 border border-green-200 text-green-700 rounded-md">
                                     {successMessage}
                                 </div>
                             )}
                         </div>
 
                         {/* Filters */}
-                        <div className="p-4 border-b">
-                            <div className="flex flex-col">
-                                <label className="text-sm text-gray-600 mb-1">
+                        <div className="px-6 py-3 border-b bg-gray-50 flex justify-center">
+                            <div className="max-w-xs">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Select Category
                                 </label>
                                 <select
-                                    className="w-full p-2 rounded-lg border border-gray-200 text-black focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                                     value={selectedCategory || ""}
                                     onChange={(e) =>
                                         handleCategorySelect(e.target.value)
                                     }
                                 >
-                                    <option value="">All Certificates</option>
+                                    <option value="">All Documents</option>
                                     {categories.map((category) => (
                                         <option key={category} value={category}>
                                             {category}
@@ -1586,208 +1586,230 @@ function CertificateManagement() {
                         </div>
 
                         {/* Content Area */}
-                        <div className="flex-1 overflow-auto p-4">
+                        <div className="flex-1 overflow-auto">
                             {/* Mobile View */}
-                            <div className="md:hidden space-y-4">
-                                {filteredCertificates.length > 0 ? (
+                            <div className="block md:hidden p-4 space-y-4">
+                                {filteredCertificates.length === 0 ? (
+                                    <div className="text-center py-8 text-gray-500">
+                                        No documents found.
+                                    </div>
+                                ) : (
                                     filteredCertificates.map((cert) => {
                                         const status = getCertificateStatus(
                                             cert.expiring_date,
                                             cert.type,
                                         );
-                                        const statusColor =
-                                            status === "Expiring"
-                                                ? "#f19c09"
-                                                : status === "Expired"
-                                                  ? "#ff0000"
-                                                  : "rgb(34, 197, 94)";
-                                        const typeColor =
-                                            cert.type === "expirable"
-                                                ? "bg-yellow-400"
-                                                : "bg-blue-400";
+                                        const statusColor = {
+                                            Expiring: "bg-yellow-500",
+                                            Expired: "bg-red-500",
+                                            Active: "bg-green-500",
+                                        }[status];
 
                                         return (
                                             <div
                                                 key={cert.id}
-                                                className="border border-gray-200 rounded-lg p-4 bg-gray-50"
+                                                className="bg-white border rounded-lg shadow-sm overflow-hidden"
                                             >
-                                                <div className="flex justify-between items-start mb-3">
-                                                    <div className="flex-1">
+                                                <div className="p-4">
+                                                    <div className="flex justify-between items-start mb-3">
+                                                        <div>
+                                                            <span
+                                                                className={`inline-block px-2 py-1 text-xs rounded ${cert.type === "expirable" ? "bg-yellow-100 text-yellow-800" : "bg-blue-100 text-blue-800"}`}
+                                                            >
+                                                                {cert.type ===
+                                                                "expirable"
+                                                                    ? "Expirable"
+                                                                    : "Non-Expirable"}
+                                                            </span>
+                                                            <h3 className="mt-2 font-medium text-gray-900">
+                                                                {
+                                                                    cert.certificate_name
+                                                                }
+                                                            </h3>
+                                                            <p className="text-sm text-gray-600">
+                                                                {cert.category}
+                                                            </p>
+                                                        </div>
                                                         <span
-                                                            className={`inline-block px-2 py-1 rounded text-sm ${typeColor}`}
+                                                            className={`px-2 py-1 text-xs font-medium text-white rounded ${statusColor}`}
                                                         >
-                                                            {cert.type ===
-                                                            "expirable"
-                                                                ? "Expirable"
-                                                                : "Non-Expirable"}
+                                                            {status}
                                                         </span>
-                                                        <h3 className="font-medium mt-2">
-                                                            {
-                                                                cert.certificate_name
-                                                            }
-                                                        </h3>
-                                                        <p className="text-sm text-gray-600">
-                                                            {cert.category}
-                                                        </p>
                                                     </div>
-                                                    <span
-                                                        className="px-2 py-1 text-sm font-medium rounded text-white"
-                                                        style={{
-                                                            backgroundColor:
-                                                                statusColor,
-                                                        }}
-                                                    >
-                                                        {status}
-                                                    </span>
-                                                </div>
 
-                                                <div className="grid grid-cols-2 gap-4 mb-4">
-                                                    <div>
-                                                        <p className="text-xs text-gray-500">
-                                                            Date Issued
-                                                        </p>
-                                                        <p className="text-sm">
-                                                            {new Date(
-                                                                cert.issued_date,
-                                                            ).toLocaleDateString(
-                                                                "en-US",
-                                                            )}
-                                                        </p>
+                                                    <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+                                                        <div>
+                                                            <p className="text-gray-500">
+                                                                Issued Date
+                                                            </p>
+                                                            <p>
+                                                                {new Date(
+                                                                    cert.issued_date,
+                                                                ).toLocaleDateString()}
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-gray-500">
+                                                                Expiring Date
+                                                            </p>
+                                                            <p>
+                                                                {cert.type ===
+                                                                "non-expirable"
+                                                                    ? "N/A"
+                                                                    : cert.expiring_date
+                                                                      ? new Date(
+                                                                            cert.expiring_date,
+                                                                        ).toLocaleDateString()
+                                                                      : ""}
+                                                            </p>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <p className="text-xs text-gray-500">
-                                                            Expiring Date
-                                                        </p>
-                                                        <p className="text-sm">
-                                                            {cert.type ===
-                                                            "non-expirable"
-                                                                ? "N/A"
-                                                                : cert.expiring_date
-                                                                  ? new Date(
-                                                                        cert.expiring_date,
-                                                                    ).toLocaleDateString(
-                                                                        "en-US",
-                                                                    )
-                                                                  : ""}
-                                                        </p>
-                                                    </div>
-                                                </div>
 
-                                                <div className="flex flex-wrap gap-2">
-                                                    <button
-                                                        onClick={() =>
-                                                            handleDelete(
-                                                                cert.id,
-                                                            )
-                                                        }
-                                                        className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-                                                    >
-                                                        <MdDelete size={20} />
-                                                    </button>
-                                                    {cert.file_url && (
+                                                    <div className="flex flex-wrap gap-2">
                                                         <button
                                                             onClick={() =>
-                                                                handleOpenPdf(
-                                                                    cert.file_url,
+                                                                handleDelete(
+                                                                    cert.id,
                                                                 )
                                                             }
-                                                            className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                                                            className="p-2 text-white bg-red-500 rounded-md hover:bg-red-600"
                                                         >
-                                                            <RiFileDownloadFill
-                                                                size={20}
+                                                            <MdDelete
+                                                                size={18}
                                                             />
                                                         </button>
-                                                    )}
-                                                    <button
-                                                        onClick={() =>
-                                                            handleEditModal(
-                                                                cert,
-                                                            )
-                                                        }
-                                                        className="flex-1 py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                                                    >
-                                                        Update
-                                                    </button>
-                                                    <button
-                                                        onClick={() =>
-                                                            handleGrantUpdateAccess(
-                                                                cert.id,
-                                                            )
-                                                        }
-                                                        className="flex-1 py-2 px-4 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
-                                                    >
-                                                        Grant Access
-                                                    </button>
-                                                    <button
-                                                        onClick={() =>
-                                                            handleOpenDetailModal(
-                                                                cert.id,
-                                                            )
-                                                        }
-                                                        className="flex-1 py-2 px-4 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
-                                                    >
-                                                        View Details
-                                                    </button>
+                                                        {cert.file_url && (
+                                                            <button
+                                                                onClick={() =>
+                                                                    handleOpenPdf(
+                                                                        cert.file_url,
+                                                                    )
+                                                                }
+                                                                className="p-2 text-white bg-green-500 rounded-md hover:bg-green-600"
+                                                            >
+                                                                <RiFileDownloadFill
+                                                                    size={18}
+                                                                />
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            onClick={() =>
+                                                                handleEditModal(
+                                                                    cert,
+                                                                )
+                                                            }
+                                                            className="flex-1 py-2 px-3 text-white bg-blue-500 rounded-md hover:bg-blue-600"
+                                                        >
+                                                            Update
+                                                        </button>
+                                                        <button
+                                                            onClick={() =>
+                                                                handleGrantUpdateAccess(
+                                                                    cert.id,
+                                                                )
+                                                            }
+                                                            className="flex-1 py-2 px-3 text-white bg-yellow-500 rounded-md hover:bg-yellow-600"
+                                                        >
+                                                            Grant Access
+                                                        </button>
+                                                        <button
+                                                            onClick={() =>
+                                                                handleOpenDetailModal(
+                                                                    cert.id,
+                                                                )
+                                                            }
+                                                            className="flex-1 py-2 px-3 text-white bg-blue-500 rounded-md hover:bg-blue-600"
+                                                        >
+                                                            View Details
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         );
                                     })
-                                ) : (
-                                    <div className="text-center py-8 text-gray-500">
-                                        No certificates found.
-                                    </div>
                                 )}
                             </div>
 
                             {/* Desktop View */}
                             <div className="hidden md:block">
-                                <table className="w-full border-collapse">
+                                <table className="min-w-full divide-y divide-gray-200">
                                     <thead className="bg-gray-50">
                                         <tr>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th
+                                                scope="col"
+                                                className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                            >
                                                 Type
                                             </th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th
+                                                scope="col"
+                                                className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                            >
                                                 Category
                                             </th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th
+                                                scope="col"
+                                                className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                            >
                                                 Name
                                             </th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th
+                                                scope="col"
+                                                className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                            >
                                                 Issued Date
                                             </th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th
+                                                scope="col"
+                                                className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                            >
                                                 Expiring Date
                                             </th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th
+                                                scope="col"
+                                                className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                            >
                                                 Status
                                             </th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th
+                                                scope="col"
+                                                className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                            >
                                                 Actions
                                             </th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        {filteredCertificates.length > 0 ? (
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {filteredCertificates.length === 0 ? (
+                                            <tr>
+                                                <td
+                                                    colSpan="7"
+                                                    className="px-6 py-8 text-center text-gray-500"
+                                                >
+                                                    No documents found.
+                                                </td>
+                                            </tr>
+                                        ) : (
                                             filteredCertificates.map((cert) => {
                                                 const status =
                                                     getCertificateStatus(
                                                         cert.expiring_date,
                                                         cert.type,
                                                     );
-                                                const typeColor =
-                                                    cert.type === "expirable"
-                                                        ? "bg-yellow-400"
-                                                        : "bg-blue-400";
+                                                const statusColor = {
+                                                    Expiring: "bg-yellow-500",
+                                                    Expired: "bg-red-500",
+                                                    Active: "bg-green-500",
+                                                }[status];
 
                                                 return (
                                                     <tr
                                                         key={cert.id}
                                                         className="hover:bg-gray-50"
                                                     >
-                                                        <td className="px-4 py-3">
+                                                        <td className="px-6 py-4 whitespace-nowrap">
                                                             <span
-                                                                className={`inline-block px-2 py-1 rounded text-sm ${typeColor}`}
+                                                                className={`inline-block px-2 py-1 text-xs rounded ${cert.type === "expirable" ? "bg-yellow-100 text-yellow-800" : "bg-blue-100 text-blue-800"}`}
                                                             >
                                                                 {cert.type ===
                                                                 "expirable"
@@ -1795,59 +1817,46 @@ function CertificateManagement() {
                                                                     : "Non-Expirable"}
                                                             </span>
                                                         </td>
-                                                        <td className="px-4 py-3 text-sm">
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                             {cert.category}
                                                         </td>
-                                                        <td className="px-4 py-3 text-sm font-medium">
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                                             {
                                                                 cert.certificate_name
                                                             }
                                                         </td>
-                                                        <td className="px-4 py-3 text-sm">
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                             {new Date(
                                                                 cert.issued_date,
-                                                            ).toLocaleDateString(
-                                                                "en-US",
-                                                            )}
+                                                            ).toLocaleDateString()}
                                                         </td>
-                                                        <td className="px-4 py-3 text-sm">
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                             {cert.type ===
                                                             "non-expirable"
                                                                 ? "N/A"
                                                                 : cert.expiring_date
                                                                   ? new Date(
                                                                         cert.expiring_date,
-                                                                    ).toLocaleDateString(
-                                                                        "en-US",
-                                                                    )
+                                                                    ).toLocaleDateString()
                                                                   : ""}
                                                         </td>
-                                                        <td className="px-4 py-3">
+                                                        <td className="px-6 py-4 whitespace-nowrap">
                                                             <span
-                                                                className="px-2 py-1 text-sm font-medium rounded text-white"
-                                                                style={{
-                                                                    backgroundColor:
-                                                                        status ===
-                                                                        "Expiring"
-                                                                            ? "#f19c09"
-                                                                            : status ===
-                                                                                "Expired"
-                                                                              ? "#ff0000"
-                                                                              : "rgb(34, 197, 94)",
-                                                                }}
+                                                                className={`px-2 py-1 text-xs font-medium text-white rounded ${statusColor}`}
                                                             >
                                                                 {status}
                                                             </span>
                                                         </td>
-                                                        <td className="px-4 py-3">
-                                                            <div className="flex items-center space-x-2">
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                            <div className="flex items-center gap-2">
                                                                 <button
                                                                     onClick={() =>
                                                                         handleDelete(
                                                                             cert.id,
                                                                         )
                                                                     }
-                                                                    className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                                                                    className="p-2 text-white bg-red-500 rounded-md hover:bg-red-600"
+                                                                    title="Delete"
                                                                 >
                                                                     <MdDelete
                                                                         size={
@@ -1862,7 +1871,8 @@ function CertificateManagement() {
                                                                                 cert.file_url,
                                                                             )
                                                                         }
-                                                                        className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                                                                        className="p-2 text-white bg-green-500 rounded-md hover:bg-green-600"
+                                                                        title="Download"
                                                                     >
                                                                         <RiFileDownloadFill
                                                                             size={
@@ -1877,7 +1887,7 @@ function CertificateManagement() {
                                                                             cert,
                                                                         )
                                                                     }
-                                                                    className="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                                                                    className="px-3 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600"
                                                                 >
                                                                     Update
                                                                 </button>
@@ -1887,7 +1897,7 @@ function CertificateManagement() {
                                                                             cert.id,
                                                                         )
                                                                     }
-                                                                    className="px-3 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+                                                                    className="px-3 py-2 text-white bg-yellow-500 rounded-md hover:bg-yellow-600"
                                                                 >
                                                                     Grant Access
                                                                 </button>
@@ -1897,7 +1907,7 @@ function CertificateManagement() {
                                                                             cert.id,
                                                                         )
                                                                     }
-                                                                    className="px-3 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
+                                                                    className="px-3 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600"
                                                                 >
                                                                     View Details
                                                                 </button>
@@ -1906,15 +1916,6 @@ function CertificateManagement() {
                                                     </tr>
                                                 );
                                             })
-                                        ) : (
-                                            <tr>
-                                                <td
-                                                    colSpan="7"
-                                                    className="px-4 py-8 text-center text-gray-500"
-                                                >
-                                                    No certificates found.
-                                                </td>
-                                            </tr>
                                         )}
                                     </tbody>
                                 </table>
@@ -1922,10 +1923,10 @@ function CertificateManagement() {
                         </div>
 
                         {/* Footer */}
-                        <div className="p-4 border-t">
+                        <div className="px-6 py-4 border-t bg-gray-50">
                             <div className="flex justify-between gap-4">
                                 <button
-                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                                    className="px-4 py-2 text-white bg-red-500 rounded-md hover:bg-red-600 transition-colors"
                                     onClick={() => {
                                         setIsViewModalOpen(false);
                                         setFilteredCertificates([]);
@@ -1935,10 +1936,10 @@ function CertificateManagement() {
                                     Close
                                 </button>
                                 <button
-                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                    className="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 transition-colors"
                                     onClick={handleAddModal}
                                 >
-                                    Add Certificate
+                                    Add Document
                                 </button>
                             </div>
                         </div>
@@ -1950,9 +1951,7 @@ function CertificateManagement() {
             {isAddModalOpen && (
                 <div className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
                     <div className="modal-content bg-white p-6 rounded-lg w-1/3">
-                        <h2 className="text-lg font-bold mb-4">
-                            Add Certificate
-                        </h2>
+                        <h2 className="text-lg font-bold mb-4">Add Document</h2>
                         <form onSubmit={handleSubmit}>
                             {/* Display the selected employee name */}
                             {selectedEmployee && (
@@ -1965,7 +1964,7 @@ function CertificateManagement() {
                             {/* Input for Certificate Name */}
                             <div className="mb-4">
                                 <label className="block text-gray-700">
-                                    Certificate Name
+                                    Document Name
                                 </label>
                                 <input
                                     type="text"
@@ -2075,7 +2074,7 @@ function CertificateManagement() {
                             {/* File Upload */}
                             <div className="mb-4">
                                 <label className="block text-gray-700">
-                                    Upload Certificate (PDF)
+                                    Upload Document (PDF)
                                 </label>
                                 <input
                                     type="file"
@@ -2116,7 +2115,7 @@ function CertificateManagement() {
                 <div className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
                     <div className="modal-content bg-white p-6 rounded-lg w-1/3">
                         <h2 className="text-lg font-bold mb-4">
-                            Edit Certificate
+                            Edit Document
                         </h2>
                         <form onSubmit={handleEditSubmit}>
                             {/* Display the selected employee name */}
@@ -2131,7 +2130,7 @@ function CertificateManagement() {
                             {/* Input for Certificate Name */}
                             <div className="mb-4">
                                 <label className="block text-gray-700">
-                                    Certificate Name
+                                    Document Name
                                 </label>
                                 <input
                                     type="text"
@@ -2222,7 +2221,7 @@ function CertificateManagement() {
                             {/* File Upload */}
                             <div className="mb-4">
                                 <label className="block text-gray-700">
-                                    Upload New Certificate (PDF)
+                                    Upload New Document (PDF)
                                 </label>
                                 <input
                                     type="file"
@@ -2257,7 +2256,7 @@ function CertificateManagement() {
                     <div className="bg-white rounded-lg w-full md:w-3/4 max-w-4xl max-h-[90vh] overflow-hidden flex flex-col text-black">
                         <div className="p-4 md:p-6">
                             <h2 className="text-xl font-bold mb-4 text-gray-900">
-                                Archived Certificates
+                                Archived Documents
                             </h2>
 
                             {archivedSuccessMessage && (
@@ -2290,7 +2289,7 @@ function CertificateManagement() {
                                                 <div className="space-y-2 mb-4">
                                                     <div>
                                                         <label className="text-sm text-gray-600">
-                                                            Certificate Name
+                                                            Document Name
                                                         </label>
                                                         <p className="font-medium text-gray-900">
                                                             {
@@ -2369,7 +2368,7 @@ function CertificateManagement() {
                                         ))
                                     ) : (
                                         <div className="text-center py-8 text-gray-500">
-                                            No archived certificates found.
+                                            No archived documents found.
                                         </div>
                                     )}
                                 </div>
@@ -2381,13 +2380,13 @@ function CertificateManagement() {
                                     <table className="w-full border-collapse">
                                         <thead className="bg-gray-100 sticky top-0">
                                             <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Certificate Name
+                                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Document Name
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                     Date Issued
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                     Employee ID
                                                 </th>
                                                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -2485,7 +2484,7 @@ function CertificateManagement() {
                                                         colSpan="4"
                                                         className="px-6 py-4 text-center text-sm text-gray-500"
                                                     >
-                                                        No archived certificates
+                                                        No archived documents
                                                         found.
                                                     </td>
                                                 </tr>
@@ -2516,12 +2515,12 @@ function CertificateManagement() {
                         {/* Mobile View */}
                         <div className="md:hidden p-4">
                             <h2 className="text-xl font-bold mb-4 text-center text-gray-900">
-                                Archived Certificate Details
+                                Archived Document Details
                             </h2>
                             <div className="space-y-4 bg-gray-50 p-4 rounded-lg mb-4">
                                 <div>
                                     <label className="text-sm text-gray-600">
-                                        Certificate Name
+                                        Document Name
                                     </label>
                                     <p className="font-medium text-gray-900">
                                         {
@@ -2628,13 +2627,13 @@ function CertificateManagement() {
                         {/* Desktop View */}
                         <div className="hidden md:block p-8">
                             <h2 className="text-2xl font-bold mb-6 text-center text-gray-900">
-                                Archived Certificate Details
+                                Archived Document Details
                             </h2>
                             <div className="bg-gray-50 rounded-lg p-6 mb-6">
                                 <div className="grid grid-cols-2 gap-6">
                                     <div>
                                         <label className="text-sm text-gray-600">
-                                            Certificate Name
+                                            Document Name
                                         </label>
                                         <p className="font-medium text-gray-900">
                                             {
@@ -2758,7 +2757,7 @@ function CertificateManagement() {
                         </h2>
                         <p className="mb-6 text-center">
                             Are you sure you want to permanently delete this
-                            certificate? This action cannot be undone.
+                            document? This action cannot be undone.
                         </p>
                         <div className="flex justify-center space-x-4">
                             <button
@@ -2786,7 +2785,7 @@ function CertificateManagement() {
                         {/* Header */}
                         <div className="p-4 border-b">
                             <h2 className="text-xl font-bold text-black">
-                                Certificate Update Requests
+                                Document Update Requests
                             </h2>
                             {successMessage && (
                                 <div className="bg-green-200 text-green-800 p-3 mt-3 rounded">
@@ -2816,7 +2815,7 @@ function CertificateManagement() {
                                                 </div>
                                                 <div>
                                                     <p className="text-xs text-gray-500">
-                                                        Certificate
+                                                        Document
                                                     </p>
                                                     <p className="text-sm font-medium">
                                                         {
@@ -2887,13 +2886,13 @@ function CertificateManagement() {
                                 <table className="w-full border-collapse">
                                     <thead className="bg-gray-50">
                                         <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
                                                 Employee Name
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                Certificate Name
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                                                Document Name
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
                                                 Requested Date
                                             </th>
                                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
@@ -3003,13 +3002,13 @@ function CertificateManagement() {
                 <div className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
                     <div className="modal-content bg-white p-6 rounded-lg w-1/3">
                         <h2 className="text-lg font-bold mb-4">
-                            Update Certificate
+                            Update Document
                         </h2>
                         <form onSubmit={handleUpdateSubmit}>
                             {/* Display and Edit Certificate Name */}
                             <div className="mb-4">
                                 <label className="block text-gray-700">
-                                    Certificate Name
+                                    Document Name
                                 </label>
                                 <input
                                     type="text"
@@ -3120,12 +3119,12 @@ function CertificateManagement() {
                 <div className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
                     <div className="modal-content bg-white p-8 rounded-lg w-3/4 max-w-2xl">
                         <h2 className="text-2xl font-bold mb-6 text-center">
-                            Certificate Details
+                            Document Details
                         </h2>
                         <div className="text-black space-y-4 mb-6">
                             <p>
                                 <strong className="font-semibold">
-                                    Certificate Name:
+                                    Document Name:
                                 </strong>{" "}
                                 {detailedCertificate.certificate_name}
                             </p>
@@ -3309,7 +3308,7 @@ function CertificateManagement() {
                                     ))
                                 ) : (
                                     <div className="text-center py-8 text-gray-500">
-                                        No certificate requests found.
+                                        No document requests found.
                                     </div>
                                 )}
                             </div>
@@ -3321,25 +3320,25 @@ function CertificateManagement() {
                                 <table className="w-full">
                                     <thead className="bg-gray-50 sticky top-0">
                                         <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Employee Name
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Certificate Name
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Document Name
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Type
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Category
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Date Issued
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Expiring Date
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Status
                                             </th>
                                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -3444,8 +3443,7 @@ function CertificateManagement() {
                                                     colSpan="8"
                                                     className="px-6 py-4 text-sm text-center text-gray-500"
                                                 >
-                                                    No certificate requests
-                                                    found.
+                                                    No document requests found.
                                                 </td>
                                             </tr>
                                         )}

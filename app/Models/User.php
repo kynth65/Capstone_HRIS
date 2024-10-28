@@ -139,4 +139,18 @@ class User extends Authenticatable
     {
         return $this->hasMany(ArchivedCertificate::class, 'user_id', 'user_id');
     }
+
+
+    public function unreadMessages()
+    {
+        return $this->hasMany(Message::class, 'sender_id')
+            ->where('read', 0);
+    }
+
+    public function lastMessage()
+    {
+        return $this->hasOne(Message::class, 'sender_id')
+            ->orWhere('receiver_id', $this->user_id)
+            ->latest();
+    }
 }

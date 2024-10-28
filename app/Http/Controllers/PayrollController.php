@@ -9,6 +9,7 @@ use App\Services\PayrollService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log; // Include the Log facade
+use Illuminate\Support\Facades\Hash;
 
 class PayrollController extends Controller
 {
@@ -61,11 +62,21 @@ class PayrollController extends Controller
             return response()->json(['message' => 'No payroll record found.'], 404);
         }
     }
-    public function salaryHistory()
+    public function salaryHistory(Request $request)
     {
-        $user = Auth::user(); // Get the authenticated user
-        $payrolls = $user->payrolls; // Fetch the associated payrolls
+        Log::info('Request Data: ', $request->all()); // Log all incoming request data
 
-        return response()->json($payrolls); // Return payrolls as JSON
+        $user = Auth::user();
+        $password = $request->input('password');
+
+        Log::info('User Password: ' . $user->password);
+        Log::info('Input Password: ' . $password);
+
+        if (!Hash::check($password, $user->password)) {
+            return response()->json(['error' => 'Unauthorized: Incorrect password.'], 401);
+        }
+
+        $payrolls = $user->payrolls;
+        return response()->json($payrolls);
     }
 }

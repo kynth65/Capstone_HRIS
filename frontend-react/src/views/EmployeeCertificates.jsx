@@ -90,8 +90,7 @@ function EmployeeCertificate() {
                 },
             );
             alert(
-                response.data.message ||
-                    "Certificate request sent successfully!",
+                response.data.message || "Document request sent successfully!",
             );
             setIsRequestModalOpen(false);
             setNewCertificateRequest({
@@ -185,7 +184,7 @@ function EmployeeCertificate() {
                         }`}
                         onClick={() => setActiveTab("myCertificates")}
                     >
-                        My Certificates
+                        Documents
                     </button>
 
                     <button
@@ -273,7 +272,7 @@ function EmployeeCertificate() {
                                 ))
                             ) : (
                                 <div className="text-center py-4 text-gray-500">
-                                    No certificates found.
+                                    No documents found.
                                 </div>
                             )}
                         </div>
@@ -283,7 +282,7 @@ function EmployeeCertificate() {
                                 <thead className="bg-gray-100 sticky top-0">
                                     <tr className="text-left text-sm font-semibold text-gray-700">
                                         <th className="px-4 py-2">
-                                            Certificate Name
+                                            Document Name
                                         </th>
                                         <th className="px-4 py-2">
                                             Date Issued
@@ -350,7 +349,7 @@ function EmployeeCertificate() {
                                                 colSpan="5"
                                                 className="text-center py-8 text-gray-500"
                                             >
-                                                No certificates found.
+                                                No documents found.
                                             </td>
                                         </tr>
                                     )}
@@ -363,6 +362,14 @@ function EmployeeCertificate() {
                 {activeTab === "pendingRequests" && (
                     <>
                         {/* Mobile View */}
+                        <div className="mb-6 flex md:hidden justify-end">
+                            <button
+                                onClick={handleRequestModal}
+                                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                            >
+                                <span>Request Document</span>
+                            </button>
+                        </div>
                         <div className="md:hidden max-h-[400px] overflow-y-auto space-y-4">
                             {pendingRequests.length > 0 ? (
                                 pendingRequests.map((request, index) => (
@@ -416,13 +423,21 @@ function EmployeeCertificate() {
 
                         {/* Desktop View */}
                         <div className="hidden md:block">
+                            <div className="mb-6 flex justify-end">
+                                <button
+                                    onClick={handleRequestModal}
+                                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                                >
+                                    <span>Request Document</span>
+                                </button>
+                            </div>
                             <table className="w-full bg-white border-collapse overflow-x-auto">
                                 <thead className="bg-gray-100 sticky top-0 text-center">
                                     {" "}
                                     {/* Added text-center */}
                                     <tr className="text-sm font-semibold text-gray-700">
                                         <th className="px-4 py-2">
-                                            Certificate Name
+                                            Document Name
                                         </th>
                                         <th className="px-4 py-2">
                                             Date Requested
@@ -498,12 +513,12 @@ function EmployeeCertificate() {
                     <div className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
                         <div className="modal-content bg-white p-6 rounded-lg w-1/3">
                             <h2 className="text-lg font-bold mb-4">
-                                Update Certificate
+                                Update Document
                             </h2>
                             <form onSubmit={handleUpdateRequest}>
                                 <div className="mb-4">
                                     <label className="block text-gray-700">
-                                        Certificate Name
+                                        document Name
                                     </label>
                                     <input
                                         type="text"
@@ -517,7 +532,7 @@ function EmployeeCertificate() {
                                 </div>
                                 <div className="mb-4">
                                     <label className="block text-gray-700">
-                                        Upload New Certificate (PDF)
+                                        Upload New Document (PDF)
                                     </label>
                                     <input
                                         type="file"
@@ -554,12 +569,12 @@ function EmployeeCertificate() {
                     <div className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
                         <div className="modal-content bg-white p-6 rounded-lg w-1/3">
                             <h2 className="text-lg font-bold mb-4">
-                                Send New Certificate Request
+                                Send New Document Request
                             </h2>
                             <form onSubmit={handleRequestSubmit}>
                                 <div className="mb-4">
                                     <label className="block text-gray-700">
-                                        Certificate Name
+                                        Document Name
                                     </label>
                                     <input
                                         type="text"
@@ -673,7 +688,7 @@ function EmployeeCertificate() {
                                 </div>
                                 <div className="mb-4">
                                     <label className="block text-gray-700">
-                                        Upload Certificate (PDF)
+                                        Upload Document (PDF)
                                     </label>
                                     <input
                                         type="file"
@@ -734,7 +749,7 @@ function EmployeeCertificate() {
                                 Request Details
                             </h2>
                             <p>
-                                <strong>Certificate Name:</strong>{" "}
+                                <strong>Document Name:</strong>{" "}
                                 {selectedRequest.certificate_name}
                             </p>
                             <p>

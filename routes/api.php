@@ -35,6 +35,7 @@ use App\Http\Controllers\AdminNotificationController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\RfidCardController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\ChatController;
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -148,7 +149,7 @@ Route::get('payroll/net-salary/{userId}', [PayrollController::class, 'getNetSala
 Route::get('/decline', function () {
     return view('declined_invitation');
 })->name('declined.page');
-Route::middleware('auth:sanctum')->get('/salary-history', [PayrollController::class, 'salaryHistory']);
+Route::middleware('auth:sanctum')->post('/salary-history', [PayrollController::class, 'salaryHistory']);
 Route::get('highlighted-dates', [HRDashboardController::class, 'getHighlightedDates']);
 
 Route::get('/csrf-token', function () {
@@ -266,3 +267,19 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::post('/departments', [DepartmentController::class, 'store']);
 Route::get('/departments', [DepartmentController::class, 'index']);
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::prefix('chat')->group(function () {
+        Route::get('/users', [ChatController::class, 'getUsers']);
+        Route::get('/messages/{user}', [ChatController::class, 'getMessages']);
+        Route::post('/send', [ChatController::class, 'sendMessage']);
+        Route::post('/mark-as-read/{userId}', [ChatController::class, 'markAsRead']);
+    });
+});
+
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+});

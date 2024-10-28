@@ -30,6 +30,7 @@ import IncidentReportForm from "./views/IncidentsReportForm.jsx";
 import IncidentManagement from "./views/IncidentManagement.jsx";
 import HR_Leave_Management from "./views/HR_Leave_Management.jsx";
 import RfidManagement from "./views/RfidManagement.jsx";
+import ChatBox from "./views/ChatBox.jsx";
 
 const ErrorPage = () => (
     <div>
@@ -92,6 +93,10 @@ const router = createBrowserRouter([
                 path: "rfid_management",
                 element: <RfidManagement />,
             },
+            {
+                path: "admin-chat",
+                element: <ChatBox />,
+            },
         ],
         errorElement: <ErrorPage />,
     },
@@ -143,6 +148,10 @@ const router = createBrowserRouter([
                 path: "certificate",
                 element: <Certificate />,
             },
+            {
+                path: "chat",
+                element: <ChatBox />,
+            },
         ],
         errorElement: <ErrorPage />,
     },
@@ -179,6 +188,10 @@ const router = createBrowserRouter([
             {
                 path: "incident-form",
                 element: <IncidentReportForm />,
+            },
+            {
+                path: "employee-chat",
+                element: <ChatBox />,
             },
         ],
         errorElement: <ErrorPage />,

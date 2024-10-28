@@ -62,7 +62,7 @@ class CertificateRequestController extends Controller
             'updated_at' => now(),
         ]);
 
-        return response()->json(['message' => 'Certificate request submitted successfully', 'request' => $certificateRequest], 201);
+        return response()->json(['message' => 'Document request submitted successfully', 'request' => $certificateRequest], 201);
     }
 
     public function index()
