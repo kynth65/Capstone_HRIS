@@ -208,7 +208,7 @@ const IncidentManagement = () => {
                                     <div className="flex items-center gap-2">
                                         {incident.status === "investigating" &&
                                             incident.reported_employee_ids
-                                                .length > 0 && (
+                                                ?.length > 0 && (
                                                 <button
                                                     onClick={() =>
                                                         handleSendComplianceClick(
@@ -282,7 +282,7 @@ const IncidentManagement = () => {
                                         <p className="text-sm">
                                             {incident.reported_employee_ids &&
                                             incident.reported_employee_ids
-                                                .length > 0
+                                                ?.length > 0
                                                 ? incident.reported_employee_ids.map(
                                                       (employeeId, index) => (
                                                           <span
@@ -624,7 +624,7 @@ const IncidentManagement = () => {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {complianceReports.map(
+                                                {complianceReports?.map(
                                                     (report) => (
                                                         <tr key={report.id}>
                                                             <td className="p-2 border">
