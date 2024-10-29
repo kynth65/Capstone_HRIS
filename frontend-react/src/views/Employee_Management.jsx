@@ -42,7 +42,6 @@ function EmployeeManagement() {
     const [newDepartment, setNewDepartment] = useState("");
     const [newPositions, setNewPositions] = useState([""]);
     const [departmentPositions, setDepartmentPositions] = useState({
-        Admin: ["Admin", "Purchasing"],
         HR: [
             "Human Resource Manager",
             "HR Manager",
