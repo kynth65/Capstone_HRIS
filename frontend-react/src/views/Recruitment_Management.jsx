@@ -796,9 +796,9 @@ function Recruitment_Management() {
                                                         <th className="text-center px-4 py-2 border-b">
                                                             Rank
                                                         </th>
-                                                        {/* <th className="text-center px-4 py-2 border-b">
+                                                        <th className="text-center px-4 py-2 border-b">
                                                             Name
-                                                        </th> */}
+                                                        </th>
                                                         <th className="text-center px-4 py-2 border-b">
                                                             File
                                                         </th>
@@ -823,11 +823,11 @@ function Recruitment_Management() {
                                                                 <td className="px-4 py-2 border-b">
                                                                     {index + 1}
                                                                 </td>
-                                                                {/* <td className="px-4 py-2 border-b">
+                                                                <td className="px-4 py-2 border-b">
                                                                     {
                                                                         applicant.name
                                                                     }
-                                                                </td> */}
+                                                                </td>
                                                                 <td className="px-4 py-2 border-b">
                                                                     <button
                                                                         className="text-blue-500 hover:underline"
@@ -989,7 +989,7 @@ function Recruitment_Management() {
                         </div>
                         {showResponseModal && (
                             <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-                                <div className="bg-white p-6 rounded-lg shadow-lg w-3/4 h-[700px] overflow-y-auto text-black relative">
+                                <div className="bg-white p-6 rounded-lg shadow-lg w-3/4 h-[700px] md:h-auto overflow-y-auto text-black relative">
                                     <span
                                         className="absolute top-2 right-2 cursor-pointer text-xl font-bold text-gray-600 hover:text-gray-900"
                                         onClick={() =>
@@ -998,26 +998,42 @@ function Recruitment_Management() {
                                     >
                                         &times;
                                     </span>
-                                    <h3 className="text-2xl font-semibold mb-4 text-center">
+                                    <h3 className="text-lg font-semibold mb-4 text-center">
                                         Applicant Responses
                                     </h3>
 
-                                    <div className="text-lg mb-4">
+                                    <div className="text-sm mb-4">
                                         {questions.length > 0 ? (
-                                            questions.map((question, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="mb-3"
-                                                >
-                                                    <strong>{`Question ${index + 1}:`}</strong>{" "}
-                                                    {question.text}
-                                                    <p className="ml-6">
-                                                        Response:{" "}
-                                                        {question.response ||
-                                                            "No response provided"}
-                                                    </p>
-                                                </div>
-                                            ))
+                                            questions.map((question, index) => {
+                                                // Function to decode HTML entities and replace &apos; with '
+                                                const decodeText = (text) => {
+                                                    return text
+                                                        .replace(/&apos;/g, "'")
+                                                        .replace(/&#39;/g, "'")
+                                                        .replace(/&quot;/g, '"')
+                                                        .replace(/&amp;/g, "&");
+                                                };
+
+                                                return (
+                                                    <div
+                                                        key={index}
+                                                        className="mb-3"
+                                                    >
+                                                        <strong>{`Question ${index + 1}:`}</strong>{" "}
+                                                        {decodeText(
+                                                            question.text,
+                                                        )}
+                                                        <p className="ml-6 mt-4 text-green-700">
+                                                            Response:{" "}
+                                                            {question.response
+                                                                ? decodeText(
+                                                                      question.response,
+                                                                  )
+                                                                : "No response provided"}
+                                                        </p>
+                                                    </div>
+                                                );
+                                            })
                                         ) : (
                                             <p>
                                                 No questions available for this
@@ -1342,15 +1358,15 @@ function Recruitment_Management() {
                             >
                                 &times;
                             </span>
-                            <h3 className="text-2xl font-semibold mb-4 text-center">
-                                Tags and Comments for{" "}
-                                {currentApplicant?.filename}
+
+                            <h3 className="text-base font-semibold mb-4 text-center">
+                                Tags and Comments for {currentApplicant?.name}
                             </h3>
-                            <p className="text-base mb-3">
-                                <strong>Tags:</strong>{" "}
+                            <p className="text-base flex flex-col gap-4 mb-3">
+                                <strong>Matched Tags:</strong>{" "}
                                 {currentApplicant?.matched_words}
                             </p>
-                            <p className="text-base mb-3">
+                            <p className="text-base flex flex-col gap-4 mt-14 items-center mb-3">
                                 <strong>Comments:</strong>{" "}
                                 {currentApplicant?.comments}
                             </p>
