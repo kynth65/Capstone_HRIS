@@ -796,9 +796,9 @@ function Recruitment_Management() {
                                                         <th className="text-center px-4 py-2 border-b">
                                                             Rank
                                                         </th>
-                                                        <th className="text-center px-4 py-2 border-b">
+                                                        {/* <th className="text-center px-4 py-2 border-b">
                                                             Name
-                                                        </th>
+                                                        </th> */}
                                                         <th className="text-center px-4 py-2 border-b">
                                                             File
                                                         </th>
@@ -823,11 +823,11 @@ function Recruitment_Management() {
                                                                 <td className="px-4 py-2 border-b">
                                                                     {index + 1}
                                                                 </td>
-                                                                <td className="px-4 py-2 border-b">
+                                                                {/* <td className="px-4 py-2 border-b">
                                                                     {
                                                                         applicant.name
                                                                     }
-                                                                </td>
+                                                                </td> */}
                                                                 <td className="px-4 py-2 border-b">
                                                                     <button
                                                                         className="text-blue-500 hover:underline"

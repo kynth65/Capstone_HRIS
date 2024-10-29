@@ -12,7 +12,7 @@ const Admin_Position_Edit = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isViewAllModalOpen, setIsViewAllModalOpen] = useState(false);
     const [selectedPosition, setSelectedPosition] = useState(null);
-    const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+    const [showSuccessPopup, setShowSuccessPopup] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editPositionData, setEditPositionData] = useState({
@@ -102,7 +102,10 @@ const Admin_Position_Edit = () => {
                 `/positions/${editPositionData.position_id}`,
                 editPositionData,
             );
-            setShowSuccessPopup(true);
+            setShowSuccessPopup("Job position updated successfully!");
+            setTimeout(() => {
+                setShowSuccessPopup("");
+            }, 2000);
             closeEditModal();
             fetchPositions(); // Fetch updated positions
         } catch (error) {
@@ -122,7 +125,7 @@ const Admin_Position_Edit = () => {
             </>
 
             {showSuccessPopup && (
-                <div className="successPopup">Job position edited</div>
+                <div className="successPopup">{showSuccessPopup}</div>
             )}
 
             {errorMessage && <div className="errorPopup">{errorMessage}</div>}

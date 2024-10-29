@@ -36,6 +36,8 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\RfidCardController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\DashboardAttendanceController;
+use App\Http\Controllers\TodoController;
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -73,7 +75,6 @@ Route::post('/storeTag', [AdminTagsController::class, 'storeTag']);
 Route::post('/deleteTag', [AdminTagsController::class, 'deleteTag']);
 Route::get('/applicants/{positionId}', [OpenPositionController::class, 'getApplicants']);
 Route::get('/open-files/{filename}', [OpenFileController::class, 'openFile']);
-Route::get('/record-attendance', [AttendanceController::class, 'recordAttendance']);
 Route::get('/payroll/generate/{userId}', [PayrollController::class, 'generatePayroll']);
 Route::post('/leave-requests/{requestId}/approve', [SubmitLeaveRequest::class, 'approveLeave']);
 Route::post('/leave-requests/{requestId}/decline', [SubmitLeaveRequest::class, 'declineLeave']);
@@ -150,8 +151,9 @@ Route::get('/decline', function () {
     return view('declined_invitation');
 })->name('declined.page');
 Route::middleware('auth:sanctum')->post('/salary-history', [PayrollController::class, 'salaryHistory']);
+Route::get('highlighted-dates-expiring-cerfiticates', [HRDashboardController::class, 'getHighlightedDatesExpiringCertificates']);
 Route::get('highlighted-dates', [HRDashboardController::class, 'getHighlightedDates']);
-
+Route::get('/highlighted-dates-leave', [HRDashboardController::class, 'getHighlightedDatesLeave']);
 Route::get('/csrf-token', function () {
     return response()->json(['csrf_token' => csrf_token()]);
 });
@@ -170,6 +172,13 @@ Route::delete('/delete-position/{ranking_id}', [OpenPositionController::class, '
 
 Route::get('/employee/attendance/{rfid}', [EmployeeAttendanceController::class, 'getAttendanceRecordsByRFID']);
 Route::get('/employee/attendance/average/{rfid}', [EmployeeAttendanceController::class, 'getEmployeeDailyAverage']);
+
+Route::prefix('dashboard')->group(function () {
+    Route::get('/attendance', [DashboardAttendanceController::class, 'getDashboardRecords']);
+    Route::get('/attendance/sync', [DashboardAttendanceController::class, 'syncToDashboard']);
+    Route::get('/attendance/stats', [DashboardAttendanceController::class, 'getDashboardStats']);
+    Route::post('/attendance/update/{userId}', [DashboardAttendanceController::class, 'handleAttendanceUpdate']);
+});
 
 
 Route::prefix('incidents')->group(function () {
@@ -295,7 +304,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/mark-as-read/{userId}', [ChatController::class, 'markAsRead']);
     });
 });
-
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('todos', TodoController::class);
+});
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/user', function (Request $request) {

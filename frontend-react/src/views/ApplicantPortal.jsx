@@ -380,11 +380,36 @@ const ApplicantPortal = () => {
                 },
             );
 
+            // Show success popup
             setShowSuccessPopup("You successfully submitted your resume!");
             setTimeout(() => setShowSuccessPopup(""), 4000);
 
+            // Clear form fields
+            setContactInfo({
+                email: "",
+                phoneCountryCode: "",
+                mobileNumber: "",
+            });
+            setQuestions({
+                question1: "",
+                question2: "",
+                question3: "",
+                question4: "",
+                question5: "",
+                question6: "",
+                question7: "",
+                question8: "",
+                question9: "",
+                question10: "",
+            });
+            setSelectedPosition(null);
+            setIsChecked(false);
+            setResume(null);
+            // Close modals after submission
             closeModal();
             closeViewAllModal();
+
+            // Show success message
             setShowSuccessMessage("Application submitted successfully!");
             setTimeout(() => setShowSuccessMessage(""), 5000);
         } catch (error) {

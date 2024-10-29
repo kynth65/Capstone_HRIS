@@ -347,20 +347,20 @@ class ApplicantController extends Controller
             ]);
 
             // Update or create Google record
-            $google = Google::updateOrCreate(
-                ['google_id' => $validatedData['google_id']],
-                [
-                    'google_name' => $validatedData['name'],
-                    'google_email' => $validatedData['email'],
-                    'has_uploaded' => true
-                ]
-            );
+            // $google = Google::updateOrCreate(
+            //     ['google_id' => $validatedData['google_id']],
+            //     [
+            //         'google_name' => $validatedData['name'],
+            //         'google_email' => $validatedData['email'],
+            //         'has_uploaded' => true
+            //     ]
+            // );
 
-            // Force update has_uploaded if it's still false
-            if (!$google->has_uploaded) {
-                $google->has_uploaded = true;
-                $google->save();
-            }
+            // // Force update has_uploaded if it's still false
+            // if (!$google->has_uploaded) {
+            //     $google->has_uploaded = true;
+            //     $google->save();
+            // }
 
             return response()->json([
                 'message' => 'Resume uploaded and ranked successfully',

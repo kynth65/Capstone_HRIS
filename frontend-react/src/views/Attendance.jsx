@@ -128,6 +128,12 @@ function Attendance() {
         setSelectedEmployee(null);
         setIsModalOpen(false);
     };
+
+    const formatTime = (timeStr) => {
+        if (!timeStr || timeStr === "Pending") return "Pending";
+        return timeStr; // Time is already formatted as HH:mm from backend
+    };
+
     return (
         <div>
             <nav className="grid grid-cols-2">

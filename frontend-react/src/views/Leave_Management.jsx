@@ -15,7 +15,7 @@ function Leave_Management() {
     const [activeButton, setActiveButton] = useState("documentGenerator");
     const refresh = useRefreshToken();
     const [loading, setLoading] = useState(false);
-    const [documentType, setDocumentType] = useState("leaveLetter");
+    const [documentType, setDocumentType] = useState("");
     const [documentContent, setDocumentContent] = useState("");
     const [formData, setFormData] = useState({
         file: null,
@@ -284,7 +284,7 @@ function Leave_Management() {
                             }`}
                             onClick={toggleDocumentGenerator}
                         >
-                            Template Provider
+                            Template Generator
                         </button>
                     </li>
                     <li>
@@ -308,31 +308,17 @@ function Leave_Management() {
                                 AI Letter Template Generator
                             </h2>
                             <div className="selector-container">
-                                <label className="labels font-kodchasan">
-                                    Select Document Type:
-                                    <select
+                                <label className="labels font-kodchasan mb-2 block">
+                                    Document Type:
+                                    <input
+                                        type="text"
                                         value={documentType}
                                         onChange={(e) =>
                                             setDocumentType(e.target.value)
                                         }
-                                        className="select text-black"
-                                    >
-                                        <option value="leaveLetter">
-                                            Leave Letter
-                                        </option>
-                                        <option value="resignationLetter">
-                                            Resignation Letter
-                                        </option>
-                                        <option value="appreciationLetter">
-                                            Appreciation Letter
-                                        </option>
-                                        <option value="ThankyouLetter">
-                                            Thankyou Letter
-                                        </option>
-                                        <option value="complaintLetter">
-                                            Complaint Letter
-                                        </option>
-                                    </select>
+                                        placeholder="Enter document type"
+                                        className="input w-full px-3 py-2 border rounded-md text-black"
+                                    />
                                 </label>
                             </div>
                             <div className="selector-container">

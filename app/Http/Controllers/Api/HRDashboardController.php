@@ -238,12 +238,77 @@ class HRDashboardController extends Controller
 
     public function getHighlightedDates()
     {
-        // Fetch dates with their recruitment stage
+        // Fetch dates with their recruitment stage and candidate name
         $dates = DB::table('candidates')
             ->whereIn('recruitment_stage', ['Interview', 'Exam', 'Orientation'])
-            ->select('date', 'recruitment_stage') // Select both date and recruitment_stage
-            ->get();
+            ->select(
+                'date',
+                'recruitment_stage',
+                'name as candidate_name' // Add candidate name
+            )
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'date' => $item->date,
+                    'recruitment_stage' => $item->recruitment_stage,
+                    'name' => $item->candidate_name
+                ];
+            });
 
-        return response()->json($dates); // Return the data as JSON
+        return response()->json($dates);
+    }
+
+
+    public function getHighlightedDatesExpiringCertificates()
+    {
+        try {
+            $now = Carbon::now();
+
+            $dates = DB::table('certificates')
+                ->join('users', 'certificates.user_id', '=', 'users.user_id')
+                ->select(
+                    DB::raw('DATE(certificates.expiring_date) as date'),
+                    'users.name',  // Get user name
+                    'certificates.certificate_name', // Get certificate name
+                    DB::raw("CASE 
+                    WHEN certificates.expiring_date < CURDATE() THEN 'Expired'
+                    WHEN certificates.expiring_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) THEN 'Expiring Soon'
+                    ELSE 'Valid'
+                END as status")
+                )
+                ->whereNotNull('certificates.expiring_date')
+                ->where('certificates.expiring_date', '!=', 'Non-Expiring')
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'date' => Carbon::parse($item->date)->format('Y-m-d'),
+                        'name' => $item->name,
+                        'certificate_name' => $item->certificate_name,
+                        'status' => $item->status
+                    ];
+                });
+
+            return response()->json($dates);
+        } catch (\Exception $e) {
+            Log::error('Error fetching highlighted dates: ' . $e->getMessage());
+            return response()->json(['error' => 'Error fetching dates'], 500);
+        }
+    }
+
+    public function getHighlightedDatesLeave()
+    {
+        // Fetch dates from leave_requests table with user names
+        $dates = DB::table('leave_requests')
+            ->join('users', 'leave_requests.user_id', '=', 'users.user_id')
+            ->select('leave_requests.start_date', 'users.name') // Select start_date and user name
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'date' => $item->start_date,
+                    'name' => $item->name // Now returning name instead of status
+                ];
+            });
+
+        return response()->json($dates);
     }
 }

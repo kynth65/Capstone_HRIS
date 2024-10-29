@@ -252,7 +252,7 @@ h6 {
     left: 50%;
     transform: translateX(-50%);
     min-width: 100px; /* Smaller minimum width on mobile */
-    max-width: 200px; /* Add max-width to prevent overflow */
+    max-width: 300px; /* Add max-width to prevent overflow */
     font-size: 0.75rem; /* Smaller font for tooltip */
     opacity: 0;
     transition: opacity 0.3s;

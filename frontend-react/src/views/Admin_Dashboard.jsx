@@ -38,11 +38,12 @@ const Dashboard = () => {
     const [errorMessage, setErrorMessage] = useState("");
     const [highlightedDates, setHighlightedDates] = useState([]);
     const [currentDate, setCurrentDate] = useState(new Date());
+
     // Fetch attendance records every 5 seconds
     useEffect(() => {
         const fetchAttendanceRecords = async () => {
             try {
-                const response = await axiosClient.get("/record-attendance");
+                const response = await axiosClient.get("/dashboard/attendance");
                 setData((prevData) => ({
                     ...prevData,
                     attendanceRecords: response.data || [],
@@ -110,6 +111,48 @@ const Dashboard = () => {
 
         fetchCertificates();
     }, []);
+    useEffect(() => {
+        axiosClient
+            .get("/highlighted-dates")
+            .then((response) => {
+                const highlightedDates = response.data.map((item) => {
+                    let stageText;
+                    switch (item.recruitment_stage) {
+                        case "Interview":
+                            stageText = `${item.name}'s ${item.recruitment_stage} date`;
+                            break;
+                        case "Probationary":
+                            stageText = `${item.name}'s ${item.recruitment_stage} End`;
+                            break;
+                        case "Orientation":
+                            stageText = `${item.name}'s ${item.recruitment_stage} date`;
+                            break;
+                        default:
+                            stageText = `${item.name}'s ${item.recruitment_stage}`;
+                    }
+
+                    return {
+                        date: new Date(item.date),
+                        recruitmentStage: stageText,
+                    };
+                });
+                setHighlightedDates(highlightedDates);
+                console.log("Highlighted dates:", highlightedDates);
+            })
+            .catch((error) => console.error("Error fetching dates:", error));
+    }, []);
+    const isHighlighted = (date) => {
+        const highlight = highlightedDates.find((highlightDate) => {
+            const isSameDay = highlightDate.date.getDate() === date;
+            const isSameMonth =
+                highlightDate.date.getMonth() === currentDate.getMonth();
+            const isSameYear =
+                highlightDate.date.getFullYear() === currentDate.getFullYear();
+
+            return isSameDay && isSameMonth && isSameYear;
+        });
+        return highlight ? highlight.recruitmentStage : null;
+    };
 
     const months = [
         "January",
@@ -149,19 +192,6 @@ const Dashboard = () => {
             new Date(parseInt(e.target.value), currentDate.getMonth()),
         );
     };
-    useEffect(() => {
-        axiosClient
-            .get("/highlighted-dates")
-            .then((response) => {
-                const highlightedDates = response.data.map((item) => ({
-                    date: new Date(item.date),
-                    recruitmentStage: item.recruitment_stage,
-                }));
-                setHighlightedDates(highlightedDates);
-                console.log("Highlighted dates:", highlightedDates);
-            })
-            .catch((error) => console.error("Error fetching dates:", error));
-    }, []);
 
     // Updated Calendar Implementation
     const renderCalendar = () => {
@@ -178,20 +208,6 @@ const Dashboard = () => {
         const daysInMonth = endOfMonth.getDate();
         const firstDayOfMonth = startOfMonth.getDay();
         const dates = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-
-        const isHighlighted = (date) => {
-            const highlight = highlightedDates.find((highlightDate) => {
-                const isSameDay = highlightDate.date.getDate() === date;
-                const isSameMonth =
-                    highlightDate.date.getMonth() === currentDate.getMonth();
-                const isSameYear =
-                    highlightDate.date.getFullYear() ===
-                    currentDate.getFullYear();
-
-                return isSameDay && isSameMonth && isSameYear;
-            });
-            return highlight ? highlight.recruitmentStage : null;
-        };
 
         const formatDate = (date) => {
             return new Date(date).toLocaleDateString("en-US", {
@@ -302,6 +318,61 @@ const Dashboard = () => {
         return `Sent ${daysDiff} days ago`; // For any other day
     };
 
+    const formatRelativeDate = (dateStr) => {
+        const today = new Date();
+        const date = new Date(dateStr);
+
+        if (date.toDateString() === today.toDateString()) {
+            return "Today";
+        }
+
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        if (date.toDateString() === yesterday.toDateString()) {
+            return "Yesterday";
+        }
+
+        return date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+        });
+    };
+
+    const formatTime12Hour = (timeStr) => {
+        if (!timeStr) return "-";
+        const [datePart, timePart] = timeStr.split(" ");
+        const [hours, minutes] = timePart.split(":");
+        const date = new Date();
+        date.setHours(parseInt(hours));
+        date.setMinutes(parseInt(minutes));
+        return date
+            .toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true,
+                timeZone: "Asia/Manila",
+            })
+            .toLowerCase();
+    };
+
+    const getSortedRecords = (records) => {
+        return [...records].sort((a, b) => {
+            // Get the timestamp (either time_in or time_out)
+            const timeA = new Date(a.time_in || a.time_out);
+            const timeB = new Date(b.time_in || b.time_out);
+            return timeB - timeA; // Most recent first
+        });
+    };
+
+    const getAttendanceStatus = (record) => {
+        return record.time_in ? "In" : "Out";
+    };
+
+    const getRecordTime = (record) => {
+        return formatTime12Hour(record.time_in || record.time_out);
+    };
+
     return (
         <>
             <div className="animated fadeInDown">
@@ -321,58 +392,85 @@ const Dashboard = () => {
                 </div>
                 <div className="lg:grid lg:grid-cols-2 lg:space-x-3">
                     <div className="">
-                        <div className="flex flex-col mb-4 mr-2 sm:mr-0 justify-center items-center w-auto lg:h-[313px] xl:h-[334px] bg-white text-black rounded-lg  overflow-auto">
-                            <h1 className="font-bold text-lg py-2">
+                        <div className="bg-white rounded-lg p-6 mb-4 shadow-sm">
+                            <h2 className="text-xl font-semibold mb-4 text-center text-gray-800">
                                 Attendance Records
-                            </h1>
-                            <div className="employee-list-container w-full h-72">
-                                <table className="employee-table bg-white text-black rounded-xl overflow-hidden w-full">
-                                    <thead>
+                            </h2>
+                            <div className="relative">
+                                <table className="w-full">
+                                    <thead className="bg-gray-50">
                                         <tr>
-                                            <th className="hidden md:table-cell">
-                                                User ID
+                                            <th className="px-4 py-3 text-center text-sm font-medium text-gray-600">
+                                                Status
                                             </th>
-                                            <th>Name</th>
-                                            <th className="hidden md:table-cell">
+                                            <th className="px-4 py-3 text-center text-sm font-medium text-gray-600">
+                                                Name
+                                            </th>
+                                            <th className="px-4 py-3 text-center text-sm font-medium text-gray-600 hidden md:table-cell">
                                                 Date
                                             </th>
-                                            <th>Time In</th>
-                                            <th>Time Out</th>
+                                            <th className="px-4 py-3 text-center text-sm font-medium text-gray-600">
+                                                Time
+                                            </th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        {data.attendanceRecords.length > 0 ? (
-                                            data.attendanceRecords.map(
-                                                (record) => (
-                                                    <tr key={record.id}>
-                                                        <td className="hidden md:table-cell">
-                                                            {record.user_id}
+                                </table>
+                                <div className="overflow-y-auto max-h-[272px]">
+                                    <table className="w-full">
+                                        <tbody className="divide-y divide-gray-200">
+                                            {data.attendanceRecords.length >
+                                            0 ? (
+                                                getSortedRecords(
+                                                    data.attendanceRecords,
+                                                ).map((record) => (
+                                                    <tr
+                                                        key={record.id}
+                                                        className="hover:bg-gray-50"
+                                                    >
+                                                        <td className="px-4 py-3 text-sm text-gray-700 text-center">
+                                                            <span
+                                                                className={`px-2 py-1 rounded-full text-xs ${
+                                                                    getAttendanceStatus(
+                                                                        record,
+                                                                    ) === "In"
+                                                                        ? "bg-green-100 text-green-800"
+                                                                        : "bg-red-100 text-red-800"
+                                                                }`}
+                                                            >
+                                                                {getAttendanceStatus(
+                                                                    record,
+                                                                )}
+                                                            </span>
                                                         </td>
-                                                        <td>{record.name}</td>
-                                                        <td className="hidden md:table-cell">
-                                                            {record.date}
+                                                        <td className="px-4 py-3 text-sm text-gray-700 text-center">
+                                                            {record.name}
                                                         </td>
-                                                        <td>
-                                                            {record.time_in}
+                                                        <td className="px-4 py-3 text-sm text-gray-700 hidden md:table-cell text-center">
+                                                            {formatRelativeDate(
+                                                                record.date,
+                                                            )}
                                                         </td>
-                                                        <td>
-                                                            {record.time_out}
+                                                        <td className="px-4 py-3 text-sm text-gray-700 text-center">
+                                                            {getRecordTime(
+                                                                record,
+                                                            )}
                                                         </td>
                                                     </tr>
-                                                ),
-                                            )
-                                        ) : (
-                                            <tr>
-                                                <td
-                                                    colSpan="5"
-                                                    className="text-center"
-                                                >
-                                                    No attendance records found
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
+                                                ))
+                                            ) : (
+                                                <tr>
+                                                    <td
+                                                        colSpan="4"
+                                                        className="px-4 py-3 text-sm text-gray-500 text-center"
+                                                    >
+                                                        No attendance records
+                                                        found
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                         <div>{renderCalendar()}</div>

@@ -16,7 +16,7 @@ const HR_Leave_Management = () => {
     const [loading, setLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
-    const [documentType, setDocumentType] = useState("leaveLetter");
+    const [documentType, setDocumentType] = useState("");
     const [documentContent, setDocumentContent] = useState("");
     const [tone, setTone] = useState("formal");
     const [reason, setReason] = useState("");
@@ -222,7 +222,7 @@ const HR_Leave_Management = () => {
                         className={`navButton ${activeButton === "templateProviderAI" ? "active" : ""}`}
                         onClick={() => toggleView("templateProviderAI")}
                     >
-                        Template Provider AI
+                        Template Generator
                     </button>
                 </nav>
             </div>
@@ -684,31 +684,17 @@ const HR_Leave_Management = () => {
                                     AI Letter Template Generator
                                 </h2>
                                 <div className="selector-container">
-                                    <label className="labels font-kodchasan">
-                                        Select Document Type:
-                                        <select
+                                    <label className="labels font-kodchasan mb-2 block">
+                                        Document Type:
+                                        <input
+                                            type="text"
                                             value={documentType}
                                             onChange={(e) =>
                                                 setDocumentType(e.target.value)
                                             }
-                                            className="select text-black"
-                                        >
-                                            <option value="leaveLetter">
-                                                Leave Letter
-                                            </option>
-                                            <option value="resignationLetter">
-                                                Resignation Letter
-                                            </option>
-                                            <option value="appreciationLetter">
-                                                Appreciation Letter
-                                            </option>
-                                            <option value="ThankyouLetter">
-                                                Thankyou Letter
-                                            </option>
-                                            <option value="complaintLetter">
-                                                Complaint Letter
-                                            </option>
-                                        </select>
+                                            placeholder="Enter document type"
+                                            className="input w-full px-3 py-2 border rounded-md text-black"
+                                        />
                                     </label>
                                 </div>
                                 <div className="selector-container">

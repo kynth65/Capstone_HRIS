@@ -130,7 +130,7 @@ const AdminTags = () => {
     return (
         <div className="bg-white overflow-auto h-full xl:w-3/4 text-sm flex xl:ml-32 xl:mt-12 flex-col items-center md:mx-7 md:px-7 p-2 pb-10 pt-4 rounded-lg">
             <div>
-                <h3 className="tags text-xl 2xl:pl-[300px] 2xl:text-2xl mb-3 font-bold">
+                <h3 className="tags text-xl text-center 2xl:pl-[300px] 2xl:text-2xl mb-3 font-bold ">
                     ADD TAGS
                 </h3>
             </div>

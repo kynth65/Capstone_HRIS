@@ -199,6 +199,7 @@ function DefaultLayout() {
     };
 
     const handleViewProfile = () => {
+        setHeaderText("profile");
         navigate("/profile");
         setShowModal(false);
     };
@@ -533,6 +534,7 @@ function DefaultLayout() {
                             >
                                 View Profile
                             </button>
+
                             <button
                                 onClick={onLogout}
                                 className="btn-modal px-4 bg-green-900 py-4 border-2 border-green-900 rounded-xl font-kodchasan text-white hover:bg-white hover:text-green-900 transition"
