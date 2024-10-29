@@ -72,29 +72,53 @@ function calculateWorkTime($timeIn, $timeOut)
 function isLate($userId, $timeIn)
 {
   global $conn;
-  $sql = "SELECT schedule FROM users WHERE user_id = ?";
-  $stmt = $conn->prepare($sql);
-  $stmt->bind_param("s", $userId);
-  $stmt->execute();
-  $result = $stmt->get_result();
 
-  if ($result->num_rows > 0) {
-    $row = $result->fetch_assoc();
-    $schedule = $row['schedule'];
-    $stmt->close();
+  // Default schedule settings
+  $defaultStartTime = "09:00:00"; // 9 AM default start time
+  $gracePeriod = 15; // 15 minutes grace period
 
-    $scheduleParts = explode(' - ', $schedule);
-    if (count($scheduleParts) === 2) {
-      $startTime = trim($scheduleParts[0]);
-      $gracePeriod = 15;
-      $startTimeWithGrace = (new DateTime($startTime))->add(new DateInterval("PT{$gracePeriod}M"));
+  try {
+    $sql = "SELECT schedule FROM users WHERE user_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-      $timeIn = new DateTime($timeIn);
-      return $timeIn > $startTimeWithGrace;
+    if ($result->num_rows > 0) {
+      $row = $result->fetch_assoc();
+      $schedule = $row['schedule'];
+      $stmt->close();
+
+      // If schedule is not null and has the correct format
+      if ($schedule !== null && strpos($schedule, ' - ') !== false) {
+        $scheduleParts = explode(' - ', $schedule);
+        if (count($scheduleParts) === 2) {
+          $startTime = trim($scheduleParts[0]);
+          $startTimeObj = new DateTime(date('Y-m-d') . ' ' . $startTime);
+          $startTimeWithGrace = $startTimeObj->add(new DateInterval("PT{$gracePeriod}M"));
+          $timeInObj = new DateTime($timeIn);
+          return $timeInObj > $startTimeWithGrace;
+        }
+      }
     }
-  }
 
-  return false;
+    // Use default schedule if no valid schedule is found
+    $defaultStartTimeObj = new DateTime(date('Y-m-d') . ' ' . $defaultStartTime);
+    $defaultStartWithGrace = $defaultStartTimeObj->add(new DateInterval("PT{$gracePeriod}M"));
+    $timeInObj = new DateTime($timeIn);
+
+    return $timeInObj > $defaultStartWithGrace;
+  } catch (Exception $e) {
+    // Log error if needed
+    error_log("Error in isLate function: " . $e->getMessage());
+
+    // Use default schedule in case of any error
+    $defaultStartTimeObj = new DateTime(date('Y-m-d') . ' ' . $defaultStartTime);
+    $defaultStartWithGrace = $defaultStartTimeObj->add(new DateInterval("PT{$gracePeriod}M"));
+    $timeInObj = new DateTime($timeIn);
+
+    return $timeInObj > $defaultStartWithGrace;
+  }
 }
 
 // Function to check if RFID exists in rfid_cards table
