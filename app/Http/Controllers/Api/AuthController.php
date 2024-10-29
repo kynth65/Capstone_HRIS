@@ -68,7 +68,7 @@ class AuthController extends Controller
 
             $rfidCard = RfidCard::where('rfid_uid', $data['rfid'])
                 ->where('status', 'available')
-                ->firstOrFail();
+                ->first();
 
             $rfidCard->status = 'assigned';
             $rfidCard->save();
