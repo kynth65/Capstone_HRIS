@@ -10,12 +10,6 @@ $username = "u556129284_gammacare_db";
 $password = "q^XnKj4hE~";
 $dbname = "u556129284_gammacare_db";
 
-// Database connection details
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "gammacare_db";
-
 // Establish database connection
 $conn = new mysqli($servername, $username, $password, $dbname);
 
@@ -24,7 +18,34 @@ if ($conn->connect_error) {
   die("Connection failed: " . $conn->connect_error);
 }
 
-// Function to check if it's a new day for attendance
+function hasTimeInToday($userId)
+{
+  global $conn;
+  $today = date('Y-m-d');
+  $sql = "SELECT * FROM attendances WHERE user_id = ? AND date = ? AND time_in IS NOT NULL";
+  $stmt = $conn->prepare($sql);
+  $stmt->bind_param("ss", $userId, $today);
+  $stmt->execute();
+  $result = $stmt->get_result();
+  $hasTimeIn = $result->num_rows > 0;
+  $stmt->close();
+  return $hasTimeIn;
+}
+
+function hasTimeOutToday($userId)
+{
+  global $conn;
+  $today = date('Y-m-d');
+  $sql = "SELECT * FROM attendances WHERE user_id = ? AND date = ? AND time_out IS NOT NULL";
+  $stmt = $conn->prepare($sql);
+  $stmt->bind_param("ss", $userId, $today);
+  $stmt->execute();
+  $result = $stmt->get_result();
+  $hasTimeOut = $result->num_rows > 0;
+  $stmt->close();
+  return $hasTimeOut;
+}
+
 function isNewDay($userId)
 {
   global $conn;
@@ -40,7 +61,6 @@ function isNewDay($userId)
   return $isNew;
 }
 
-// Function to calculate accumulated work time in minutes
 function calculateWorkTime($timeIn, $timeOut)
 {
   $timeIn = new DateTime($timeIn);
@@ -49,7 +69,6 @@ function calculateWorkTime($timeIn, $timeOut)
   return $interval->h * 60 + $interval->i;
 }
 
-// Function to determine if the user is late based on their schedule and time in
 function isLate($userId, $timeIn)
 {
   global $conn;
@@ -64,14 +83,12 @@ function isLate($userId, $timeIn)
     $schedule = $row['schedule'];
     $stmt->close();
 
-    // Split the schedule to get the start time
     $scheduleParts = explode(' - ', $schedule);
     if (count($scheduleParts) === 2) {
       $startTime = trim($scheduleParts[0]);
-      $gracePeriod = 15; // Grace period in minutes
+      $gracePeriod = 15;
       $startTimeWithGrace = (new DateTime($startTime))->add(new DateInterval("PT{$gracePeriod}M"));
 
-      // Check if time in is later than the start time with grace period
       $timeIn = new DateTime($timeIn);
       return $timeIn > $startTimeWithGrace;
     }
@@ -79,6 +96,93 @@ function isLate($userId, $timeIn)
 
   return false;
 }
+
+// Function to check if RFID exists in rfid_cards table
+function isRfidExists($rfid)
+{
+  global $conn;
+  $sql = "SELECT rfid_uid FROM rfid_cards WHERE rfid_uid = ?";
+  $stmt = $conn->prepare($sql);
+  $stmt->bind_param("s", $rfid);
+  $stmt->execute();
+  $result = $stmt->get_result();
+  $exists = $result->num_rows > 0;
+  $stmt->close();
+  return $exists;
+}
+
+// Function to add RFID to rfid_cards table
+function addRfidCard($rfid)
+{
+  global $conn;
+
+  // Get current date and time
+  $currentDateTime = new DateTime('now', new DateTimeZone('Asia/Manila'));
+  $createdAt = $currentDateTime->format('Y-m-d H:i:s');
+
+  // Insert new RFID card with the created_at timestamp
+  $sql = "INSERT INTO rfid_cards (rfid_uid, status, created_at) VALUES (?, 'available', ?)";
+  $stmt = $conn->prepare($sql);
+  $stmt->bind_param("ss", $rfid, $createdAt);
+
+  if ($stmt->execute()) {
+    $stmt->close();
+    return true;
+  } else {
+    $stmt->close();
+    return false;
+  }
+}
+
+
+function updateDashboardAttendance($userId, $currentTimeStamp, $currentDate, $status, $lateStatus)
+{
+  global $conn;
+
+  // Check if there's an existing dashboard record for today
+  $checkSql = "SELECT * FROM dashboard_attendances WHERE user_id = ? AND date = ? LIMIT 1";
+  $checkStmt = $conn->prepare($checkSql);
+  $checkStmt->bind_param("ss", $userId, $currentDate);
+  $checkStmt->execute();
+  $result = $checkStmt->get_result();
+  $checkStmt->close();
+
+  // Get the latest record to determine what type of record to create
+  $lastRecordSql = "SELECT * FROM dashboard_attendances WHERE user_id = ? AND date = ? ORDER BY id DESC LIMIT 1";
+  $lastRecordStmt = $conn->prepare($lastRecordSql);
+  $lastRecordStmt->bind_param("ss", $userId, $currentDate);
+  $lastRecordStmt->execute();
+  $lastRecord = $lastRecordStmt->get_result();
+  $lastRecordStmt->close();
+
+  if ($lastRecord->num_rows === 0) {
+    // First record of the day - create time in record
+    $sql = "INSERT INTO dashboard_attendances (user_id, time_in, time_out, date, status, late) 
+                VALUES (?, ?, NULL, ?, ?, ?)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("sssss", $userId, $currentTimeStamp, $currentDate, $status, $lateStatus);
+  } else {
+    $lastRow = $lastRecord->fetch_assoc();
+    if ($lastRow['time_in'] !== null && $lastRow['time_out'] === null) {
+      // Previous record was a time in - create time out record
+      $sql = "INSERT INTO dashboard_attendances (user_id, time_in, time_out, date, status, late) 
+                    VALUES (?, NULL, ?, ?, ?, ?)";
+      $stmt = $conn->prepare($sql);
+      $stmt->bind_param("sssss", $userId, $currentTimeStamp, $currentDate, $status, $lateStatus);
+    } else {
+      // Previous record was a time out - create new time in record
+      $sql = "INSERT INTO dashboard_attendances (user_id, time_in, time_out, date, status, late) 
+                    VALUES (?, ?, NULL, ?, ?, ?)";
+      $stmt = $conn->prepare($sql);
+      $stmt->bind_param("sssss", $userId, $currentTimeStamp, $currentDate, $status, $lateStatus);
+    }
+  }
+
+  $stmt->execute();
+  $stmt->close();
+}
+
+
 
 if (isset($_POST['rfid'])) {
   $rfid = $_POST['rfid'];
@@ -98,22 +202,29 @@ if (isset($_POST['rfid'])) {
     $currentDate = $currentDateTime->format('Y-m-d');
     $currentTimeStamp = $currentDateTime->format('Y-m-d H:i:s');
 
-    if (isNewDay($userId)) {
-      // Determine lateness based on the user's schedule and time in
+    // Check if user has already timed in and out today
+    $hasTimeIn = hasTimeInToday($userId);
+    $hasTimeOut = hasTimeOutToday($userId);
+
+    if (!$hasTimeIn) {
+      // Time In Logic for regular attendance
       $lateStatus = isLate($userId, $currentTimeStamp) ? 'Late' : 'On time';
 
-      // Record Time In
-      $sql = "INSERT INTO attendances (user_id, time_in, date, status, late) VALUES (?, ?, ?, 'present', ?)";
+      // Regular attendance insert
+      $sql = "INSERT INTO attendances (user_id, time_in, date, status, late) 
+                    VALUES (?, ?, ?, 'present', ?)";
       $stmt = $conn->prepare($sql);
       $stmt->bind_param("ssss", $userId, $currentTimeStamp, $currentDate, $lateStatus);
 
       if ($stmt->execute()) {
-        echo json_encode(["status" => "success", "message" => "Attendance recorded (Time In)"]);
+        // Update dashboard attendance
+        updateDashboardAttendance($userId, $currentTimeStamp, $currentDate, 'present', $lateStatus);
+        echo json_encode(["status" => "success", "message" => "Time In recorded"]);
       } else {
         echo json_encode(["status" => "error", "message" => "Error recording attendance"]);
       }
-    } else {
-      // Record Time Out
+    } else if ($hasTimeIn && !$hasTimeOut) {
+      // Time Out Logic for regular attendance
       $timeInQuery = "SELECT time_in FROM attendances WHERE user_id = ? AND date = ? AND time_out IS NULL";
       $timeInStmt = $conn->prepare($timeInQuery);
       $timeInStmt->bind_param("ss", $userId, $currentDate);
@@ -125,27 +236,53 @@ if (isset($_POST['rfid'])) {
         $timeIn = $timeInRow['time_in'];
         $accumulatedWorkTime = calculateWorkTime($timeIn, $currentTimeStamp);
 
-        $updateSql = "UPDATE attendances SET time_out = ?, accumulated_work_time = ? WHERE user_id = ? AND date = ? AND time_out IS NULL";
-        $stmt = $conn->prepare($updateSql);
-        $stmt->bind_param("siss", $currentTimeStamp, $accumulatedWorkTime, $userId, $currentDate);
+        // Update regular attendance
+        $updateSql = "UPDATE attendances 
+                             SET time_out = ?, accumulated_work_time = ? 
+                             WHERE user_id = ? AND date = ? AND time_out IS NULL";
+        $updateStmt = $conn->prepare($updateSql);
+        $updateStmt->bind_param("siss", $currentTimeStamp, $accumulatedWorkTime, $userId, $currentDate);
 
-        if ($stmt->execute()) {
+        if ($updateStmt->execute()) {
+          // Update dashboard attendance
+          updateDashboardAttendance($userId, $currentTimeStamp, $currentDate, 'present', 'On time');
           echo json_encode([
             "status" => "success",
-            "message" => "Attendance updated (Time Out)",
+            "message" => "Time Out recorded",
             "accumulated_work_time" => $accumulatedWorkTime . " minutes"
           ]);
         } else {
-          echo json_encode(["status" => "error", "message" => "Error updating attendance"]);
+          echo json_encode(["status" => "error", "message" => "Error recording Time Out"]);
         }
+        $updateStmt->close();
       } else {
-        echo json_encode(["status" => "error", "message" => "Error retrieving Time In"]);
+        echo json_encode(["status" => "error", "message" => "No Time In record found"]);
       }
       $timeInStmt->close();
     }
     $stmt->close();
   } else {
-    echo json_encode(["status" => "error", "message" => "User not found"]);
+    // User not found - check if RFID exists in rfid_cards
+    if (!isRfidExists($rfid)) {
+      // Add to rfid_cards if it doesn't exist
+      if (addRfidCard($rfid)) {
+        echo json_encode([
+          "status" => "success",
+          "message" => "New RFID card detected and stored successfully",
+          "rfid" => $rfid
+        ]);
+      } else {
+        echo json_encode([
+          "status" => "error",
+          "message" => "Error storing new RFID card"
+        ]);
+      }
+    } else {
+      echo json_encode([
+        "status" => "error",
+        "message" => "RFID exists but not assigned to any user"
+      ]);
+    }
   }
 } else {
   echo json_encode(["status" => "error", "message" => "RFID not provided"]);
