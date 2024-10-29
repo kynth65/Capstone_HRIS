@@ -303,7 +303,7 @@ function AdminLayout() {
                             </div>
 
                             {showNotificationDropdown && (
-                                <div className="absolute right-0 mt-2 h-96 overflow-auto w-[520px] bg-white shadow-lg rounded-lg border border-gray-100 z-50">
+                                <div className="absolute left-1/2 -translate-x-64 sm:-translate-x-72 md:right-0 md:-translate-x-96  mt-2 h-96 overflow-auto w-[400px] md:w-[510px] bg-white shadow-lg rounded-lg border border-gray-100 z-50">
                                     {notifications.length > 0 ? (
                                         Object.entries(
                                             notifications.reduce(

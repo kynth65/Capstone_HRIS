@@ -346,7 +346,7 @@ class ApplicantController extends Controller
                 'isRead' => false,
             ]);
 
-            // Update or create Google record
+            // // Update or create Google record
             // $google = Google::updateOrCreate(
             //     ['google_id' => $validatedData['google_id']],
             //     [
@@ -371,6 +371,7 @@ class ApplicantController extends Controller
             return response()->json(['error' => 'Failed to upload and rank resume: ' . $e->getMessage()], 500);
         }
     }
+
     public function updateHasUploaded(Request $request)
     {
         try {

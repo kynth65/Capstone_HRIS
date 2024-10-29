@@ -219,108 +219,110 @@ const ApplicantPortal = () => {
         return null;
     };
 
-    const extractName = (text) => {
-        if (!text) return null;
+    const extractNameWithAI = async (text, apiKey) => {
+        try {
+            const response = await fetch(
+                "https://api.openai.com/v1/chat/completions",
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-4",
+                        messages: [
+                            {
+                                role: "system",
+                                content:
+                                    'You are a precise name extractor. Extract only the full name of the applicant from the given text. Return ONLY the name, nothing else. The name should be in proper case (e.g., "John Smith" or "Mary Jane Doe"). Do not include titles, degrees, or other text.',
+                            },
+                            {
+                                role: "user",
+                                content: `Extract only the applicant's name from this text: ${text}`,
+                            },
+                        ],
+                        max_tokens: 50,
+                        temperature: 0.1, // Low temperature for more deterministic output
+                    }),
+                },
+            );
 
-        // Clean and normalize the text
-        let cleanText = text
-            .replace(/\s+/g, " ") // Normalize spaces
-            .replace(/\|/g, " ") // Replace pipes with spaces
-            .replace(/Contact:|Email:|Location:|Summary/gi, "|$&") // Add delimiter before common headers
-            .trim();
-
-        console.log("Cleaned text:", cleanText);
-
-        // Get everything before the first delimiter
-        let firstLine = cleanText.split("|")[0].trim();
-        console.log("First line before processing:", firstLine);
-
-        // Pre-process the name
-        firstLine = firstLine
-            // Fix "Kynt h" to "Kynth"
-            .replace(/Kynt\s+h/i, "Kynth")
-            // Normalize spaces around dots
-            .replace(/\s*\.\s*/g, ".")
-            // Add space after a dot if not present
-            .replace(/\.([A-Z])/g, ". $1")
-            // Remove any remaining multiple spaces
-            .replace(/\s+/g, " ")
-            .trim();
-
-        console.log("Processed first line:", firstLine);
-
-        // Specific pattern for your name format
-        const namePattern =
-            /^(?:(?:Kynt h|Kynth)\s+Anthony\s+P\.\s+Marcaida|(?:[A-Z][a-zA-Z]+)\s+(?:[A-Z][a-zA-Z]+)\s+(?:[A-Z]\.)\s+(?:[A-Z][a-zA-Z]+))$/i;
-
-        if (namePattern.test(firstLine)) {
-            // If it's "Kynt h", convert to "Kynth"
-            let formattedName = firstLine
-                .replace(/Kynt\s+h/i, "Kynth")
-                .replace(/\s+/g, " ")
-                .trim();
-            console.log("Matched and formatted name:", formattedName);
-            return formattedName;
-        }
-
-        // Fallback patterns
-        const fallbackPatterns = [
-            // Four part name with middle initial
-            /^([A-Z][a-zA-Z]+)\s+([A-Z][a-zA-Z]+)\s+([A-Z]\.)\s+([A-Z][a-zA-Z]+)$/,
-
-            // Three part name with middle initial
-            /^([A-Z][a-zA-Z]+)\s+([A-Z]\.)\s+([A-Z][a-zA-Z]+)$/,
-
-            // Three part name without initial
-            /^([A-Z][a-zA-Z]+)\s+([A-Z][a-zA-Z]+)\s+([A-Z][a-zA-Z]+)$/,
-        ];
-
-        for (const pattern of fallbackPatterns) {
-            const match = firstLine.match(pattern);
-            if (match) {
-                const name = match.slice(1).join(" ");
-                console.log("Matched name with fallback pattern:", name);
-                return name;
+            if (!response.ok) {
+                throw new Error("Failed to extract name using AI");
             }
-        }
 
-        console.log("No valid name pattern matched for:", firstLine);
-        return null;
+            const data = await response.json();
+            const extractedName = data.choices[0].message.content.trim();
+
+            // Basic validation to ensure we got a name
+            if (
+                extractedName &&
+                /^[A-Z][a-z]+(?:\s+(?:[A-Z][a-z]+|[A-Z]\.)){1,3}$/.test(
+                    extractedName,
+                )
+            ) {
+                return extractedName;
+            }
+            return null;
+        } catch (error) {
+            console.error("Error extracting name with AI:", error);
+            return null;
+        }
     };
 
-    // Updated validation function to handle initials
     const isValidNameWithInitials = (name) => {
         if (!name) return false;
+        if (name.length < 2) return false;
 
-        // Must be at least 5 characters (minimum for a proper name)
-        if (name.length < 5) return false;
-
-        // Split into words
         const words = name.trim().split(/\s+/);
+        if (words.length < 2 || words.length > 4) return false;
 
-        // Must have at least 2 words
-        if (words.length < 2) return false;
+        // Common non-name words to check against
+        const nonNameWords = [
+            "USA",
+            "PROFESSIONAL",
+            "RESUME",
+            "CURRICULUM",
+            "VITAE",
+            "CV",
+            "NAME",
+            "MAIN",
+            "STREET",
+            "ROAD",
+            "AVENUE",
+            "DRIVE",
+            "LANE",
+            "COURT",
+            "CIRCLE",
+            "SUMMARY",
+            "PROFILE",
+            "CONTACT",
+            "EMAIL",
+            "PHONE",
+            "ADDRESS",
+            "LOCATION",
+        ];
 
-        // Check each word
         for (const word of words) {
-            // Handle initials (e.g., "P." or "P")
+            // Skip checking format for initials
             if (/^[A-Z]\.?$/.test(word)) continue;
 
-            // Regular name words
-            if (!/^[A-Z][a-zA-Z]{1,}$/.test(word)) {
+            // Check if it's a non-name word
+            if (nonNameWords.includes(word.toUpperCase())) {
                 return false;
             }
-        }
 
-        // Check for common document words
-        const invalidWords = ["RESUME", "CURRICULUM", "VITAE", "CV", "NAME"];
-        if (words.some((word) => invalidWords.includes(word.toUpperCase()))) {
-            return false;
+            // Check format for regular name words
+            if (!/^[A-Z][a-zA-Z]+$/.test(word)) {
+                return false;
+            }
         }
 
         return true;
     };
 
+    // Modified handleUpload function
     const handleUpload = async () => {
         if (selectedFiles.length === 0 || !isChecked) {
             setErrorMessage(
@@ -348,8 +350,14 @@ const ApplicantPortal = () => {
                 .replace(/\s*\|\s*/g, "|")
                 .trim();
 
-            const extractedName = extractName(cleanedText);
+            // Use AI to extract name
+            const apiKey = import.meta.env.VITE_APP_OPENAI_API_KEY; // Make sure to set this in your environment
+            const extractedName = await extractNameWithAI(cleanedText, apiKey);
             const email = extractEmail(text);
+
+            if (!extractedName) {
+                throw new Error("Could not extract name from resume");
+            }
 
             formData.append("filename", file.name);
             formData.append("email", email || contactInfo.email);
