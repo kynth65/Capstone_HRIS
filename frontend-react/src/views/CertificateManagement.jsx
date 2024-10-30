@@ -952,7 +952,7 @@ function CertificateManagement() {
     return (
         <>
             <div className="mb-4">
-                <nav className="grid grid-cols-3 ">
+                <nav className="grid grid-cols-2 ">
                     <button
                         className={`navButton ${
                             activeButton === "employeeList" ? "active" : ""
@@ -972,12 +972,12 @@ function CertificateManagement() {
                     >
                         Employee Documents
                     </button>
-                    <button
+                    {/* <button
                         className={`navButton ${activeButton === "certificateRequests" ? "active" : ""}`}
                         onClick={() => setActiveButton("certificateRequests")}
                     >
                         Documents Requests
-                    </button>
+                    </button> */}
                 </nav>
             </div>
 
@@ -985,7 +985,7 @@ function CertificateManagement() {
                 <div className="w-full max-w-7xl mx-auto px-4 animated fadeInDown   sm:ml-0 text-black">
                     {/* Filters and Controls Section */}
                     <div className="bg-white rounded-lg p-4 mb-4 shadow-sm">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2">
                             <div className="flex flex-col">
                                 <label className="text-sm text-gray-600 mb-1">
                                     Department
@@ -1017,7 +1017,7 @@ function CertificateManagement() {
                                 />
                             </div>
 
-                            <div className="flex flex-col">
+                            {/* <div className="flex flex-col">
                                 <label className="text-sm text-gray-600 mb-1">
                                     &nbsp;
                                 </label>
@@ -1032,7 +1032,7 @@ function CertificateManagement() {
                                         </span>
                                     )}
                                 </button>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
 
@@ -2936,10 +2936,9 @@ function CertificateManagement() {
                 </div>
             )}
 
-            {isUpdateRequestModalOpen && (
+            {/* {isUpdateRequestModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50 text-black">
                     <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-                        {/* Header */}
                         <div className="p-4 border-b">
                             <h2 className="text-xl font-bold text-black">
                                 Document Update Requests
@@ -2951,9 +2950,7 @@ function CertificateManagement() {
                             )}
                         </div>
 
-                        {/* Content Area */}
                         <div className="flex-1 max-h-[450px] overflow-auto p-4">
-                            {/* Mobile View */}
                             <div className="md:hidden space-y-4">
                                 {certificateUpdateRequests.length > 0 ? (
                                     certificateUpdateRequests.map((request) => (
@@ -3038,7 +3035,6 @@ function CertificateManagement() {
                                 )}
                             </div>
 
-                            {/* Desktop View */}
                             <div className="hidden md:block">
                                 <table className="w-full border-collapse">
                                     <thead className="bg-gray-50">
@@ -3140,7 +3136,6 @@ function CertificateManagement() {
                             </div>
                         </div>
 
-                        {/* Footer */}
                         <div className="p-4 border-t">
                             <button
                                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
@@ -3162,7 +3157,6 @@ function CertificateManagement() {
                             Update Document
                         </h2>
                         <form onSubmit={handleUpdateSubmit}>
-                            {/* Display and Edit Certificate Name */}
                             <div className="mb-4">
                                 <label className="block text-gray-700">
                                     Document Name
@@ -3178,7 +3172,6 @@ function CertificateManagement() {
                                     required
                                 />
                             </div>
-                            {/* Select for Expirable or Non-expirable */}
                             <div className="mb-4">
                                 <label className="block text-gray-700">
                                     Type
@@ -3195,7 +3188,7 @@ function CertificateManagement() {
                                     <option value="expirable">Expirable</option>
                                 </select>
                             </div>
-                            {/* Category Selection */}
+
                             <div className="mb-4">
                                 <label className="block text-gray-700">
                                     Category
@@ -3232,7 +3225,6 @@ function CertificateManagement() {
                                     max={formatDateString(maxDate)} // Set maximum date
                                 />
                             </div>
-                            {/* Conditionally show date inputs based on certificate type */}
                             {newType === "expirable" && (
                                 <>
                                     <div className="mb-4">
@@ -3271,7 +3263,7 @@ function CertificateManagement() {
                         </form>
                     </div>
                 </div>
-            )}
+            )} */}
             {isDetailModalOpen && detailedCertificate && (
                 <div className="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
                     <div className="modal-content bg-white p-8 rounded-lg w-3/4 max-w-2xl">
@@ -3349,9 +3341,9 @@ function CertificateManagement() {
                 </div>
             )}
 
-            {activeButton === "certificateRequests" && (
+            {/* {activeButton === "certificateRequests" && (
                 <div className="w-full max-w-5xl mx-auto px-4 animated fadeInDown sm:ml-0 text-black">
-                    {/* Filters Section - Shown in both Desktop and Mobile */}
+            
                     <div className="bg-white rounded-lg p-4 mb-4 shadow-sm">
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div className="flex flex-col">
@@ -3404,7 +3396,6 @@ function CertificateManagement() {
                         </div>
                     </div>
 
-                    {/* Mobile View */}
                     <div className="md:hidden">
                         <div className="space-y-4">
                             {filteredRequests.length > 0 ? (
@@ -3506,7 +3497,6 @@ function CertificateManagement() {
                         </div>
                     </div>
 
-                    {/* Desktop View */}
                     <div className="hidden md:block bg-white rounded-lg shadow-sm">
                         <div className="max-h-[600px] overflow-y-auto">
                             <table className="w-full">
@@ -3626,7 +3616,7 @@ function CertificateManagement() {
                         </div>
                     </div>
                 </div>
-            )}
+            )} */}
 
             {/* Remark Modal */}
             {isRemarkModalOpen && (

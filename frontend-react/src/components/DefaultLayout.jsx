@@ -262,14 +262,14 @@ function DefaultLayout() {
                             Recruitment Management
                         </span>
                     </Link>
-                    <Link
+                    {/* <Link
                         to="/payroll"
                         onClick={() => handleHeaderChange("Payroll")}
                     >
                         <span className="block h-10 pt-3 cursor-pointer text-white hover:bg-opacity-70 hover:bg-gray-600 rounded-lg transition">
                             Payroll
                         </span>
-                    </Link>
+                    </Link> */}
                     <Link
                         to="/onboarding"
                         onClick={() => handleHeaderChange("Onboarding")}

@@ -18,8 +18,7 @@ import LicensedLogo2 from "../assets/images/FDA logo updated.png";
 import LicensedLogo3 from "../assets/images/acredited image tuv.png";
 import HeroImage from "../assets/images/HeroImage.gif";
 import LogoImage from "../assets/images/GMSI Logo.png";
-import { MdArrowForwardIos } from "react-icons/md";
-import { MdArrowBackIos } from "react-icons/md";
+import { MdArrowForwardIos, MdArrowBackIos } from "react-icons/md";
 import "../styles/homePage.css";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { FaFacebookSquare, FaForward } from "react-icons/fa";
@@ -30,8 +29,6 @@ import { FaClinicMedical } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 function Home() {
-    const [showNavigator, setShowNavigator] = useState(false);
-
     const slides = [
         AboutSlide1,
         AboutSlide2,
@@ -39,6 +36,78 @@ function Home() {
         AboutSlide4,
         AboutSlide5,
     ];
+
+    const services = [
+        {
+            title: "2d Echo w/ Doppler",
+            description:
+                "A 2D Echo with Doppler is a non-invasive test that uses ultrasound to visualize the heart and measure blood flow.",
+        },
+        {
+            title: "12-Lead ECG",
+            description:
+                "A 12-Lead ECG records the electrical activity of the heart from twelve different angles to diagnose heart conditions.",
+        },
+        {
+            title: "Covid-19 Tests",
+            description:
+                "Covid-19 tests detect the presence of the virus through various methods, including nasal swabs and antibody tests.",
+        },
+        {
+            title: "Doctor's Clinic",
+            description:
+                "A doctor's clinic is a healthcare facility where patients can receive medical consultations and treatment from physicians.",
+        },
+        {
+            title: "Laboratory Tests",
+            description:
+                "Laboratory tests are medical tests conducted in a lab to analyze blood, urine, or other samples for diagnosis.",
+        },
+        {
+            title: "Minor Surgery",
+            description:
+                "Minor surgery refers to small, low-risk surgical procedures performed on an outpatient basis.",
+        },
+        {
+            title: "Pharmacy",
+            description:
+                "A pharmacy is a place where medications are dispensed and healthcare advice is provided by licensed pharmacists.",
+        },
+        {
+            title: "Ultrasound",
+            description:
+                "An ultrasound is a diagnostic tool that uses sound waves to create images of internal organs, tissues, and the fetus during pregnancy.",
+        },
+        {
+            title: "X-Ray",
+            description:
+                "An X-ray is a type of imaging test that uses radiation to create images of bones and other internal structures.",
+        },
+        {
+            title: "Drug Testing",
+            description:
+                "Drug testing is a medical procedure that analyzes biological samples to detect the presence of drugs or their metabolites.",
+        },
+    ];
+
+    const itemsPerGroup = 4;
+    const [currentGroup, setCurrentGroup] = useState(0);
+    const totalGroups = Math.ceil(services.length / itemsPerGroup);
+    const [showNavigator, setShowNavigator] = useState(false);
+
+    const nextGroup = () => {
+        setCurrentGroup((prev) => (prev === totalGroups - 1 ? 0 : prev + 1));
+    };
+
+    const prevGroup = () => {
+        setCurrentGroup((prev) => (prev === 0 ? totalGroups - 1 : prev - 1));
+    };
+
+    // Get current group of services
+    const getCurrentGroup = () => {
+        const start = currentGroup * itemsPerGroup;
+        return services.slice(start, start + itemsPerGroup);
+    };
 
     const [slideNumber, setSlideNumber] = useState(0);
 
@@ -53,6 +122,7 @@ function Home() {
             prevState === 0 ? slides.length - 1 : prevState - 1,
         );
     };
+
     return (
         <>
             <div className="absolute w-screen h-screen bg-white left-0">
@@ -176,106 +246,128 @@ function Home() {
                         </div>
                     </div>
                 </section>
-                <section className="w-screen ">
-                    <div className="">
+                <section className="w-full bg-white">
+                    <div className="text-center mb-8">
                         <h2
                             id="services"
-                            className="text-black text-4xl pt-14 font-poppins font-bold hover:text-green-950 transition"
+                            className="text-black text-3xl sm:text-4xl pt-14 font-poppins font-bold hover:text-green-950 transition"
                         >
                             SERVICES OFFERED
                         </h2>
                     </div>
-                    <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4 px-16 py-8 text-black text-xl sm:text-2xl xl:text-3xl text-start ">
-                        <div className="px-4 py-10 flex flex-col border-2 border-green-800 rounded-md hover:shadow-md  hover:shadow-green-900 transition">
-                            <span className="hover:underline">
-                                2d Echo w/ Doppler
-                            </span>
-                            <span className="mt-2 text-sm xl:text-lg">
-                                A 2D Echo with Doppler is a non-invasive test
-                                that uses ultrasound to visualize the heart and
-                                measure blood flow.
-                            </span>
+
+                    {/* Navigation Dots */}
+                    <div className="flex md:hidden justify-center mt-8 gap-2">
+                        {[...Array(totalGroups)].map((_, index) => (
+                            <button
+                                key={index}
+                                onClick={() => setCurrentGroup(index)}
+                                className={`h-1 rounded-full transition-all duration-300 ${
+                                    index === currentGroup
+                                        ? "bg-green-800 w-8"
+                                        : "bg-gray-300 w-4 hover:bg-gray-400"
+                                }`}
+                                aria-label={`Go to service group ${index + 1}`}
+                            />
+                        ))}
+                    </div>
+
+                    <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                        {/* Navigation Arrows */}
+                        <button
+                            onClick={prevGroup}
+                            className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 hidden md:block"
+                            aria-label="Previous services"
+                        >
+                            <MdArrowBackIos
+                                color="darkgreen"
+                                className="cursor-pointer size-8"
+                            />
+                        </button>
+
+                        <button
+                            onClick={nextGroup}
+                            className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 hidden md:block"
+                            aria-label="Next services"
+                        >
+                            <MdArrowForwardIos
+                                color="darkgreen"
+                                className="cursor-pointer size-8"
+                            />
+                        </button>
+
+                        {/* Services Container */}
+                        <div className="overflow-hidden">
+                            <div
+                                className="flex transition-transform duration-500 ease-in-out"
+                                style={{
+                                    transform: `translateX(-${currentGroup * 100}%)`,
+                                }}
+                            >
+                                {/* Create groups of 4 services */}
+                                {Array.from({
+                                    length: Math.ceil(
+                                        services.length / itemsPerGroup,
+                                    ),
+                                }).map((_, groupIndex) => (
+                                    <div
+                                        key={groupIndex}
+                                        className="flex min-w-full flex-wrap md:flex-nowrap"
+                                    >
+                                        {services
+                                            .slice(
+                                                groupIndex * itemsPerGroup,
+                                                (groupIndex + 1) *
+                                                    itemsPerGroup,
+                                            )
+                                            .map((service, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="w-full md:w-1/2 lg:w-1/3 xl:w-1/4 p-4 flex-shrink-0"
+                                                >
+                                                    <div
+                                                        className="bg-white text-green-700 rounded-lg h-full p-6 border-2 border-green-800 
+                                          hover:shadow-lg hover:shadow-green-900/20 transition-all duration-300"
+                                                    >
+                                                        <h3
+                                                            className="text-lg sm:text-xl lg:text-2xl font-bold mb-3 
+                                             hover:text-green-800 hover:underline transition-colors"
+                                                        >
+                                                            {service.title}
+                                                        </h3>
+                                                        <p className="text-gray-600 text-sm sm:text-base lg:text-lg">
+                                                            {
+                                                                service.description
+                                                            }
+                                                        </p>
+                                                        <button
+                                                            className="mt-4 px-4 py-2 border-2 border-green-800 text-green-800 rounded 
+                                                 hover:bg-green-800 hover:text-white transition-colors duration-300"
+                                                        >
+                                                            READ MORE
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                        <div className="px-4 py-10 flex flex-col border-2 border-green-800 rounded-md hover:shadow-md  hover:shadow-green-900 transition">
-                            <span className="hover:underline">12-Lead ECG</span>
-                            <span className="mt-2 text-sm xl:text-lg">
-                                A 12-Lead ECG records the electrical activity of
-                                the heart from twelve different angles to
-                                diagnose heart conditions.
-                            </span>
-                        </div>
-                        <div className="px-4 py-10 flex flex-col border-2 border-green-800 rounded-md hover:shadow-md  hover:shadow-green-900 transition">
-                            <span className="hover:underline">
-                                Covid-19 Tests
-                            </span>
-                            <span className="mt-2 text-sm xl:text-lg">
-                                Covid-19 tests detect the presence of the virus
-                                through various methods, including nasal swabs
-                                and antibody tests.
-                            </span>
-                        </div>
-                        <div className="px-4 py-10 flex flex-col border-2 border-green-800 rounded-md hover:shadow-md hover:shadow-green-900 transition">
-                            <span className="hover:underline">
-                                Doctor's Clinic
-                            </span>
-                            <span className="mt-2 text-sm xl:text-lg">
-                                A doctor's clinic is a healthcare facility where
-                                patients can receive medical consultations and
-                                treatment from physicians.
-                            </span>
-                        </div>
-                        <div className="px-4 py-10 flex flex-col border-2 border-green-800 rounded-md hover:shadow-md  hover:shadow-green-900 transition">
-                            <span className="hover:underline">
-                                Laboratory Tests
-                            </span>
-                            <span className="mt-2 text-sm xl:text-lg">
-                                Laboratory tests are medical tests conducted in
-                                a lab to analyze blood, urine, or other samples
-                                for diagnosis.
-                            </span>
-                        </div>
-                        <div className="px-4 py-10 flex flex-col border-2 border-green-800 rounded-md hover:shadow-md  hover:shadow-green-900 transition">
-                            <span className="hover:underline">
-                                Minor Surgery
-                            </span>
-                            <span className="mt-2 text-sm xl:text-lg">
-                                Minor surgery refers to small, low-risk surgical
-                                procedures performed on an outpatient basis.
-                            </span>
-                        </div>
-                        <div className="px-4 py-10 flex flex-col border-2 border-green-800 rounded-md hover:shadow-md  hover:shadow-green-900 transition">
-                            <span className="hover:underline">Pharmacy</span>
-                            <span className="mt-2 text-sm xl:text-lg">
-                                A pharmacy is a place where medications are
-                                dispensed and healthcare advice is provided by
-                                licensed pharmacists.
-                            </span>
-                        </div>
-                        <div className="px-4 py-10 flex flex-col border-2 border-green-800 rounded-md hover:shadow-md  hover:shadow-green-900 transition">
-                            <span className="hover:underline">Ultrasound</span>
-                            <span className="mt-2 text-sm xl:text-lg">
-                                An ultrasound is a diagnostic tool that uses
-                                sound waves to create images of internal organs,
-                                tissues, and the fetus during pregnancy.
-                            </span>
-                        </div>
-                        <div className="px-4 py-10 flex flex-col border-2 border-green-800 rounded-md hover:shadow-md  hover:shadow-green-900 transition">
-                            <span className="hover:underline">X-Ray</span>
-                            <span className="mt-2 text-sm xl:text-lg">
-                                An X-ray is a type of imaging test that uses
-                                radiation to create images of bones and other
-                                internal structures.
-                            </span>
-                        </div>
-                        <div className="px-4 py-10 flex flex-col border-2 border-green-800 rounded-md hover:shadow-md  hover:shadow-green-900 transition">
-                            <span className="hover:underline">
-                                Drug Testing
-                            </span>
-                            <span className="mt-2 text-sm xl:text-lg">
-                                Drug testing is a medical procedure that
-                                analyzes biological samples to detect the
-                                presence of drugs or their metabolites.
-                            </span>
+
+                        {/* Navigation Dots */}
+                        <div className="flex justify-center mt-8 gap-2">
+                            {[...Array(totalGroups)].map((_, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => setCurrentGroup(index)}
+                                    className={`h-1 rounded-full transition-all duration-300 ${
+                                        index === currentGroup
+                                            ? "bg-green-800 w-8"
+                                            : "bg-gray-300 w-4 hover:bg-gray-400"
+                                    }`}
+                                    aria-label={`Go to service group ${index + 1}`}
+                                />
+                            ))}
                         </div>
                     </div>
                 </section>
@@ -425,12 +517,7 @@ function Home() {
                             />
                         </Link>
                     </div>
-                    <Link
-                        to={
-                            "https://docs.google.com/spreadsheets/d/e/2PACX-1vT1Mku4TbGyB0utYMz5tGVEaIIf_BEdZNfVX4-7TM1zH0tw1dPRbPtIyovgDbuTytw4JHcugYyNUsgp/pubhtml#"
-                        }
-                        className="w-full pb-7  cursor-pointer"
-                    >
+                    <div className="w-full ">
                         <div className="flex flex-col bg-gray-200 py-4">
                             <h2 className="text-black pt-16 text-4xl font-poppins font-bold hover:text-green-950 transition uppercase">
                                 licensed and accredited by
@@ -453,7 +540,7 @@ function Home() {
                                 />
                             </div>
                         </div>
-                    </Link>
+                    </div>
                 </section>
 
                 <footer id="contacts">
@@ -560,7 +647,7 @@ function Home() {
                                 <span>
                                     {" "}
                                     <IoCallSharp className="size-6 inline-block mr-2" />
-                                    Diagnostics +63917-6256689
+                                    Diagnostics: +63917-6256689
                                 </span>
                                 <div className="flex ">
                                     <FaClinicMedical className="size-6 h-full w-fit mr-2 ab" />
