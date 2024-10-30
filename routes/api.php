@@ -23,7 +23,6 @@ use App\Http\Controllers\ExamController;
 use App\Http\Controllers\OrientationController;
 use App\Http\Controllers\ProbationaryController;
 use App\Http\Controllers\Api\EmployeeNotificationController;
-use App\Http\Controllers\TrackingAttendanceController;
 use App\Http\Controllers\EmployeeAttendanceController;
 use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\callOpenAi;
@@ -163,15 +162,20 @@ Route::get('/monthly-attendance', [AttendanceController::class, 'getMonthlyAtten
 
 Route::get('/monthly-attendance', [AttendanceController::class, 'getMonthlyAttendanceRecords']);
 
-Route::post('/attendance', [TrackingAttendanceController::class, 'recordAttendance']);
-Route::patch('/attendance/{id}', [TrackingAttendanceController::class, 'updateTimeOut']);
-Route::get('/attendance/averages', [TrackingAttendanceController::class, 'getDailyAverage']);
-Route::get('/attendance/averages/{userId}', [TrackingAttendanceController::class, 'getEmployeeDailyAverage']);
 Route::delete('/delete-position/{ranking_id}', [OpenPositionController::class, 'deletePosition']);
 
 
 Route::get('/employee/attendance/{rfid}', [EmployeeAttendanceController::class, 'getAttendanceRecordsByRFID']);
 Route::get('/employee/attendance/average/{rfid}', [EmployeeAttendanceController::class, 'getEmployeeDailyAverage']);
+Route::get('/attendance-range', [AttendanceController::class, 'getAttendanceByDateRange']);
+
+Route::get('/preview-monthly-report', [AttendanceController::class, 'previewMonthlyReport']);
+Route::get('/generate-monthly-report', [AttendanceController::class, 'downloadAttendanceExcel']);
+
+Route::get('/preview-date-range-report', [AttendanceController::class, 'previewDateRangeReport']);
+Route::get('/download-date-range-report', [AttendanceController::class, 'downloadDateRangeExcel']);
+
+
 
 Route::prefix('dashboard')->group(function () {
     Route::get('/attendance', [DashboardAttendanceController::class, 'getDashboardRecords']);

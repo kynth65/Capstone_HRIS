@@ -187,14 +187,14 @@ function EmployeeCertificate() {
                         Documents
                     </button>
 
-                    <button
+                    {/* <button
                         className={`navButton ${
                             activeTab === "pendingRequests" ? "active" : ""
                         }`}
                         onClick={() => setActiveTab("pendingRequests")}
                     >
                         Pending Requests
-                    </button>
+                    </button> */}
                 </nav>
             </div>
             <div className="container mx-auto p-4">
