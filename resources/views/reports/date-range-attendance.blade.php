@@ -3,6 +3,8 @@
 <html>
 <head>
     <title>Attendance Report ({{ $fromDate }} to {{ $toDate }})</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.2/axios.min.js"></script>
+
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -94,34 +96,60 @@
         </tbody>
     </table>
 
-    <div class="action-buttons">
-        <button onclick="downloadExcel()" class="download-btn">
-            Download Excel
-        </button>
-    </div>
+   <div class="action-buttons">
+    <button onclick="downloadExcel()" class="download-btn">
+        Download Excel
+    </button>
+</div>
 
-    <script>
-        function downloadExcel() {
-            const fromDate = '{{ $fromDate }}';
-            const toDate = '{{ $toDate }}';
-            const url = `/download-date-range-report?from_date=${fromDate}&to_date=${toDate}`;
-            
-            fetch(url)
-                .then(response => response.blob())
-                .then(blob => {
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `attendance_report_${fromDate}_to_${toDate}.xlsx`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                })
-                .catch(error => {
-                    console.error('Error downloading file:', error);
-                    alert('Error downloading file. Please try again.');
+ <script>
+        // Configure axios instance
+        const axiosClient = axios.create({
+            baseURL: '{{ config('app.url') }}/api',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            withCredentials: true
+        });
+
+        // Add CSRF token if you're using Laravel's CSRF protection
+        const token = document.head.querySelector('meta[name="csrf-token"]');
+        if (token) {
+            axiosClient.defaults.headers.common['X-CSRF-TOKEN'] = token.content;
+        }
+
+        async function downloadExcel() {
+            try {
+                const fromDate = '{{ $fromDate }}';
+                const toDate = '{{ $toDate }}';
+                
+                const response = await axiosClient.get('/download-date-range-report', {
+                    params: {
+                        from_date: fromDate,
+                        to_date: toDate
+                    },
+                    responseType: 'blob'
                 });
+
+                const blob = new Blob([response.data], { 
+                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                });
+                
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `attendance_report_${fromDate}_to_${toDate}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+            } catch (error) {
+                console.error('Error downloading file:', error);
+                alert('Error downloading report. Please try again.');
+            }
         }
     </script>
 </body>

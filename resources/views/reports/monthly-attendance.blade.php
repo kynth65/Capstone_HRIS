@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Monthly Attendance Report - {{ $month }} {{ $year }}</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.2/axios.min.js"></script>
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -101,27 +102,53 @@
     </div>
 
     <script>
-        function downloadExcel() {
-            const month = {{ request('month') }};
-            const year = {{ request('year') }};
-            const url = `/generate-monthly-report?month=${month}&year=${year}`;
-            
-            fetch(url)
-                .then(response => response.blob())
-                .then(blob => {
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `monthly_attendance_report_${month}_${year}.xlsx`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                })
-                .catch(error => {
-                    console.error('Error downloading file:', error);
-                    alert('Error downloading file. Please try again.');
+        // Configure axios instance
+        const axiosClient = axios.create({
+            baseURL: '{{ config('app.url') }}/api',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            withCredentials: true
+        });
+
+        // Add CSRF token
+        const token = document.head.querySelector('meta[name="csrf-token"]');
+        if (token) {
+            axiosClient.defaults.headers.common['X-CSRF-TOKEN'] = token.content;
+        }
+
+        async function downloadExcel() {
+            try {
+                const month = {{ request('month') }};
+                const year = {{ request('year') }};
+                
+                const response = await axiosClient.get('/generate-monthly-report', {
+                    params: {
+                        month: month,
+                        year: year
+                    },
+                    responseType: 'blob'
                 });
+
+                const blob = new Blob([response.data], { 
+                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                });
+                
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `monthly_attendance_report_${month}_${year}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+            } catch (error) {
+                console.error('Error downloading file:', error);
+                alert('Error downloading report. Please try again.');
+            }
         }
     </script>
 </body>
