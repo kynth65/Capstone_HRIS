@@ -1859,7 +1859,7 @@ function CertificateManagement() {
                                                         >
                                                             Update
                                                         </button>
-                                                        <button
+                                                        {/* <button
                                                             onClick={() =>
                                                                 handleGrantUpdateAccess(
                                                                     cert.id,
@@ -1868,7 +1868,7 @@ function CertificateManagement() {
                                                             className="flex-1 py-2 px-3 text-white bg-yellow-500 rounded-md hover:bg-yellow-600"
                                                         >
                                                             Grant Access
-                                                        </button>
+                                                        </button> */}
                                                         <button
                                                             onClick={() =>
                                                                 handleOpenDetailModal(
@@ -2048,7 +2048,7 @@ function CertificateManagement() {
                                                                 >
                                                                     Update
                                                                 </button>
-                                                                <button
+                                                                {/* <button
                                                                     onClick={() =>
                                                                         handleGrantUpdateAccess(
                                                                             cert.id,
@@ -2057,7 +2057,7 @@ function CertificateManagement() {
                                                                     className="px-3 py-2 text-white bg-yellow-500 rounded-md hover:bg-yellow-600"
                                                                 >
                                                                     Grant Access
-                                                                </button>
+                                                                </button> */}
                                                                 <button
                                                                     onClick={() =>
                                                                         handleOpenDetailModal(

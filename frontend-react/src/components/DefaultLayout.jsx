@@ -297,7 +297,7 @@ function DefaultLayout() {
                         </span>
                     </Link>
                     <Link
-                        to="/certificate"
+                        to="/document"
                         onClick={() =>
                             handleHeaderChange("Document Management")
                         }

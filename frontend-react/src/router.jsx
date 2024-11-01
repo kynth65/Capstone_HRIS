@@ -31,6 +31,8 @@ import IncidentManagement from "./views/IncidentManagement.jsx";
 import HR_Leave_Management from "./views/HR_Leave_Management.jsx";
 import RfidManagement from "./views/RfidManagement.jsx";
 import ChatBox from "./views/ChatBox.jsx";
+import DocumentRequirementsManagement from "./views/DocumentManagement.jsx";
+import EmployeeDocumentsView from "./views/EmployeeDocumentsView.jsx";
 
 const ErrorPage = () => (
     <div>
@@ -147,6 +149,14 @@ const router = createBrowserRouter([
             {
                 path: "certificate",
                 element: <Certificate />,
+            },
+            {
+                path: "document",
+                element: <DocumentRequirementsManagement />,
+            },
+            {
+                path: "employee_document",
+                element: <EmployeeDocumentsView />,
             },
             {
                 path: "chat",

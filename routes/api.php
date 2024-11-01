@@ -36,6 +36,7 @@ use App\Http\Controllers\RfidCardController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DashboardAttendanceController;
+use App\Http\Controllers\DocumentManagementController;
 use App\Http\Controllers\TodoController;
 
 
@@ -316,4 +317,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+});
+
+
+Route::prefix('documents')->group(function () {
+    Route::get('requirements/{userId}', [DocumentManagementController::class, 'getEmployeeRequirements']);
+    Route::post('submit', [DocumentManagementController::class, 'submitDocument']);
+    Route::post('check/{documentId}', [DocumentManagementController::class, 'checkDocument']);
+
+    // HR only routes - add middleware as needed
+    Route::post('requirements', [DocumentManagementController::class, 'addRequirement']);
+    Route::delete('requirements/{id}', [DocumentManagementController::class, 'removeRequirement']);
 });
