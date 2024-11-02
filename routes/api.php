@@ -38,6 +38,7 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DashboardAttendanceController;
 use App\Http\Controllers\DocumentManagementController;
 use App\Http\Controllers\TodoController;
+use App\Http\Controllers\EmployeeRequirementsController;
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -328,4 +329,9 @@ Route::prefix('documents')->group(function () {
     // HR only routes - add middleware as needed
     Route::post('requirements', [DocumentManagementController::class, 'addRequirement']);
     Route::delete('requirements/{id}', [DocumentManagementController::class, 'removeRequirement']);
+});
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/my-requirements', [EmployeeRequirementsController::class, 'getMyRequirements']);
+    Route::get('/my-requirements/{requirementId}', [EmployeeRequirementsController::class, 'getRequirementDetail']);
 });

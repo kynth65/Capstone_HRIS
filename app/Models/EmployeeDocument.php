@@ -20,8 +20,19 @@ class EmployeeDocument extends Model
         'remarks'
     ];
 
+    protected $casts = [
+        'issued_date' => 'date',
+        'expiring_date' => 'date',
+        'is_checked' => 'boolean'
+    ];
+
     public function requirement()
     {
         return $this->belongsTo(Requirement::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

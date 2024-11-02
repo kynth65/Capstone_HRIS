@@ -3,16 +3,10 @@ import { MdArrowBack } from "react-icons/md";
 import axiosClient from "../axiosClient";
 
 const EmployeeDocumentsView = () => {
-    // View States
-    const [currentView, setCurrentView] = useState("list"); // list or details
+    const [currentView, setCurrentView] = useState("list");
     const [selectedDocument, setSelectedDocument] = useState(null);
-
-    // Data States
     const [requirements, setRequirements] = useState([]);
     const [error, setError] = useState("");
-
-    // Current user ID (you might want to get this from your auth context)
-    const userId = 1; // Replace with actual user ID from your auth system
 
     useEffect(() => {
         fetchEmployeeRequirements();
@@ -20,23 +14,47 @@ const EmployeeDocumentsView = () => {
 
     const fetchEmployeeRequirements = async () => {
         try {
-            const response = await axiosClient.get(
-                `/documents/requirements/${userId}`,
-            );
-            // Filter to only show requirements that have documents
-            const submittedDocs = response.data.filter(
-                (req) => req.is_submitted,
-            );
-            setRequirements(submittedDocs);
+            const response = await axiosClient.get("/my-requirements");
+
+            if (response.data.success) {
+                console.log("Requirements Data:", response.data.data); // Debug log
+                console.log("Debug Info:", response.data.debug_info); // Debug log
+
+                // Check for documents
+                const requirementsWithDocs = response.data.data.filter(
+                    (req) => req.document,
+                );
+                console.log(
+                    "Requirements with documents:",
+                    requirementsWithDocs,
+                );
+
+                setRequirements(response.data.data);
+            } else {
+                setError(
+                    response.data.message || "Error fetching your documents",
+                );
+            }
         } catch (error) {
             setError("Error fetching your documents");
             console.error("Error fetching requirements:", error);
         }
     };
 
-    const handleViewDetails = (document) => {
-        setSelectedDocument(document);
-        setCurrentView("details");
+    const handleViewDetails = async (document) => {
+        try {
+            if (!document) {
+                setError("No document details available");
+                return;
+            }
+
+            // If we already have the document details, just show them
+            setSelectedDocument(document);
+            setCurrentView("details");
+        } catch (error) {
+            setError("Error fetching document details");
+            console.error("Error fetching document details:", error);
+        }
     };
 
     const handleBack = () => {
@@ -45,13 +63,13 @@ const EmployeeDocumentsView = () => {
     };
 
     const RequirementsListView = () => (
-        <div className="bg-white rounded-lg shadow-lg">
+        <div className="bg-white rounded-lg shadow-lg text-black">
             <div className="p-6">
                 <h2 className="text-xl font-semibold mb-4">My Documents</h2>
                 <div className="space-y-4">
                     {requirements.length === 0 ? (
                         <div className="text-center py-8 text-gray-500">
-                            No submitted documents found.
+                            No requirements found.
                         </div>
                     ) : (
                         requirements.map((requirement) => (
@@ -61,53 +79,68 @@ const EmployeeDocumentsView = () => {
                             >
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-4">
+                                        {/* Status indicator */}
                                         <div className="relative inline-block">
                                             <div
                                                 className={`w-5 h-5 border rounded flex items-center justify-center ${
-                                                    requirement.is_checked
-                                                        ? "bg-green-700 border-green-800"
-                                                        : "bg-yellow-500 border-yellow-600"
+                                                    requirement.is_submitted
+                                                        ? requirement.is_checked
+                                                            ? "bg-green-700 border-green-800"
+                                                            : "bg-yellow-500 border-yellow-600"
+                                                        : "bg-gray-200 border-gray-300"
                                                 }`}
                                             >
-                                                {requirement.is_checked ? (
-                                                    <svg
-                                                        className="w-3 h-3 text-white"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={2}
-                                                            d="M5 13l4 4L19 7"
-                                                        />
-                                                    </svg>
-                                                ) : (
-                                                    <svg
-                                                        className="w-3 h-3 text-white"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={2}
-                                                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                                        />
-                                                    </svg>
-                                                )}
+                                                {requirement.is_submitted &&
+                                                    (requirement.is_checked ? (
+                                                        <svg
+                                                            className="w-3 h-3 text-white"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M5 13l4 4L19 7"
+                                                            />
+                                                        </svg>
+                                                    ) : (
+                                                        <svg
+                                                            className="w-3 h-3 text-white"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                                            />
+                                                        </svg>
+                                                    ))}
                                             </div>
                                         </div>
+
+                                        {/* Requirement info */}
                                         <div>
-                                            <h3 className="font-medium text-gray-900">
-                                                {requirement.name}
-                                            </h3>
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="font-medium text-gray-900">
+                                                    {requirement.name}
+                                                </h3>
+                                                {requirement.is_personal && (
+                                                    <span className="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded">
+                                                        Personal
+                                                    </span>
+                                                )}
+                                            </div>
                                             <p className="text-sm text-gray-500">
                                                 {requirement.category}
                                             </p>
                                         </div>
+
+                                        {/* Type badge */}
                                         <span
                                             className={`px-2 py-1 text-xs rounded ${
                                                 requirement.type === "expirable"
@@ -117,28 +150,42 @@ const EmployeeDocumentsView = () => {
                                         >
                                             {requirement.type}
                                         </span>
+
+                                        {/* Status badge */}
                                         <span
                                             className={`px-2 py-1 text-xs rounded ${
-                                                requirement.is_checked
-                                                    ? "bg-green-100 text-green-800"
-                                                    : "bg-yellow-100 text-yellow-800"
+                                                !requirement.is_submitted
+                                                    ? "bg-gray-100 text-gray-800"
+                                                    : requirement.is_checked
+                                                      ? "bg-green-100 text-green-800"
+                                                      : "bg-yellow-100 text-yellow-800"
                                             }`}
                                         >
-                                            {requirement.is_checked
-                                                ? "Verified"
-                                                : "Pending Verification"}
+                                            {!requirement.is_submitted
+                                                ? "Not Submitted"
+                                                : requirement.is_checked
+                                                  ? "Verified"
+                                                  : "Pending Verification"}
                                         </span>
                                     </div>
-                                    <button
-                                        onClick={() =>
-                                            handleViewDetails(
-                                                requirement.document,
-                                            )
-                                        }
-                                        className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
-                                    >
-                                        View Details
-                                    </button>
+
+                                    {/* Action buttons */}
+                                    {requirement.document ? (
+                                        <button
+                                            onClick={() =>
+                                                handleViewDetails(
+                                                    requirement.document,
+                                                )
+                                            }
+                                            className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+                                        >
+                                            View Details
+                                        </button>
+                                    ) : (
+                                        <span className="text-sm text-gray-500">
+                                            No document submitted
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         ))

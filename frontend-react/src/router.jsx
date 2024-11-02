@@ -154,10 +154,7 @@ const router = createBrowserRouter([
                 path: "document",
                 element: <DocumentRequirementsManagement />,
             },
-            {
-                path: "employee_document",
-                element: <EmployeeDocumentsView />,
-            },
+
             {
                 path: "chat",
                 element: <ChatBox />,
@@ -183,8 +180,8 @@ const router = createBrowserRouter([
                 element: <SalaryHistory />,
             },
             {
-                path: "employee-certificate",
-                element: <EmployeeCertificate />,
+                path: "employee-document",
+                element: <EmployeeDocumentsView />,
             },
             {
                 path: "employee-profile",

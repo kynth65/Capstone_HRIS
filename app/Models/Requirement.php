@@ -12,7 +12,12 @@ class Requirement extends Model
         'type',
         'is_required',
         'is_active',
-        'user_id'  // Add this
+        'user_id'
+    ];
+
+    protected $casts = [
+        'is_required' => 'boolean',
+        'is_active' => 'boolean'
     ];
 
     public function employeeDocuments()

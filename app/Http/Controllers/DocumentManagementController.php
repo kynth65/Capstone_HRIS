@@ -13,34 +13,44 @@ class DocumentManagementController extends Controller
     // Get requirements list for an employee
     public function getEmployeeRequirements($userId)
     {
-        // Get all active requirements assigned to this user or department
-        $requirements = Requirement::where('is_active', true)
-            ->where(function ($query) use ($userId) {
-                $query->where('user_id', $userId)
-                    ->orWhereNull('user_id'); // For general requirements
-            })
-            ->get();
+        try {
+            $requirements = Requirement::where('is_active', true)
+                ->where(function ($query) use ($userId) {
+                    $query->where('user_id', $userId)
+                        ->orWhere('user_id', null);
+                })
+                ->get();
 
-        // Get employee's submitted documents
-        $submittedDocuments = EmployeeDocument::where('user_id', $userId)->get();
+            $submittedDocuments = EmployeeDocument::where('user_id', $userId)->get();
 
-        // Prepare requirements with submission status
-        $requirementsList = $requirements->map(function ($requirement) use ($submittedDocuments) {
-            $submitted = $submittedDocuments->firstWhere('requirement_id', $requirement->id);
+            $requirementsList = $requirements->map(function ($requirement) use ($submittedDocuments) {
+                $submitted = $submittedDocuments->firstWhere('requirement_id', $requirement->id);
 
-            return [
-                'id' => $requirement->id,
-                'name' => $requirement->name,
-                'category' => $requirement->category,
-                'type' => $requirement->type,
-                'is_required' => $requirement->is_required,
-                'is_submitted' => !is_null($submitted),
-                'is_checked' => $submitted ? $submitted->is_checked : false,
-                'document' => $submitted ?? null
-            ];
-        });
+                return [
+                    'id' => $requirement->id,
+                    'name' => $requirement->name,
+                    'category' => $requirement->category,
+                    'type' => $requirement->type,
+                    'is_required' => $requirement->is_required,
+                    'is_submitted' => !is_null($submitted),
+                    'is_checked' => $submitted ? $submitted->is_checked : false,
+                    'document' => $submitted ?? null,
+                    'is_personal' => !is_null($requirement->user_id)
+                ];
+            });
 
-        return response()->json($requirementsList);
+            return response()->json($requirementsList);
+        } catch (\Exception $e) {
+            Log::error('Error fetching employee requirements', [
+                'user_id' => $userId,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'message' => 'Error fetching requirements',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     // Submit document for requirement
