@@ -1,27 +1,26 @@
 export const anatomicalQuestions = [
-    "Do you have a degree in a related field, such as Anatomy, Physiology, or Biomedical Science?",
-    "Are you familiar with anatomical dissection techniques?",
-    "Do you have experience working with human cadaver specimens?",
-    "How many years of experience do you have in an anatomical or biological laboratory setting?",
-    "How would you rate your proficiency in identifying and labeling anatomical structures?",
-    "Are you comfortable using anatomical software or virtual dissection tools?",
-    "Do you have experience teaching or presenting anatomical concepts to others?",
-    "What is your level of proficiency in medical terminology?",
+    "What is your experience with anatomical terminology and body systems?",
+    "Are you familiar with handling and preparing anatomical specimens for analysis?",
+    "Do you have experience assisting with dissections or specimen preparations in an anatomical lab setting?",
+    "How comfortable are you with identifying and labeling anatomical structures?",
 ];
 
 const AnatomicalQuestions = ({ questions, setQuestions, errors }) => {
     return (
         <div>
             <label>
-                Do you have a degree in a related field, such as Anatomy,
-                Physiology, or Biomedical Science?*
+                What is your experience with anatomical terminology and body
+                systems?
             </label>
             <div>
                 <input
                     type="radio"
                     name="relatedDegree"
-                    value="Yes"
-                    checked={questions.question1 === "Yes"}
+                    value="Extensive knowledge and practical experience"
+                    checked={
+                        questions.question1 ===
+                        "Extensive knowledge and practical experience"
+                    }
                     onChange={(e) =>
                         setQuestions({
                             ...questions,
@@ -29,12 +28,15 @@ const AnatomicalQuestions = ({ questions, setQuestions, errors }) => {
                         })
                     }
                 />
-                Yes
+                Extensive knowledge and practical experience
                 <input
                     type="radio"
                     name="relatedDegree"
-                    value="No"
-                    checked={questions.question1 === "No"}
+                    value="Basic knowledge from coursework"
+                    checked={
+                        questions.question1 ===
+                        "Basic knowledge from coursework"
+                    }
                     onChange={(e) =>
                         setQuestions({
                             ...questions,
@@ -42,18 +44,51 @@ const AnatomicalQuestions = ({ questions, setQuestions, errors }) => {
                         })
                     }
                 />
-                No
+                Basic knowledge from coursework
+                <input
+                    type="radio"
+                    name="relatedDegree"
+                    value="Minimal knowledge, willing to learn"
+                    checked={
+                        questions.question1 ===
+                        "Minimal knowledge, willing to learn"
+                    }
+                    onChange={(e) =>
+                        setQuestions({
+                            ...questions,
+                            question1: e.target.value,
+                        })
+                    }
+                />
+                Minimal knowledge, willing to learn
+                <input
+                    type="radio"
+                    name="relatedDegree"
+                    value="No prior experience"
+                    checked={questions.question1 === "No prior experience"}
+                    onChange={(e) =>
+                        setQuestions({
+                            ...questions,
+                            question1: e.target.value,
+                        })
+                    }
+                />
+                No prior experience
             </div>
 
             <label>
-                Are you familiar with anatomical dissection techniques?*
+                Are you familiar with handling and preparing anatomical
+                specimens for analysis?
             </label>
             <div>
                 <input
                     type="radio"
-                    name="dissectionTechniques"
-                    value="Yes"
-                    checked={questions.question2 === "Yes"}
+                    name="relatedDegree"
+                    value="Yes, I have extensive experience"
+                    checked={
+                        questions.question2 ===
+                        "Yes, I have extensive experience"
+                    }
                     onChange={(e) =>
                         setQuestions({
                             ...questions,
@@ -61,12 +96,14 @@ const AnatomicalQuestions = ({ questions, setQuestions, errors }) => {
                         })
                     }
                 />
-                Yes
+                Yes, I have extensive experience
                 <input
                     type="radio"
-                    name="dissectionTechniques"
-                    value="No"
-                    checked={questions.question2 === "No"}
+                    name="relatedDegree"
+                    value="Some experience but limited"
+                    checked={
+                        questions.question2 === "Some experience but limited"
+                    }
                     onChange={(e) =>
                         setQuestions({
                             ...questions,
@@ -74,18 +111,38 @@ const AnatomicalQuestions = ({ questions, setQuestions, errors }) => {
                         })
                     }
                 />
-                No
+                Some experience but limited
+                <input
+                    type="radio"
+                    name="relatedDegree"
+                    value="No experience, but I'm eager to learn"
+                    checked={
+                        questions.question2 ===
+                        "No experience, but I'm eager to learn"
+                    }
+                    onChange={(e) =>
+                        setQuestions({
+                            ...questions,
+                            question2: e.target.value,
+                        })
+                    }
+                />
+                No experience, but I'm eager to learn
             </div>
 
             <label>
-                Do you have experience working with human cadaver specimens?*
+                Do you have experience assisting with dissections or specimen
+                preparations in an anatomical lab setting?
             </label>
             <div>
                 <input
                     type="radio"
-                    name="cadaverExperience"
-                    value="Yes"
-                    checked={questions.question3 === "Yes"}
+                    name="relatedDegree"
+                    value="Yes, I have extensive hands-on experience"
+                    checked={
+                        questions.question3 ===
+                        "Yes, I have extensive hands-on experience"
+                    }
                     onChange={(e) =>
                         setQuestions({
                             ...questions,
@@ -93,12 +150,15 @@ const AnatomicalQuestions = ({ questions, setQuestions, errors }) => {
                         })
                     }
                 />
-                Yes
+                Yes, I have extensive hands-on experience
                 <input
                     type="radio"
-                    name="cadaverExperience"
-                    value="No"
-                    checked={questions.question3 === "No"}
+                    name="relatedDegree"
+                    value="Yes, I have some experience with basic procedures"
+                    checked={
+                        questions.question3 ===
+                        "Yes, I have some experience with basic procedures"
+                    }
                     onChange={(e) =>
                         setQuestions({
                             ...questions,
@@ -106,134 +166,95 @@ const AnatomicalQuestions = ({ questions, setQuestions, errors }) => {
                         })
                     }
                 />
-                No
+                Yes, I have some experience with basic procedures
+                <input
+                    type="radio"
+                    name="relatedDegree"
+                    value="Minimal experience, but I am eager to learn"
+                    checked={
+                        questions.question3 ===
+                        "Minimal experience, but I am eager to learn"
+                    }
+                    onChange={(e) =>
+                        setQuestions({
+                            ...questions,
+                            question3: e.target.value,
+                        })
+                    }
+                />
+                Minimal experience, but I am eager to learn
+                <input
+                    type="radio"
+                    name="relatedDegree"
+                    value="No experience"
+                    checked={questions.question3 === "No experience"}
+                    onChange={(e) =>
+                        setQuestions({
+                            ...questions,
+                            question3: e.target.value,
+                        })
+                    }
+                />
+                No experience
             </div>
 
             <label>
-                How many years of experience do you have in an anatomical or
-                biological laboratory setting?*
+                How comfortable are you with identifying and labeling anatomical
+                structures?
             </label>
             <div>
                 <input
-                    type="number"
-                    value={questions.question4 || ""}
+                    type="radio"
+                    name="relatedDegree"
+                    value="Extremely Comfortable"
+                    checked={questions.question4 === "Extremely Comfortable"}
                     onChange={(e) =>
                         setQuestions({
                             ...questions,
                             question4: e.target.value,
                         })
                     }
-                    min="0"
                 />
-            </div>
-
-            <label>
-                How would you rate your proficiency in identifying and labeling
-                anatomical structures?*
-            </label>
-            <div>
-                <select
-                    value={questions.question5}
-                    onChange={(e) =>
-                        setQuestions({
-                            ...questions,
-                            question5: e.target.value,
-                        })
-                    }
-                >
-                    <option value="">Select an option</option>
-                    <option value="Beginner">Beginner</option>
-                    <option value="Intermediate">Intermediate</option>
-                    <option value="Advanced">Advanced</option>
-                    <option value="Expert">Expert</option>
-                </select>
-            </div>
-
-            <label>
-                Are you comfortable using anatomical software or virtual
-                dissection tools?*
-            </label>
-            <div>
+                Extremely Comfortable
                 <input
                     type="radio"
-                    name="anatomicalSoftware"
-                    value="Yes"
-                    checked={questions.question6 === "Yes"}
+                    name="relatedDegree"
+                    value="Somewhat Comfortable"
+                    checked={questions.question4 === "Somewhat Comfortable"}
                     onChange={(e) =>
                         setQuestions({
                             ...questions,
-                            question6: e.target.value,
+                            question4: e.target.value,
                         })
                     }
                 />
-                Yes
+                Somewhat Comfortable
                 <input
                     type="radio"
-                    name="anatomicalSoftware"
-                    value="No"
-                    checked={questions.question6 === "No"}
+                    name="relatedDegree"
+                    value="Limited Comfort"
+                    checked={questions.question4 === "Limited Comfort"}
                     onChange={(e) =>
                         setQuestions({
                             ...questions,
-                            question6: e.target.value,
+                            question4: e.target.value,
                         })
                     }
                 />
-                No
-            </div>
-
-            <label>
-                Do you have experience teaching or presenting anatomical
-                concepts to others?*
-            </label>
-            <div>
+                Limited Comfort
                 <input
                     type="radio"
-                    name="teachingExperience"
-                    value="Yes"
-                    checked={questions.question7 === "Yes"}
+                    name="relatedDegree"
+                    value="No Comfort"
+                    checked={questions.question4 === "No Comfort"}
                     onChange={(e) =>
                         setQuestions({
                             ...questions,
-                            question7: e.target.value,
+                            question4: e.target.value,
                         })
                     }
                 />
-                Yes
-                <input
-                    type="radio"
-                    name="teachingExperience"
-                    value="No"
-                    checked={questions.question7 === "No"}
-                    onChange={(e) =>
-                        setQuestions({
-                            ...questions,
-                            question7: e.target.value,
-                        })
-                    }
-                />
-                No
-            </div>
-
-            <label>
-                What is your level of proficiency in medical terminology?*
-            </label>
-            <div>
-                <select
-                    value={questions.question8}
-                    onChange={(e) =>
-                        setQuestions({
-                            ...questions,
-                            question8: e.target.value,
-                        })
-                    }
-                >
-                    <option value="">Select an option</option>
-                    <option value="Beginner">Beginner</option>
-                    <option value="Intermediate">Intermediate</option>
-                    <option value="Advanced">Advanced</option>
-                    <option value="Expert">Expert</option>
-                </select>
+                No Comfort
             </div>
 
             {errors && Object.keys(errors).length > 0 && (

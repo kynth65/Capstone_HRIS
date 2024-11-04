@@ -1,28 +1,24 @@
 export const accountingQuestions = [
-    "Have you completed the following level of education:Bachelor&apos;s Degree?",
-    "Are you willing to undergo a background check, in accordance with local law/regulations?",
-    "Are you comfortable commuting to this job&apos;s location?* Are you comfortable commuting to this job&apos;s location?",
-    "Willing to work Saturdays?",
-    "Bachelor of Science in Accountancy graduate?",
-    "What is your level of proficiency in English?",
-    "How many years of Accounting/Auditing experience do you currently have?",
-    " How many years of work experience do you have with Accounting Software?",
+    "How familiar are you with accounting software (e.g., QuickBooks, Xero)?",
+    "Describe your experience with financial statement preparation (e.g., balance sheets, income statements).",
+    "Have you ever managed or assisted with audits or regulatory compliance processes?",
+    "How comfortable are you with analyzing financial data to assist in budgeting and forecasting",
 ];
 
 const AccountingQuestions = ({ questions, setQuestions, errors }) => {
     return (
         <div>
-            {/* Accounting-specific questions */}
+            {/* Generic accounting questions */}
             <label>
-                Have you completed the following level of education:
-                Bachelor&apos;s Degree?*
+                How familiar are you with accounting software (e.g., QuickBooks,
+                Xero)?
                 <div>
                     <label>
                         <input
                             type="radio"
-                            name="bachelorDegree"
-                            value="Yes"
-                            checked={questions.question1 === "Yes"}
+                            name="degree"
+                            value="Very Familiar"
+                            checked={questions.question1 === "Very Familiar"}
                             onChange={(e) =>
                                 setQuestions({
                                     ...questions,
@@ -30,14 +26,16 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                                 })
                             }
                         />
-                        Yes
+                        Very Familiar
                     </label>
                     <label>
                         <input
                             type="radio"
-                            name="bachelorDegree"
-                            value="No"
-                            checked={questions.question1 === "No"}
+                            name="degree"
+                            value="Somewhat Familiar"
+                            checked={
+                                questions.question1 === "Somewhat Familiar"
+                            }
                             onChange={(e) =>
                                 setQuestions({
                                     ...questions,
@@ -45,21 +43,56 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                                 })
                             }
                         />
-                        No
+                        Somewhat Familiar
+                    </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="degree"
+                            value="Minimal Familiarity"
+                            checked={
+                                questions.question1 === "Minimal Familiarity"
+                            }
+                            onChange={(e) =>
+                                setQuestions({
+                                    ...questions,
+                                    question1: e.target.value,
+                                })
+                            }
+                        />
+                        Minimal Familiarity
+                    </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="degree"
+                            value="No Experience"
+                            checked={questions.question1 === "No Experience"}
+                            onChange={(e) =>
+                                setQuestions({
+                                    ...questions,
+                                    question1: e.target.value,
+                                })
+                            }
+                        />
+                        No Experience
                     </label>
                 </div>
             </label>
 
             <label>
-                Are you willing to undergo a background check, in accordance
-                with local law/regulations?*
+                Describe your experience with financial statement preparation
+                (e.g., balance sheets, income statements).
                 <div>
                     <label>
                         <input
                             type="radio"
-                            name="backgroundCheck"
-                            value="Yes"
-                            checked={questions.question2 === "Yes"}
+                            name="degree"
+                            value="Extensive experience with regular preparation"
+                            checked={
+                                questions.question2 ===
+                                "Extensive experience with regular preparation"
+                            }
                             onChange={(e) =>
                                 setQuestions({
                                     ...questions,
@@ -67,14 +100,17 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                                 })
                             }
                         />
-                        Yes
+                        Extensive experience with regular preparation
                     </label>
                     <label>
                         <input
                             type="radio"
-                            name="backgroundCheck"
-                            value="No"
-                            checked={questions.question2 === "No"}
+                            name="degree"
+                            value="Some experience, primarily assisting in preparation"
+                            checked={
+                                questions.question2 ===
+                                "Some experience, primarily assisting in preparation"
+                            }
                             onChange={(e) =>
                                 setQuestions({
                                     ...questions,
@@ -82,21 +118,57 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                                 })
                             }
                         />
-                        No
+                        Some experience, primarily assisting in preparation
+                    </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="degree"
+                            value="Minimal experience, but knowledge of basic principles"
+                            checked={
+                                questions.question2 ===
+                                "Minimal experience, but knowledge of basic principles"
+                            }
+                            onChange={(e) =>
+                                setQuestions({
+                                    ...questions,
+                                    question2: e.target.value,
+                                })
+                            }
+                        />
+                        Minimal experience, but knowledge of basic principles
+                    </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="degree"
+                            value="No Experience"
+                            checked={questions.question2 === "No Experience"}
+                            onChange={(e) =>
+                                setQuestions({
+                                    ...questions,
+                                    question2: e.target.value,
+                                })
+                            }
+                        />
+                        No Experience
                     </label>
                 </div>
             </label>
 
             <label>
-                Are you comfortable commuting to this job&apos;s location?* Are
-                you comfortable commuting to this job&apos;s location?*
+                Have you ever managed or assisted with audits or regulatory
+                compliance processes?
                 <div>
                     <label>
                         <input
                             type="radio"
-                            name="commute"
-                            value="Yes"
-                            checked={questions.question3 === "Yes"}
+                            name="degree"
+                            value="Yes, I have led audit/compliance processes"
+                            checked={
+                                questions.question3 ===
+                                "Yes, I have led audit/compliance processes"
+                            }
                             onChange={(e) =>
                                 setQuestions({
                                     ...questions,
@@ -104,14 +176,17 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                                 })
                             }
                         />
-                        Yes
+                        Yes, I have led audit/compliance processes
                     </label>
                     <label>
                         <input
                             type="radio"
-                            name="commute"
-                            value="No"
-                            checked={questions.question3 === "No"}
+                            name="degree"
+                            value="Yes, I have assisted with audits/compliance"
+                            checked={
+                                questions.question3 ===
+                                "Yes, I have assisted with audits/compliance"
+                            }
                             onChange={(e) =>
                                 setQuestions({
                                     ...questions,
@@ -119,123 +194,119 @@ const AccountingQuestions = ({ questions, setQuestions, errors }) => {
                                 })
                             }
                         />
-                        No
+                        Yes, I have assisted with audits/compliance
+                    </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="degree"
+                            value="No, but I understand the basics"
+                            checked={
+                                questions.question3 ===
+                                "No, but I understand the basics"
+                            }
+                            onChange={(e) =>
+                                setQuestions({
+                                    ...questions,
+                                    question3: e.target.value,
+                                })
+                            }
+                        />
+                        No, but I understand the basics
+                    </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="degree"
+                            value="No Experience"
+                            checked={questions.question3 === "No Experience"}
+                            onChange={(e) =>
+                                setQuestions({
+                                    ...questions,
+                                    question3: e.target.value,
+                                })
+                            }
+                        />
+                        No Experience
                     </label>
                 </div>
             </label>
-
             <label>
-                Willing to work Saturdays?*
+                How comfortable are you with analyzing financial data to assist
+                in budgeting and forecasting
                 <div>
-                    <select
-                        value={questions.question4}
-                        onChange={(e) =>
-                            setQuestions({
-                                ...questions,
-                                question4: e.target.value,
-                            })
-                        }
-                    >
-                        <option value="">Select an option</option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                    </select>
-                </div>
-            </label>
-
-            <label>
-                Bachelor of Science in Accountancy graduate?*
-                <div>
-                    <select
-                        value={questions.question5}
-                        onChange={(e) =>
-                            setQuestions({
-                                ...questions,
-                                question5: e.target.value,
-                            })
-                        }
-                    >
-                        <option value="">Select an option</option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                    </select>
-                </div>
-            </label>
-
-            <label>
-                What is your level of proficiency in English?*
-                <div>
-                    <select
-                        value={questions.question6}
-                        onChange={(e) =>
-                            setQuestions({
-                                ...questions,
-                                question6: e.target.value,
-                            })
-                        }
-                    >
-                        <option value="">Select an option</option>
-                        <option value="None">None</option>
-                        <option value="Conversational">Conversational</option>
-                        <option value="Professional">Professional</option>
-                        <option value="Native or bilingual">
-                            Native or bilingual
-                        </option>
-                    </select>
-                </div>
-            </label>
-
-            <label>
-                How many years of Accounting/Auditing experience do you
-                currently have?*
-                <div>
-                    <input
-                        type="number"
-                        value={questions.question7 || ""}
-                        onChange={(e) =>
-                            setQuestions({
-                                ...questions,
-                                question7: e.target.value,
-                            })
-                        }
-                        min="0"
-                    />
-                </div>
-            </label>
-
-            <label>
-                How many years of work experience do you have with Accounting
-                Software?*
-                <div>
-                    <input
-                        type="number"
-                        value={questions.question8 || ""}
-                        onChange={(e) =>
-                            setQuestions({
-                                ...questions,
-                                question8: e.target.value,
-                            })
-                        }
-                        min="0"
-                    />
-                </div>
-            </label>
-
-            <label>
-                How many years of work experience do you have with Business
-                Process?*
-                <div>
-                    <input
-                        type="number"
-                        value={questions.question9 || ""}
-                        onChange={(e) =>
-                            setQuestions({
-                                ...questions,
-                                question9: e.target.value,
-                            })
-                        }
-                        min="0"
-                    />
+                    <label>
+                        <input
+                            type="radio"
+                            name="budgeting"
+                            value="Extremely Comfortable and Experienced"
+                            checked={
+                                questions.question4 ===
+                                "Extremely Comfortable and Experienced"
+                            }
+                            onChange={(e) =>
+                                setQuestions({
+                                    ...questions,
+                                    question4: e.target.value,
+                                })
+                            }
+                        />
+                        Extremely Comfortable and Experienced
+                    </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="budgeting"
+                            value=" Somewhat Comfortable with Basic Experience"
+                            checked={
+                                questions.question4 ===
+                                " Somewhat Comfortable with Basic Experience"
+                            }
+                            onChange={(e) =>
+                                setQuestions({
+                                    ...questions,
+                                    question4: e.target.value,
+                                })
+                            }
+                        />
+                        Somewhat Comfortable with Basic Experience
+                    </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="budgeting"
+                            value="Limited Comfort and Experience"
+                            checked={
+                                questions.question4 ===
+                                "Limited Comfort and Experience"
+                            }
+                            onChange={(e) =>
+                                setQuestions({
+                                    ...questions,
+                                    question4: e.target.value,
+                                })
+                            }
+                        />
+                        Limited Comfort and Experience
+                    </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="budgeting"
+                            value="No Comfort or Experience"
+                            checked={
+                                questions.question4 ===
+                                "No Comfort or Experience"
+                            }
+                            onChange={(e) =>
+                                setQuestions({
+                                    ...questions,
+                                    question4: e.target.value,
+                                })
+                            }
+                        />
+                        No Comfort or Experience
+                    </label>
                 </div>
             </label>
 

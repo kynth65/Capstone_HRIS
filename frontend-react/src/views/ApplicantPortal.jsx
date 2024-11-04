@@ -34,6 +34,7 @@ Modal.setAppElement("#root");
 const ApplicantPortal = () => {
     const [positions, setPositions] = useState([]);
     const [selectedFiles, setSelectedFiles] = useState([]);
+    const [showLogin, setShowLogin] = useState(false);
     const [hrTags, setHrTags] = useState("");
     const [loading, setLoading] = useState(false);
     const [loggedIn, setLoggedIn] = useState(false);
@@ -470,24 +471,30 @@ const ApplicantPortal = () => {
         setSelectedPosition(position);
         setIsViewAllModalOpen(true);
     };
+    const handleApplyClick = () => {
+        if (!loggedIn) {
+            setShowLogin(true);
+        } else if (loggedIn) {
+            setIsModalOpen(true); // Show application steps if logged in
+        } else {
+            alert("Please log in to apply."); // Prompt to log in
+        }
+    };
 
     const fetchPositions = async () => {
         try {
             const response = await axiosClient.get("/open-positions");
             const data = response.data;
-            // Check if data is an array; if not, default to an empty array
             setPositions(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error("Error fetching positions:", error);
-            setPositions([]); // Set to an empty array on error
+            setPositions([]);
         }
     };
 
     useEffect(() => {
-        if (loggedIn) {
-            fetchPositions();
-        }
-    }, [loggedIn]);
+        fetchPositions();
+    }, []);
 
     const handleLoginError = (error) => {
         console.error("Google login error:", error);
@@ -534,7 +541,7 @@ const ApplicantPortal = () => {
         return (
             <>
                 <div
-                    className="bg-white w-full h-full py-4 px-4  rounded-lg flex flex-col items-start gap-3 cursor-pointer hover:shadow-inner hover:shadow-green-900 hover:bg-neutral-100 transition"
+                    className="bg-white w-full h-full py-4 px-4 rounded-lg flex flex-col items-start gap-3 cursor-pointer hover:shadow-inner hover:shadow-green-900 hover:bg-neutral-100 transition"
                     onClick={() => openViewAllModal(position)}
                 >
                     <div>
@@ -606,51 +613,26 @@ const ApplicantPortal = () => {
                         {showSuccessMessage}
                     </div>
                 )}
-
-                {!loggedIn && (
-                    <div className="h-[600px] w-full flex items-center justify-center">
-                        <div className="flex flex-col items-center">
-                            <p className="font-poppins text-3xl mb-4 ">
-                                Sign Up
-                            </p>
-                            <p className="font-poppins mb-6">
-                                Sign up now to explore available job openings
-                                and apply for exciting career opportunities!
-                            </p>
-                            <GoogleLogin
-                                buttonText="SIGN IN WITH GOOGLE"
-                                id="google"
-                                onSuccess={handleLoginSuccess}
-                                onFailure={handleLoginError}
-                                cookiePolicy={"single_host_origin"}
-                                prompt="remove_account"
-                            />
-                        </div>
-                    </div>
-                )}
-
-                {loggedIn && (
-                    <>
-                        <div className="">
-                            <h3 className="hidden">
-                                Welcome, {userData?.name}!
-                            </h3>
-                            <p className="hidden">Email: {userData?.email}</p>
-                        </div>
-                        <PositionsList
-                            positions={positions}
-                            openModal={openModal}
-                            openViewAllModal={openViewAllModal}
-                        />
-                    </>
-                )}
-
+                <PositionsList
+                    positions={positions}
+                    openModal={openModal}
+                    openViewAllModal={openViewAllModal}
+                />
                 <Modal
                     isOpen={isViewAllModalOpen}
                     onRequestClose={closeViewAllModal}
                     contentLabel="View Position Details"
                     className="modal"
                     overlayClassName="overlay"
+                    style={{
+                        overlay: {
+                            backgroundColor: "rgba(0, 0, 0, 0.5)",
+                            zIndex: 40,
+                        },
+                        content: {
+                            zIndex: 41,
+                        },
+                    }}
                 >
                     <div className="h-[700px] overflow-auto bg-white px-3 py-3 mx-2 rounded-lg">
                         <span
@@ -662,7 +644,7 @@ const ApplicantPortal = () => {
 
                         {selectedPosition && (
                             <>
-                                <div className="overflow-auto text-base flex flex-col items-center pl-5 gap-5 font-semibold text-black">
+                                <div className="overflow-auto text-base flex flex-col items-center pl-5 gap-5 font-semibold text-black z-50">
                                     <h2 className="font-bold text-2xl uppercase">
                                         {selectedPosition.title}
                                     </h2>
@@ -731,9 +713,7 @@ const ApplicantPortal = () => {
 
                                     <button
                                         className="px-10 py-4 text-white font-normal bg-green-800 rounded-lg border-2 hover:border-green-900 hover:bg-white hover:text-green-800 transition"
-                                        onClick={() => {
-                                            openModal(selectedPosition);
-                                        }}
+                                        onClick={handleApplyClick}
                                     >
                                         Apply
                                     </button>
@@ -743,6 +723,39 @@ const ApplicantPortal = () => {
                     </div>
                 </Modal>
 
+                {!loggedIn && showLogin && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white text-black p-8 rounded-lg shadow-xl max-w-md w-full m-4">
+                            <div className="flex flex-col items-center">
+                                <button
+                                    onClick={() => setShowLogin(false)}
+                                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                                >
+                                    ×
+                                </button>
+                                <p className="font-poppins text-3xl mb-4 text-center">
+                                    Sign Up
+                                </p>
+                                <p className="font-poppins mb-6 text-center">
+                                    Sign up now to apply for this position!
+                                </p>
+                                <GoogleLogin
+                                    buttonText="SIGN IN WITH GOOGLE"
+                                    onSuccess={handleLoginSuccess}
+                                    onFailure={handleLoginError}
+                                    cookiePolicy={"single_host_origin"}
+                                    prompt="remove_account"
+                                />
+                                <button
+                                    onClick={() => setShowLogin(false)}
+                                    className="mt-4 text-gray-600 hover:text-gray-800"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 <Modal
                     isOpen={isModalOpen}
                     onRequestClose={closeModal}
