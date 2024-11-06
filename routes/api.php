@@ -327,8 +327,38 @@ Route::prefix('documents')->group(function () {
     Route::post('check/{documentId}', [DocumentManagementController::class, 'checkDocument']);
 
     // HR only routes - add middleware as needed
+
     Route::post('requirements', [DocumentManagementController::class, 'addRequirement']);
+
+    // Delete
     Route::delete('requirements/{id}', [DocumentManagementController::class, 'removeRequirement']);
+    Route::delete('requirements/{id}/permanent', [DocumentManagementController::class, 'permanentDeleteRequirement']);
+
+    // Archive
+    Route::post('requirements/{id}/archive', [DocumentManagementController::class, 'archiveRequirement']);
+    Route::get('requirements/{userId}/archived', [DocumentManagementController::class, 'getArchivedRequirements']);
+
+    // Recover
+    Route::post('requirements/{id}/recover', [DocumentManagementController::class, 'recoverRequirement']);
+});
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/documents/my-requirements/archived', [DocumentManagementController::class, 'getMyArchivedRequirements']);
+});
+
+Route::get('/debug/requirements/{userId}', function ($userId) {
+    $requirements = \App\Models\Requirement::where('is_active', false)
+        ->whereNotNull('archived_at')
+        ->where(function ($query) use ($userId) {
+            $query->where('user_id', (string) $userId)
+                ->orWhereNull('user_id');
+        })
+        ->get();
+
+    return response()->json([
+        'count' => $requirements->count(),
+        'requirements' => $requirements
+    ]);
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {

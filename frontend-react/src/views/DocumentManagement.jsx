@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { MdDelete, MdAdd, MdClose, MdArrowBack } from "react-icons/md";
+import {
+    MdDelete,
+    MdAdd,
+    MdClose,
+    MdArrowBack,
+    MdRestore,
+} from "react-icons/md";
 import { RiFileDownloadFill } from "react-icons/ri";
 import axiosClient from "../axiosClient";
 
@@ -57,6 +63,10 @@ const DocumentRequirementsManagement = () => {
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [selectedDocument, setSelectedDocument] = useState(null);
 
+    // Archive States
+    const [archivedRequirements, setArchivedRequirements] = useState([]);
+    const [showArchived, setShowArchived] = useState(false);
+
     // Form States
     const [newDocument, setNewDocument] = useState({
         name: "",
@@ -99,6 +109,19 @@ const DocumentRequirementsManagement = () => {
         }
     }, [selectedEmployee]);
 
+    // Add useEffect to reset archive view on component mount
+    useEffect(() => {
+        setShowArchived(false);
+    }, []);
+
+    // Add useEffect to reset archive view when switching employees
+    useEffect(() => {
+        if (selectedEmployee) {
+            setShowArchived(false);
+        }
+    }, [selectedEmployee]);
+
+    // Fetch
     const fetchEmployees = async () => {
         try {
             const response = await axiosClient.get("/employees");
@@ -128,6 +151,18 @@ const DocumentRequirementsManagement = () => {
         }
     };
 
+    const fetchArchivedRequirements = async (userId) => {
+        try {
+            const response = await axiosClient.get(
+                `/documents/requirements/${userId}/archived`,
+            );
+            setArchivedRequirements(response.data);
+        } catch (error) {
+            setError("Error fetching archived requirements");
+            console.error("Error fetching archived requirements:", error);
+        }
+    };
+
     // Handlers
     const handleDeleteRequirement = async (requirementId) => {
         if (
@@ -143,6 +178,47 @@ const DocumentRequirementsManagement = () => {
             } catch (error) {
                 setError("Error deleting requirement");
                 console.error("Error deleting requirement:", error);
+            }
+        }
+    };
+
+    // Permanently delete in archive
+    const handlePermanentDelete = async (requirementId) => {
+        if (
+            window.confirm(
+                "Are you sure you want to permanently delete this requirement? This action cannot be undone.",
+            )
+        ) {
+            try {
+                await axiosClient.delete(
+                    `/documents/requirements/${requirementId}/permanent`,
+                );
+                // Refresh the archived requirements list
+                await fetchArchivedRequirements(selectedEmployee.user_id);
+                setSuccessMessage("Requirement permanently deleted");
+            } catch (error) {
+                setError("Error deleting requirement");
+                console.error("Error deleting requirement:", error);
+            }
+        }
+    };
+
+    // Recover
+    const handleRecoverRequirement = async (requirementId) => {
+        if (
+            window.confirm("Are you sure you want to recover this requirement?")
+        ) {
+            try {
+                await axiosClient.post(
+                    `/documents/requirements/${requirementId}/recover`,
+                );
+                // Refresh both active and archived requirements
+                await fetchEmployeeRequirements(selectedEmployee.user_id);
+                await fetchArchivedRequirements(selectedEmployee.user_id);
+                setSuccessMessage("Requirement recovered successfully");
+            } catch (error) {
+                setError("Error recovering requirement");
+                console.error("Error recovering requirement:", error);
             }
         }
     };
@@ -217,6 +293,7 @@ const DocumentRequirementsManagement = () => {
     const handleEmployeeSelect = (employee) => {
         setSelectedEmployee(employee);
         setCurrentView("requirements");
+        setShowArchived(false); // Reset to active view
     };
 
     const handleAddDocument = async (formData) => {
@@ -302,10 +379,12 @@ const DocumentRequirementsManagement = () => {
             case "requirements":
                 setCurrentView("list");
                 setSelectedEmployee(null);
+                setShowArchived(false); // Reset to active view
                 break;
             case "details":
                 setCurrentView("requirements");
                 setSelectedDocument(null);
+                setShowArchived(false); // Reset to active view
                 break;
             case "addDocument":
                 setCurrentView("requirements");
@@ -330,8 +409,29 @@ const DocumentRequirementsManagement = () => {
                 break;
             default:
                 setCurrentView("list");
+                setShowArchived(false); // Reset to active view
         }
     };
+
+    const handleArchiveRequirement = async (requirementId) => {
+        if (
+            window.confirm("Are you sure you want to archive this requirement?")
+        ) {
+            try {
+                await axiosClient.post(
+                    `/documents/requirements/${requirementId}/archive`,
+                );
+                // Refresh both active and archived requirements
+                await fetchEmployeeRequirements(selectedEmployee.user_id);
+                await fetchArchivedRequirements(selectedEmployee.user_id);
+                setSuccessMessage("Requirement archived successfully");
+            } catch (error) {
+                setError("Error archiving requirement");
+                console.error("Error archiving requirement:", error);
+            }
+        }
+    };
+
     // View Components
     const EmployeeListView = () => (
         <div className="bg-white rounded-lg shadow-lg text-black">
@@ -341,13 +441,13 @@ const DocumentRequirementsManagement = () => {
                     <table className="min-w-full">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     ID
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Name
                                 </th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Action
                                 </th>
                             </tr>
@@ -361,7 +461,7 @@ const DocumentRequirementsManagement = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         {employee.name}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                         <button
                                             onClick={() =>
                                                 handleEmployeeSelect(employee)
@@ -383,7 +483,7 @@ const DocumentRequirementsManagement = () => {
     const RequirementsView = () => (
         <div className="bg-white rounded-lg shadow-lg text-black">
             <div className="p-6">
-                {/* Header with Back Button, Title and Add Requirement Button */}
+                {/* Header section with archive toggle */}
                 <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center gap-4">
                         <button
@@ -393,28 +493,161 @@ const DocumentRequirementsManagement = () => {
                             <MdArrowBack size={24} />
                         </button>
                         <h2 className="text-xl font-semibold">
-                            Requirements for {selectedEmployee?.name}
+                            {showArchived
+                                ? "Archived Requirements"
+                                : "Requirements"}{" "}
+                            for {selectedEmployee?.name}
                         </h2>
                     </div>
-                    <button
-                        onClick={() => setCurrentView("addRequirement")}
-                        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                        <MdAdd size={20} />
-                        Add Requirement
-                    </button>
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => {
+                                setShowArchived(!showArchived);
+                                if (!showArchived) {
+                                    fetchArchivedRequirements(
+                                        selectedEmployee.user_id,
+                                    );
+                                }
+                            }}
+                            className="px-4 py-2 text-gray-700 bg-gray-300 rounded-lg hover:bg-gray-500"
+                        >
+                            {showArchived ? "Show Active" : "Show Archived"}
+                        </button>
+                        {!showArchived && (
+                            <button
+                                onClick={() => setCurrentView("addRequirement")}
+                                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                            >
+                                <MdAdd size={20} />
+                                Add Requirement
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Requirements List */}
                 <div className="space-y-4">
-                    {requirements.length === 0 ? (
+                    {showArchived ? (
+                        // Archived Requirements View
+                        archivedRequirements.length === 0 ? (
+                            <div className="text-center py-12">
+                                <div className="text-gray-400 mb-4">
+                                    <svg
+                                        className="w-16 h-16 mx-auto"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={1}
+                                            d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+                                        />
+                                    </svg>
+                                </div>
+                                <p className="text-gray-500 text-lg">
+                                    No archived requirements found
+                                </p>
+                            </div>
+                        ) : (
+                            archivedRequirements.map((requirement) => (
+                                <div
+                                    key={requirement.id}
+                                    className="bg-gray-50 rounded-lg p-6 border border-gray-100 hover:border-gray-200 transition-all"
+                                >
+                                    <div className="flex justify-between items-start">
+                                        <div className="space-y-2">
+                                            <h3 className="text-base font-semibold text-gray-900">
+                                                {requirement.name}
+                                            </h3>
+                                            <div className="mt-2">
+                                                <span
+                                                    className={`px-3 py-1 text-xs font-medium rounded-full ${
+                                                        requirement.type ===
+                                                        "expirable"
+                                                            ? "bg-yellow-100 text-yellow-800"
+                                                            : "bg-blue-100 text-blue-800"
+                                                    }`}
+                                                >
+                                                    {requirement.type}
+                                                </span>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <div className="flex items-center text-sm text-gray-600">
+                                                    <span className="font-medium mr-2">
+                                                        Category:
+                                                    </span>
+                                                    {requirement.category}
+                                                </div>
+                                                <div className="flex items-center text-sm text-gray-600">
+                                                    <span className="font-medium mr-2">
+                                                        Archived on:
+                                                    </span>
+                                                    {new Date(
+                                                        requirement.archived_at,
+                                                    ).toLocaleDateString(
+                                                        "en-US",
+                                                        {
+                                                            year: "numeric",
+                                                            month: "long",
+                                                            day: "numeric",
+                                                        },
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            {requirement.document && (
+                                                <button
+                                                    onClick={() =>
+                                                        handleViewDetails(
+                                                            requirement.document,
+                                                        )
+                                                    }
+                                                    className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                                                >
+                                                    <RiFileDownloadFill
+                                                        size={20}
+                                                    />
+                                                    View Document
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={() =>
+                                                    handleRecoverRequirement(
+                                                        requirement.id,
+                                                    )
+                                                }
+                                                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                                            >
+                                                <MdRestore size={20} />
+                                                Recover
+                                            </button>
+                                            <button
+                                                onClick={() =>
+                                                    handlePermanentDelete(
+                                                        requirement.id,
+                                                    )
+                                                }
+                                                className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                                            >
+                                                <MdDelete size={20} />
+                                                Delete Permanently
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )
+                    ) : // Active Requirements View (Keep existing requirements mapping)
+                    requirements.length === 0 ? (
                         <div className="text-center py-8 text-gray-500">
                             No requirements found. Add some requirements to get
                             started.
                         </div>
                     ) : (
                         requirements.map((requirement) => {
-                            // The document info is now directly in the requirement object
                             const isCompleted = requirement.is_submitted;
                             const document = requirement.document;
 
@@ -504,6 +737,16 @@ const DocumentRequirementsManagement = () => {
                                             )}
                                             <button
                                                 onClick={() =>
+                                                    handleArchiveRequirement(
+                                                        requirement.id,
+                                                    )
+                                                }
+                                                className="px-4 py-2 text-white bg-yellow-500 rounded-lg hover:bg-yellow-600"
+                                            >
+                                                Archive
+                                            </button>
+                                            {/* <button
+                                                onClick={() =>
                                                     handleDeleteRequirement(
                                                         requirement.id,
                                                     )
@@ -511,7 +754,7 @@ const DocumentRequirementsManagement = () => {
                                                 className="p-2 text-white bg-red-500 rounded-lg hover:bg-red-600"
                                             >
                                                 <MdDelete size={20} />
-                                            </button>
+                                            </button> */}
                                         </div>
                                     </div>
                                 </div>
@@ -545,7 +788,7 @@ const DocumentRequirementsManagement = () => {
                         >
                             <MdArrowBack size={24} />
                         </button>
-                        <h2 className="text-xl font-semibold">
+                        <h2 className="text-xl font-semibold text-black">
                             Document Details
                         </h2>
                     </div>
@@ -667,6 +910,7 @@ const DocumentRequirementsManagement = () => {
         return (
             <div className="bg-white rounded-lg shadow-lg text-black">
                 <div className="p-6">
+                    <h2 className="text-xl font-semibold">Add Requirement</h2>
                     <div className="flex items-center gap-4 mb-6">
                         <button
                             onClick={onBack}
@@ -674,13 +918,9 @@ const DocumentRequirementsManagement = () => {
                         >
                             <MdArrowBack size={24} />
                         </button>
-                        <h2 className="text-xl font-semibold">
-                            Add Requirement
-                        </h2>
                     </div>
-
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div>
+                        <div className="flex items-center flex-col">
                             <label className="block text-sm font-medium text-gray-700">
                                 Requirement Name
                             </label>
@@ -690,11 +930,11 @@ const DocumentRequirementsManagement = () => {
                                 required
                                 value={formData.name}
                                 onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                className="mt-1 block w-full mb-0 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             />
                         </div>
 
-                        <div>
+                        <div className="flex items-center flex-col">
                             <label className="block text-sm font-medium text-gray-700">
                                 Category
                             </label>
@@ -703,7 +943,7 @@ const DocumentRequirementsManagement = () => {
                                 name="category"
                                 value={formData.category}
                                 onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                className="mt-1 block w-full mb-0 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             >
                                 <option value="">Select a category</option>
                                 {CATEGORIES.map((category) => (
@@ -714,7 +954,7 @@ const DocumentRequirementsManagement = () => {
                             </select>
                         </div>
 
-                        <div>
+                        <div className="flex items-center flex-col">
                             <label className="block text-sm font-medium text-gray-700">
                                 Type
                             </label>
@@ -723,7 +963,7 @@ const DocumentRequirementsManagement = () => {
                                 name="type"
                                 value={formData.type}
                                 onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                className="mt-1 block w-full mb-0 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             >
                                 <option value="non-expirable">
                                     Non-Expirable
