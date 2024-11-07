@@ -28,8 +28,9 @@ class EmployeeDocument extends Model
 
     public function requirement()
     {
-        return $this->belongsTo(Requirement::class);
+        return $this->belongsTo(Requirement::class, 'requirement_id');
     }
+
 
     public function user()
     {

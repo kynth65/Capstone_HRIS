@@ -57,8 +57,34 @@ const EmployeeDocumentsView = () => {
                 "/documents/my-requirements/archived",
             );
 
+            console.log("Raw response:", response.data); // Log the raw response
+
             if (response.data.success) {
-                setArchivedRequirements(response.data.data);
+                // Map the data even if it's empty
+                const archivedData = (response.data.data || []).map(
+                    (requirement) => ({
+                        ...requirement,
+                        document: requirement.document
+                            ? {
+                                  id: requirement.document.id,
+                                  certificate_name:
+                                      requirement.document.certificate_name,
+                                  issued_date: requirement.document.issued_date,
+                                  expiring_date:
+                                      requirement.document.expiring_date,
+                                  certificate_file_path:
+                                      requirement.document
+                                          .certificate_file_path,
+                                  type: requirement.document.type,
+                                  category: requirement.document.category,
+                                  is_checked: requirement.document.is_checked,
+                              }
+                            : null,
+                    }),
+                );
+
+                console.log("Processed archived data:", archivedData);
+                setArchivedRequirements(archivedData);
             } else {
                 setError(
                     response.data.message ||
@@ -98,8 +124,10 @@ const EmployeeDocumentsView = () => {
         if (currentView === "details") {
             setCurrentView("list");
             setSelectedDocument(null);
+        } else {
+            // Only reset archive view when explicitly clicking the Show Active button
+            setShowArchived(false);
         }
-        setShowArchived(false); // Reset archive view when going back
     };
 
     const RequirementsListView = () => (
@@ -110,7 +138,7 @@ const EmployeeDocumentsView = () => {
                     <h2 className="text-xl font-semibold">
                         {showArchived
                             ? "Archived Requirements"
-                            : "My Documents"}
+                            : "Active Requirements"}
                     </h2>
                     <button
                         onClick={() => {
@@ -119,7 +147,7 @@ const EmployeeDocumentsView = () => {
                                 fetchArchivedRequirements();
                             }
                         }}
-                        className="px-4 py-2 text-gray-700 bg-gray-300 rounded-lg hover:bg-gray-500"
+                        className="px-4 py-2 text-white bg-green-700 rounded-lg hover:bg-green-900 transition"
                     >
                         {showArchived ? "Show Active" : "Show Archived"}
                     </button>
@@ -153,58 +181,41 @@ const EmployeeDocumentsView = () => {
                             archivedRequirements.map((requirement) => (
                                 <div
                                     key={requirement.id}
-                                    className="bg-gray-50 rounded-lg p-6 border border-gray-100 hover:border-gray-200 transition-all"
+                                    className="bg-gray-100 rounded-lg p-4 hover:bg-gray-100 transition-colors"
                                 >
-                                    <div className="flex justify-between items-start">
-                                        <div className="space-y-2">
+                                    <div className="flex items-start justify-between">
+                                        <div className="space-y-1.5">
                                             <div className="flex items-center gap-2">
-                                                <h3 className="text-lg font-semibold text-gray-900">
+                                                <h3 className="text-base font-medium text-gray-900">
                                                     {requirement.name}
                                                 </h3>
-                                                {requirement.is_personal && (
-                                                    <span className="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded">
-                                                        Personal
-                                                    </span>
-                                                )}
+                                                <span
+                                                    className={`px-2 py-0.5 text-xs rounded-full ${
+                                                        requirement.type ===
+                                                        "expirable"
+                                                            ? "bg-yellow-100 text-yellow-800"
+                                                            : "bg-blue-100 text-blue-800"
+                                                    }`}
+                                                >
+                                                    {requirement.type}
+                                                </span>
                                             </div>
-                                            <div className="space-y-1">
-                                                <div className="mt-2">
-                                                    <span
-                                                        className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
-                                                            requirement.type ===
-                                                            "expirable"
-                                                                ? "bg-yellow-100 text-yellow-800"
-                                                                : "bg-blue-100 text-blue-800"
-                                                        }`}
-                                                    >
-                                                        {requirement.type}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center text-sm text-gray-600">
-                                                    <span className="font-medium mr-2">
-                                                        Category:
-                                                    </span>
-                                                    {requirement.category}
-                                                </div>
-                                                <div className="flex items-center text-sm text-gray-600">
-                                                    <span className="font-medium mr-2">
-                                                        Archived on:
-                                                    </span>
-                                                    {new Date(
-                                                        requirement.archived_at,
-                                                    ).toLocaleDateString(
-                                                        "en-US",
-                                                        {
-                                                            year: "numeric",
-                                                            month: "long",
-                                                            day: "numeric",
-                                                        },
-                                                    )}
-                                                </div>
+                                            <div className="text-xs text-gray-600">
+                                                Category: {requirement.category}
+                                            </div>
+                                            <div className="text-xs text-gray-600">
+                                                Archived on:{" "}
+                                                {new Date(
+                                                    requirement.archived_at,
+                                                ).toLocaleDateString("en-US", {
+                                                    year: "numeric",
+                                                    month: "long",
+                                                    day: "numeric",
+                                                })}
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            {requirement.document && (
+                                        <div>
+                                            {requirement.document ? (
                                                 <button
                                                     onClick={() =>
                                                         handleViewDetails(
@@ -213,19 +224,13 @@ const EmployeeDocumentsView = () => {
                                                     }
                                                     className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors"
                                                 >
-                                                    View Details
+                                                    View Document
                                                 </button>
+                                            ) : (
+                                                <span className="text-sm text-gray-500">
+                                                    No document submitted
+                                                </span>
                                             )}
-                                            <button
-                                                onClick={() =>
-                                                    handleViewDocument(
-                                                        requirement,
-                                                    )
-                                                }
-                                                className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors"
-                                            >
-                                                View Document
-                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -376,7 +381,7 @@ const EmployeeDocumentsView = () => {
                         >
                             <MdArrowBack size={24} />
                         </button>
-                        <h2 className="text-xl font-semibold">
+                        <h2 className="text-xl font-semibold text-black">
                             Document Details
                         </h2>
                     </div>

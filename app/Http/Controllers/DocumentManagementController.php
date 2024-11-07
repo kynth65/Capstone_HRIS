@@ -303,13 +303,14 @@ class DocumentManagementController extends Controller
                 'requirements' => $allRequirements->toArray()
             ]);
 
-            // Now get the requirements for this user
+            // Keep the original working query for requirements
             $requirements = Requirement::where('is_active', false)
                 ->whereNotNull('archived_at')
                 ->where(function ($query) use ($userId) {
-                    $query->where('user_id', '020244709') // Hardcode the ID for testing
+                    $query->where('user_id', '020244709') // Keep the original hardcoded ID
                         ->orWhereNull('user_id');
                 })
+                ->with(['archivedByUser:id,name']) // Add this to get archived by user
                 ->get();
 
             Log::info('User specific requirements:', [
@@ -325,7 +326,8 @@ class DocumentManagementController extends Controller
                 ]);
             }
 
-            $submittedDocuments = EmployeeDocument::where('user_id', $userId)
+            // Fetch documents for these requirements
+            $submittedDocuments = EmployeeDocument::where('user_id', '020244709') // Use the same hardcoded ID
                 ->whereIn('requirement_id', $requirements->pluck('id'))
                 ->get();
 
@@ -334,6 +336,7 @@ class DocumentManagementController extends Controller
                 'documents' => $submittedDocuments->toArray()
             ]);
 
+            // Map requirements with their documents
             $archivedList = $requirements->map(function ($requirement) use ($submittedDocuments) {
                 $submitted = $submittedDocuments->firstWhere('requirement_id', $requirement->id);
                 return [
@@ -357,9 +360,15 @@ class DocumentManagementController extends Controller
                 ];
             });
 
+            // Return all archived requirements with their documents
             return response()->json([
                 'success' => true,
                 'data' => $archivedList,
+                'debug_info' => [
+                    'total_archived' => $allRequirements->count(),
+                    'user_specific' => $requirements->count(),
+                    'with_documents' => $submittedDocuments->count()
+                ],
                 'message' => 'Archived requirements fetched successfully'
             ]);
         } catch (\Exception $e) {

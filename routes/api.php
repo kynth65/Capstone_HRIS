@@ -346,20 +346,33 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/documents/my-requirements/archived', [DocumentManagementController::class, 'getMyArchivedRequirements']);
 });
 
-Route::get('/debug/requirements/{userId}', function ($userId) {
-    $requirements = \App\Models\Requirement::where('is_active', false)
+Route::get('/debug/my-archived-requirements', function (Request $request) {
+    $userId = (string) $request->user()->id;
+
+    // Get direct requirements
+    $requirements = DB::table('requirements')
+        ->where('is_active', false)
         ->whereNotNull('archived_at')
         ->where(function ($query) use ($userId) {
-            $query->where('user_id', (string) $userId)
+            $query->where('user_id', '=', $userId)
                 ->orWhereNull('user_id');
         })
         ->get();
 
+    // Get associated documents
+    $documents = DB::table('employee_documents')
+        ->where('user_id', $userId)
+        ->whereIn('requirement_id', $requirements->pluck('id'))
+        ->get();
+
     return response()->json([
-        'count' => $requirements->count(),
-        'requirements' => $requirements
+        'user_id' => $userId,
+        'requirements' => $requirements,
+        'documents' => $documents,
+        'requirements_count' => $requirements->count(),
+        'documents_count' => $documents->count()
     ]);
-});
+})->middleware('auth:sanctum');
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/my-requirements', [EmployeeRequirementsController::class, 'getMyRequirements']);
