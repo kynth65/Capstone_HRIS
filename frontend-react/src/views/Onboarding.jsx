@@ -6,6 +6,7 @@ const Onboarding = () => {
     const [step, setStep] = useState(1);
     const [candidates, setCandidates] = useState([]);
     const [success, setSuccess] = useState("");
+    const [error, setError] = useState("");
     const [candidateId, setCandidateId] = useState(null);
     const [showSchedule, setShowSchedule] = useState();
     const [showExamSchedule, setShowExamSchedule] = useState();
@@ -15,9 +16,11 @@ const Onboarding = () => {
     const [showCandidateModal, setShowCandidateModal] = useState(false);
     const [selectedCandidate, setSelectedCandidate] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [candidateLoading, setCandidateLoading] = useState({});
     const [sentEmails, setSentEmails] = useState([]);
     const [showInterviewCandidateModal, setShowInterviewCandidateModal] =
         useState(false);
+    const [failedEmailSent, setFailedEmailSent] = useState({});
     const [selectedInterviewCandidate, setSelectedInterviewCandidate] =
         useState(null);
     const [showCreateCandidateModal, setShowCreateCandidateModal] =
@@ -48,7 +51,12 @@ const Onboarding = () => {
 
     const nextStep = () => setStep(step + 1);
     const prevStep = () => setStep(step - 1);
-
+    const setLoadingForCandidate = (candidateId, value) => {
+        setCandidateLoading((prev) => ({
+            ...prev,
+            [candidateId]: value,
+        }));
+    };
     useEffect(() => {
         fetchCandidates();
     }, []);
@@ -128,7 +136,9 @@ const Onboarding = () => {
                 });
             })
             .catch((error) => {
-                console.error("Error triggering onboarding:", error);
+                setError(
+                    "The interview invatation schedule must be set for a future time.",
+                );
             })
             .finally(() => {
                 setLoading(false);
@@ -136,7 +146,7 @@ const Onboarding = () => {
     };
 
     const handleInterviewPassed = (id) => {
-        setLoading(true);
+        setLoadingForCandidate(id, true);
         axiosClient
             .post(`/interview-passed/${id}`)
             .then((response) => {
@@ -149,11 +159,11 @@ const Onboarding = () => {
             .catch((error) =>
                 console.error("Error triggering onboarding:", error),
             )
-            .finally(() => setLoading(false)); // Reset loading state
+            .finally(() => setLoadingForCandidate(id, false)); // Reset loading state
     };
 
     const handleInterviewDeclined = (id) => {
-        setLoading(true);
+        setLoadingForCandidate(id, true);
         axiosClient
             .post(`/interview-declined/${id}`)
             .then((response) => {
@@ -166,7 +176,7 @@ const Onboarding = () => {
             .catch((error) =>
                 console.error("Error triggering onboarding:", error),
             )
-            .finally(() => setLoading(false));
+            .finally(() => setLoadingForCandidate(id, false));
     };
 
     const handleFinalInterview = (event, candidateId) => {
@@ -185,20 +195,28 @@ const Onboarding = () => {
                 fetchCandidates();
                 setShowSchedule(false);
             })
-            .catch((error) => console.error("Error updating candidate:", error))
+            .catch(() => {
+                setError(
+                    "The final interview schedule must be set for a future time.",
+                );
+                setTimeout(() => {
+                    setError("");
+                }, 3000);
+            })
             .finally(() => setLoading(false));
     };
 
     const handleExam = (event, candidateId) => {
         event.preventDefault();
+        setLoading(true);
         axiosClient
             .post(`/exam/${candidateId}/`, newCandidate)
             .then((response) => {
-                setSuccess(
-                    "Email sent for final interview schedule is successfully!",
-                );
+                setSuccess("Email sent for Exam schedule is successfully!");
+
                 setTimeout(() => {
                     setSuccess("");
+                    setError("");
                 }, 3000);
                 setNewCandidate({
                     ...newCandidate,
@@ -208,13 +226,20 @@ const Onboarding = () => {
                 fetchCandidates();
                 setShowExamSchedule(false);
             })
-            .catch((error) => {
-                console.error("Error updating candidate:", error);
+            .catch(() => {
+                setError("The exam schedule must be set for a future time.");
+                setTimeout(() => {
+                    setError("");
+                }, 3000);
+            })
+            .finally(() => {
+                setLoading(false);
             });
     };
 
     const handleExamPassed = (event, candidateId) => {
         event.preventDefault(); // Prevent default form submission
+        setLoading(true);
         axiosClient
             .post(`/exam-passed/${candidateId}/`, newCandidate)
             .then((response) => {
@@ -233,10 +258,16 @@ const Onboarding = () => {
                 fetchCandidates();
             })
             .catch((error) => {
-                console.error("Error updating candidate:", error);
+                setError(
+                    "The orientation schedule must be set for a future time.",
+                );
+            })
+            .finally(() => {
+                setLoading(alse);
             });
     };
     const handleExamFailed = (id) => {
+        setLoadingForCandidate(id, true);
         axiosClient
             .post(`/exam-failed/${id}`)
             .then((response) => {
@@ -244,14 +275,21 @@ const Onboarding = () => {
                 setTimeout(() => {
                     setSuccess("");
                 }, 3000);
+                setFailedEmailSent((prev) => ({
+                    ...prev,
+                    [candidateId]: true,
+                }));
                 fetchCandidates();
             })
             .catch((error) =>
                 console.error("Error triggering onboarding:", error),
-            );
+            )
+            .finally(() => {
+                setLoadingForCandidate(id, false);
+            });
     };
     const handleProbationary = (id) => {
-        setLoading(true);
+        setLoadingForCandidate(id, true);
         axiosClient
             .post(`/orientation/${id}`)
             .then((response) => {
@@ -264,11 +302,11 @@ const Onboarding = () => {
             .catch((error) =>
                 console.error("Error triggering onboarding:", error),
             )
-            .finally(() => setLoading(false)); // Reset loading state
+            .finally(() => setLoadingForCandidate(id, false)); // Reset loading state
     };
 
     const handleRegular = (id) => {
-        setLoading(true);
+        setLoadingForCandidate(id, true);
         axiosClient
             .post(`/probationary/${id}`)
             .then((response) => {
@@ -281,10 +319,10 @@ const Onboarding = () => {
             .catch((error) =>
                 console.error("Error triggering onboarding:", error),
             )
-            .finally(() => setLoading(false)); // Reset loading state
+            .finally(() => setLoadingForCandidate(id, false)); // Reset loading state
     };
     const handleRegularEmployee = async (candidateId) => {
-        setLoading(true);
+        setLoadingForCandidate(candidateId, true);
         try {
             const response = await axiosClient.post(
                 `/candidates/${candidateId}/notify-regular`,
@@ -297,7 +335,7 @@ const Onboarding = () => {
             console.error("There was an error sending the email:", error);
             alert("Failed to send the notification email.");
         } finally {
-            setLoading(false);
+            setLoadingForCandidate(candidateId, false);
         }
     };
 
@@ -560,6 +598,11 @@ const Onboarding = () => {
                                     }
                                     className="space-y-4"
                                 >
+                                    {error && (
+                                        <p className="text-red-600 font-medium bg-red-50 p-3 rounded-lg">
+                                            {error}
+                                        </p>
+                                    )}
                                     <h3 className="text-2xl font-semibold mb-4 text-center">
                                         Set Schedule for Invitation
                                     </h3>
@@ -716,7 +759,10 @@ const Onboarding = () => {
                                                     const isFutureInterview =
                                                         interviewDateTime >
                                                         currentTime;
-
+                                                    const isCandidateLoading =
+                                                        candidateLoading[
+                                                            candidate.id
+                                                        ] || false;
                                                     return (
                                                         <tr
                                                             key={candidate.id}
@@ -786,11 +832,11 @@ const Onboarding = () => {
                                                                             )
                                                                         }
                                                                         disabled={
-                                                                            loading ||
+                                                                            isCandidateLoading ||
                                                                             isFutureInterview
                                                                         }
                                                                     >
-                                                                        {loading
+                                                                        {isCandidateLoading
                                                                             ? "Loading..."
                                                                             : "Final Interview"}
                                                                     </button>
@@ -803,11 +849,11 @@ const Onboarding = () => {
                                                                             )
                                                                         }
                                                                         disabled={
-                                                                            loading ||
+                                                                            isCandidateLoading ||
                                                                             isFutureInterview
                                                                         }
                                                                     >
-                                                                        {loading
+                                                                        {isCandidateLoading
                                                                             ? "Processing..."
                                                                             : "Accept"}
                                                                     </button>
@@ -820,11 +866,11 @@ const Onboarding = () => {
                                                                             )
                                                                         }
                                                                         disabled={
-                                                                            loading ||
+                                                                            isCandidateLoading ||
                                                                             isFutureInterview
                                                                         }
                                                                     >
-                                                                        {loading
+                                                                        {isCandidateLoading
                                                                             ? "Processing..."
                                                                             : "Decline"}
                                                                     </button>
@@ -969,6 +1015,11 @@ const Onboarding = () => {
                                     }
                                     className="space-y-4"
                                 >
+                                    {error && (
+                                        <p className="text-red-600 font-medium bg-red-50 p-3 rounded-lg">
+                                            {error}
+                                        </p>
+                                    )}
                                     <h3 className="text-2xl font-semibold mb-4 text-center">
                                         Set Schedule for Final Interview
                                     </h3>
@@ -1025,7 +1076,9 @@ const Onboarding = () => {
                                             type="submit"
                                             className="bg-green-900 hover:bg-white text-white py-2 px-4 rounded border-2 border-green-900 transition hover:text-green-900"
                                         >
-                                            Save / Send email
+                                            {loading
+                                                ? "Sending..."
+                                                : "Save / Send email"}
                                         </button>
                                     </div>
                                 </form>
@@ -1079,7 +1132,10 @@ const Onboarding = () => {
                                                     const isFutureExam =
                                                         examDateTime >
                                                         currentTime;
-
+                                                    const isCandidateLoading =
+                                                        candidateLoading[
+                                                            candidate.id
+                                                        ] || false;
                                                     return (
                                                         <tr
                                                             key={candidate.id}
@@ -1196,10 +1252,16 @@ const Onboarding = () => {
                                                                         disabled={
                                                                             isFutureExam ||
                                                                             !candidate.date ||
-                                                                            !candidate.time
-                                                                        }
+                                                                            !candidate.time ||
+                                                                            failedEmailSent[
+                                                                                candidate
+                                                                                    .id
+                                                                            ]
+                                                                        } // Disable if email sent
                                                                     >
-                                                                        Failed
+                                                                        {isCandidateLoading
+                                                                            ? "Sending..."
+                                                                            : "Failed"}
                                                                     </button>
                                                                 </div>
                                                                 {isFutureExam && (
@@ -1340,6 +1402,12 @@ const Onboarding = () => {
                                     }
                                     className="space-y-4"
                                 >
+                                    {" "}
+                                    {error && (
+                                        <p className="text-red-600 font-medium bg-red-50 p-3 rounded-lg">
+                                            {error}
+                                        </p>
+                                    )}
                                     <h3 className="text-2xl font-semibold mb-4 text-center">
                                         Set Schedule for Final Interview
                                     </h3>
@@ -1410,6 +1478,11 @@ const Onboarding = () => {
                                     }
                                     className="space-y-4"
                                 >
+                                    {error && (
+                                        <p className="text-red-600 font-medium bg-red-50 p-3 rounded-lg">
+                                            {error}
+                                        </p>
+                                    )}
                                     <h3 className="text-2xl font-semibold mb-4 text-center">
                                         Set Schedule for Orientation
                                     </h3>
@@ -1516,7 +1589,10 @@ const Onboarding = () => {
                                                     const isFutureOrientation =
                                                         orientationDateTime >
                                                         currentTime;
-
+                                                    const isCandidateLoading =
+                                                        candidateLoading[
+                                                            candidate.id
+                                                        ] || false;
                                                     return (
                                                         <tr
                                                             key={candidate.id}
@@ -1585,7 +1661,7 @@ const Onboarding = () => {
                                                                     <button
                                                                         className={`hidden md:block bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-md text-sm ${
                                                                             isFutureOrientation ||
-                                                                            loading
+                                                                            isCandidateLoading
                                                                                 ? "cursor-not-allowed bg-blue-300"
                                                                                 : ""
                                                                         }`}
@@ -1596,10 +1672,10 @@ const Onboarding = () => {
                                                                         }
                                                                         disabled={
                                                                             isFutureOrientation ||
-                                                                            loading
+                                                                            isCandidateLoading
                                                                         }
                                                                     >
-                                                                        {loading
+                                                                        {isCandidateLoading
                                                                             ? "Processing..."
                                                                             : "Proceed"}
                                                                     </button>
@@ -1771,6 +1847,10 @@ const Onboarding = () => {
                                                     const isFutureProbationary =
                                                         probationaryDateTime >
                                                         currentTime;
+                                                    const isCandidateLoading =
+                                                        candidateLoading[
+                                                            candidate.id
+                                                        ] || false;
 
                                                     return (
                                                         <tr
@@ -1805,7 +1885,7 @@ const Onboarding = () => {
                                                                     <button
                                                                         className={`hidden md:block bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-md text-sm ${
                                                                             isFutureProbationary ||
-                                                                            loading
+                                                                            isCandidateLoading
                                                                                 ? "cursor-not-allowed bg-blue-300"
                                                                                 : ""
                                                                         }`}
@@ -1816,10 +1896,10 @@ const Onboarding = () => {
                                                                         }
                                                                         disabled={
                                                                             isFutureProbationary ||
-                                                                            loading
+                                                                            isCandidateLoading
                                                                         }
                                                                     >
-                                                                        {loading
+                                                                        {isCandidateLoading
                                                                             ? "Sending..."
                                                                             : "Send Email"}
                                                                     </button>
@@ -1946,53 +2026,61 @@ const Onboarding = () => {
                                                         candidate.recruitment_stage ===
                                                         "Regular",
                                                 )
-                                                .map((candidate) => (
-                                                    <tr
-                                                        key={candidate.id}
-                                                        className="hover:bg-gray-50 transition-colors"
-                                                    >
-                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm">
-                                                            {candidate.name}
-                                                        </td>
-                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
-                                                            {candidate.email}
-                                                        </td>
-                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
-                                                            {
-                                                                candidate.job_position
-                                                            }
-                                                        </td>
-                                                        <td className="px-6 py-4 border-b border-gray-200 text-sm">
-                                                            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
-                                                                <button
-                                                                    className="md:hidden bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                                                                    onClick={() =>
-                                                                        handleViewRegularCandidate(
-                                                                            candidate,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    View
-                                                                </button>
-                                                                <button
-                                                                    className={`hidden md:block bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-md text-sm ${loading ? "cursor-not-allowed bg-blue-300" : ""}`}
-                                                                    onClick={() =>
-                                                                        handleRegularEmployee(
-                                                                            candidate.id,
-                                                                        )
-                                                                    }
-                                                                    disabled={
-                                                                        loading
-                                                                    }
-                                                                >
-                                                                    {loading
-                                                                        ? "Sending..."
-                                                                        : "Send Email"}
-                                                                </button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
+                                                .map((candidate) => {
+                                                    const isCandidateLoading =
+                                                        candidateLoading[
+                                                            candidate.id
+                                                        ] || false;
+                                                    return (
+                                                        <tr
+                                                            key={candidate.id}
+                                                            className="hover:bg-gray-50 transition-colors"
+                                                        >
+                                                            <td className="px-6 py-4 border-b border-gray-200 text-sm">
+                                                                {candidate.name}
+                                                            </td>
+                                                            <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
+                                                                {
+                                                                    candidate.email
+                                                                }
+                                                            </td>
+                                                            <td className="px-6 py-4 border-b border-gray-200 text-sm hidden md:table-cell">
+                                                                {
+                                                                    candidate.job_position
+                                                                }
+                                                            </td>
+                                                            <td className="px-6 py-4 border-b border-gray-200 text-sm">
+                                                                <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                                                                    <button
+                                                                        className="md:hidden bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                                                                        onClick={() =>
+                                                                            handleViewRegularCandidate(
+                                                                                candidate,
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        View
+                                                                    </button>
+                                                                    <button
+                                                                        className={`hidden md:block bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-md text-sm ${loading ? "cursor-not-allowed bg-blue-300" : ""}`}
+                                                                        onClick={() =>
+                                                                            handleRegularEmployee(
+                                                                                candidate.id,
+                                                                            )
+                                                                        }
+                                                                        disabled={
+                                                                            isCandidateLoading
+                                                                        }
+                                                                    >
+                                                                        {isCandidateLoading
+                                                                            ? "Sending..."
+                                                                            : "Send Email"}
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })
                                         ) : (
                                             <tr>
                                                 <td

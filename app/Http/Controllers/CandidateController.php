@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Candidate;
+use App\Models\Notification;
+use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -15,7 +17,13 @@ class CandidateController extends Controller
     {
         $candidate = Candidate::findOrFail($candidateId);
         $token = Str::random(60);
+        $examDateTime = Carbon::createFromFormat('Y-m-d H:i', $request->date . ' ' . $request->time);
+        $currentDateTime = Carbon::now('Asia/Manila');
 
+        // Check if the exam time is in the past
+        if ($examDateTime->isPast()) {
+            return response()->json(['message' => 'The time schedule must be set for a future time.'], 422);
+        }
         // Add new fields from the request
         $candidate->onboarding_token = $token;
         $candidate->onboarding_status = 'started';
@@ -130,6 +138,12 @@ class CandidateController extends Controller
             // Handle accept logic
             $candidate->recruitment_stage = "Interview";
             $candidate->save();
+            $hrMessage = $candidate->name . ' has accepted the invitation for the interview.';
+            Notification::create([
+
+                'message' => $hrMessage,
+
+            ]);
             // Redirect to a thank you page
             return redirect()->route('thank.you.page');
         } elseif ($response === 'decline') {

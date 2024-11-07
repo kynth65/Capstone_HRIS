@@ -233,7 +233,7 @@ function EmployeeLayout() {
                         </span>
                     </Link>
                     <Link
-                        to="/employee-certificate"
+                        to="/employee-document"
                         onClick={() => handleHeaderChange("Document")}
                     >
                         <span className="block h-10 pt-3 cursor-pointer text-white hover:bg-opacity-70 hover:bg-gray-600 rounded-lg transition">
