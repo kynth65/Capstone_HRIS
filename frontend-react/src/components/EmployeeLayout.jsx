@@ -39,28 +39,60 @@ function EmployeeLayout() {
     };
 
     useEffect(() => {
-        axiosClient
-            .get("/employee-notifications")
-            .then((response) => {
-                console.log("Employee notifications response:", response.data);
-                // Map notifications using the direct isRead field from database
-                const notificationsWithReadStatus = response.data.map(
-                    (notification) => ({
-                        ...notification,
-                        isRead: Boolean(notification.isRead), // Convert to boolean to ensure proper type
-                    }),
+        // Function to fetch notifications
+        const fetchNotifications = () => {
+            axiosClient
+                .get("/employee-notifications")
+                .then((response) => {
+                    console.log(
+                        "Employee notifications response:",
+                        response.data,
+                    );
+                    // Map notifications using the direct isRead field from database
+                    const notificationsWithReadStatus = response.data.map(
+                        (notification) => ({
+                            ...notification,
+                            isRead: Boolean(notification.isRead),
+                        }),
+                    );
+                    setNotifications(notificationsWithReadStatus);
+                    // Count unread using the isRead field directly
+                    const unread = notificationsWithReadStatus.filter(
+                        (n) => !n.isRead,
+                    ).length;
+                    setUnreadCount(unread);
+                })
+                .catch((error) =>
+                    console.error(
+                        "Error fetching employee notifications:",
+                        error,
+                    ),
                 );
-                setNotifications(notificationsWithReadStatus);
-                // Count unread using the isRead field directly
-                const unread = notificationsWithReadStatus.filter(
-                    (n) => !n.isRead,
-                ).length;
-                setUnreadCount(unread);
-            })
-            .catch((error) =>
-                console.error("Error fetching employee notifications:", error),
-            );
-    }, []);
+        };
+
+        // Function to fetch unread count only
+        const fetchUnreadCount = () => {
+            axiosClient
+                .get("/employee-notifications/unread-count")
+                .then((response) => {
+                    console.log("Unread count response:", response.data);
+                    setUnreadCount(response.data.unreadCount);
+                })
+                .catch((error) =>
+                    console.error("Error fetching unread count:", error),
+                );
+        };
+
+        // Initial fetch of both notifications and unread count
+        fetchUnreadCount();
+        fetchNotifications();
+
+        // Set up polling interval
+        const intervalId = setInterval(fetchNotifications, 3000); // Fetch every 3 seconds
+
+        // Cleanup function to clear interval
+        return () => clearInterval(intervalId);
+    }, []); // Empty dependency array means this effect runs once on mount
 
     useEffect(() => {
         localStorage.setItem("headerText", headerText);
@@ -138,18 +170,16 @@ function EmployeeLayout() {
                 .then((response) => {
                     console.log("Mark as read response:", response.data);
                     if (response.data.success) {
-                        // Update notifications state using the isRead field
                         setNotifications(
                             notifications.map((n) =>
                                 n.id === notification.id
-                                    ? {
-                                          ...n,
-                                          isRead: true,
-                                      }
+                                    ? { ...n, isRead: true }
                                     : n,
                             ),
                         );
-                        setUnreadCount((prevCount) => prevCount - 1);
+                        setUnreadCount((prevCount) =>
+                            Math.max(0, prevCount - 1),
+                        );
                     }
                 })
                 .catch((error) => {
@@ -157,6 +187,7 @@ function EmployeeLayout() {
                 });
         }
     };
+
     const toggleNotificationDropdown = () => {
         setShowNotificationDropdown(!showNotificationDropdown);
     };

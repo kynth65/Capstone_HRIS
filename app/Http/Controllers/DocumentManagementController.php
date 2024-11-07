@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\EmployeeDocument;
 use App\Models\Requirement;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
@@ -54,15 +56,16 @@ class DocumentManagementController extends Controller
     }
 
     // Submit document for requirement
-
     public function submitDocument(Request $request)
     {
-        // Log the entire request content
-        Log::info('Document submission started', [
-            'request_all' => $request->all(),
-            'has_file' => $request->hasFile('certificate_file_path'),
-            'files' => $request->allFiles(),
-        ]);
+        Log::info(
+            'Document submission started',
+            [
+                'request_all' => $request->all(),
+                'has_file' => $request->hasFile('certificate_file_path'),
+                'files' => $request->allFiles(),
+            ]
+        );
 
         try {
             $validated = $request->validate([
@@ -71,29 +74,37 @@ class DocumentManagementController extends Controller
                 'certificate_name' => 'required',
                 'issued_date' => 'required|date',
                 'expiring_date' => 'nullable|date',
-                'certificate_file_path' => 'required|file', // Match the database column name
+                'certificate_file_path' => 'required|file',
                 'type' => 'required',
                 'category' => 'required'
             ]);
 
-            // If validation passes, we know we have a file
-            $file = $request->file('certificate_file_path');
+            // Get requirement name before creating document
+            $requirement = Requirement::findOrFail($request->requirement_id);
 
-            // Store in the public disk under documents directory
+            $file = $request->file('certificate_file_path');
             $path = $file->store('documents', 'public');
 
-            // Create the document record
             $document = EmployeeDocument::create([
                 'user_id' => $request->user_id,
                 'requirement_id' => $request->requirement_id,
                 'certificate_name' => $request->certificate_name,
                 'issued_date' => $request->issued_date,
                 'expiring_date' => $request->expiring_date,
-                'certificate_file_path' => $path, // This matches your DB column name
+                'certificate_file_path' => $path,
                 'type' => $request->type,
                 'category' => $request->category,
-                'is_checked' => true  // Set this to true by default
+                'is_checked' => true
+            ]);
 
+            // Notify about document submission with requirement name
+            DB::table('employee_notifications')->insert([
+                'id' => Str::uuid(),
+                'user_id' => $request->user_id,
+                'message' => "Document '{$request->certificate_name}' has been submitted successfully for requirement '{$requirement->name}'.",
+                'type' => 'document_submitted',
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
 
             return response()->json($document);
@@ -102,7 +113,6 @@ class DocumentManagementController extends Controller
                 'errors' => $e->errors(),
                 'request_data' => $request->all()
             ]);
-
             return response()->json([
                 'message' => 'Validation failed',
                 'errors' => $e->errors()
@@ -112,7 +122,6 @@ class DocumentManagementController extends Controller
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-
             return response()->json([
                 'message' => 'An error occurred while uploading the document.',
                 'error' => $e->getMessage()
@@ -139,11 +148,23 @@ class DocumentManagementController extends Controller
             'category' => 'required',
             'type' => 'required',
             'is_required' => 'boolean',
-            'user_id' => 'required' // Add this validation
-
+            'user_id' => 'required'
         ]);
 
         $requirement = Requirement::create($request->all());
+
+        // Add notification for the specific user
+        if ($request->user_id) {
+            DB::table('employee_notifications')->insert([
+                'id' => Str::uuid(),
+                'user_id' => $request->user_id,
+                'message' => "New requirement '{$requirement->name}' has been added to your documents.",
+                'type' => 'requirement_added',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
         return response()->json($requirement);
     }
 
@@ -191,11 +212,21 @@ class DocumentManagementController extends Controller
         try {
             $requirement = Requirement::findOrFail($id);
             $requirement->archived_at = now();
-
-            // Get the user ID using request()->user() or fallback to null
             $requirement->archived_by = request()->user()?->id;
             $requirement->is_active = false;
             $requirement->save();
+
+            // Notify user if requirement is user-specific
+            if ($requirement->user_id) {
+                DB::table('employee_notifications')->insert([
+                    'id' => Str::uuid(),
+                    'user_id' => $requirement->user_id,
+                    'message' => "Requirement '{$requirement->name}' has been archived.",
+                    'type' => 'requirement_archived',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
 
             return response()->json([
                 'message' => 'Requirement archived successfully',
@@ -223,6 +254,18 @@ class DocumentManagementController extends Controller
             $requirement->is_active = true;
             $requirement->save();
 
+            // Notify user if requirement is user-specific
+            if ($requirement->user_id) {
+                DB::table('employee_notifications')->insert([
+                    'id' => Str::uuid(),
+                    'user_id' => $requirement->user_id,
+                    'message' => "Requirement '{$requirement->name}' has been restored from archive.",
+                    'type' => 'requirement_restored',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
             return response()->json([
                 'message' => 'Requirement recovered successfully',
                 'requirement' => $requirement
@@ -232,7 +275,6 @@ class DocumentManagementController extends Controller
                 'id' => $id,
                 'error' => $e->getMessage()
             ]);
-
             return response()->json([
                 'message' => 'Error recovering requirement',
                 'error' => $e->getMessage()
@@ -242,21 +284,62 @@ class DocumentManagementController extends Controller
 
     public function removeRequirement($id)
     {
-        $requirement = Requirement::findOrFail($id);
-        $requirement->is_active = false;
-        $requirement->save();
+        try {
+            $requirement = Requirement::findOrFail($id);
+            $requirement->is_active = false;
+            $requirement->save();
 
-        return response()->json(['message' => 'Requirement removed']);
+            // Notify user if requirement is user-specific
+            if ($requirement->user_id) {
+                DB::table('employee_notifications')->insert([
+                    'id' => Str::uuid(),
+                    'user_id' => $requirement->user_id,
+                    'message' => "Requirement '{$requirement->name}' has been removed.",
+                    'type' => 'requirement_removed',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            return response()->json(['message' => 'Requirement removed']);
+        } catch (\Exception $e) {
+            Log::error('Error removing requirement', [
+                'id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            return response()->json([
+                'message' => 'Error removing requirement',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function permanentDeleteRequirement($id)
     {
         try {
             $requirement = Requirement::findOrFail($id);
-            // Delete associated documents if needed
+
+            // Store user_id before deletion for notification
+            $userId = $requirement->user_id;
+            $requirementName = $requirement->name;
+
+            // Delete associated documents
             EmployeeDocument::where('requirement_id', $id)->delete();
+
             // Delete the requirement
             $requirement->delete();
+
+            // Notify user if requirement was user-specific
+            if ($userId) {
+                DB::table('employee_notifications')->insert([
+                    'id' => Str::uuid(),
+                    'user_id' => $userId,
+                    'message' => "Requirement '{$requirementName}' has been permanently deleted.",
+                    'type' => 'requirement_deleted',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
 
             return response()->json(['message' => 'Requirement permanently deleted']);
         } catch (\Exception $e) {
@@ -264,7 +347,6 @@ class DocumentManagementController extends Controller
                 'id' => $id,
                 'error' => $e->getMessage()
             ]);
-
             return response()->json([
                 'message' => 'Error deleting requirement',
                 'error' => $e->getMessage()
