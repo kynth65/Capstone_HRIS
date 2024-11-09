@@ -5,6 +5,7 @@ import { jwtDecode } from "jwt-decode";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import Modal from "react-modal";
 import { IoIosArrowRoundBack } from "react-icons/io";
+import { IoSearch } from "react-icons/io5";
 import countryCodes from "../hooks/useCountryCodes";
 import Terms from "../views/Terms";
 import Conditions from "../views/Conditions";
@@ -50,6 +51,8 @@ const ApplicantPortal = () => {
     const [isConditionsOpen, setIsConditionsOpen] = useState(false);
     const [isChecked, setIsChecked] = useState(false);
     const [step, setStep] = useState(1);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [filteredPositions, setFilteredPositions] = useState([]);
     const [contactInfo, setContactInfo] = useState({
         email: "",
         phoneCountryCode: "+63",
@@ -485,10 +488,13 @@ const ApplicantPortal = () => {
         try {
             const response = await axiosClient.get("/open-positions");
             const data = response.data;
-            setPositions(Array.isArray(data) ? data : []);
+            const positions = Array.isArray(data) ? data : [];
+            setPositions(positions);
+            setFilteredPositions(positions); // Initialize filtered positions with all positions
         } catch (error) {
             console.error("Error fetching positions:", error);
             setPositions([]);
+            setFilteredPositions([]);
         }
     };
 
@@ -496,6 +502,35 @@ const ApplicantPortal = () => {
         fetchPositions();
     }, []);
 
+    const handleSearch = () => {
+        const filtered = positions.filter((position) => {
+            const searchTerm = searchQuery.toLowerCase();
+            return (
+                position.title.toLowerCase().includes(searchTerm) ||
+                position.type.toLowerCase().includes(searchTerm) ||
+                position.hr_tags.toLowerCase().includes(searchTerm) ||
+                position.base_salary.toLowerCase().includes(searchTerm)
+            );
+        });
+        setFilteredPositions(filtered);
+    };
+
+    const handleSearchInputChange = (e) => {
+        const searchTerm = e.target.value;
+        setSearchQuery(searchTerm);
+
+        // Filter positions immediately when input changes
+        const filtered = positions.filter((position) => {
+            const term = searchTerm.toLowerCase();
+            return (
+                position.title.toLowerCase().includes(term) ||
+                position.type.toLowerCase().includes(term) ||
+                position.hr_tags.toLowerCase().includes(term) ||
+                position.base_salary.toLowerCase().includes(term)
+            );
+        });
+        setFilteredPositions(filtered);
+    };
     const handleLoginError = (error) => {
         console.error("Google login error:", error);
         setErrorMessage("Failed to log in with Google. Please try again.");
@@ -532,10 +567,11 @@ const ApplicantPortal = () => {
                     />
                 ))
             ) : (
-                <p>No open positions available.</p>
+                <p>No positions found matching your search.</p>
             )}
         </div>
     );
+
     //Position Card
     const PositionCard = ({ position, openModal, openViewAllModal }) => {
         return (
@@ -608,13 +644,26 @@ const ApplicantPortal = () => {
                     )}
                 </div>
 
+                <div className="w-full max-w-2xl mx-auto mt-6 px-4">
+                    <div className="relative">
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={handleSearchInputChange}
+                            placeholder="Search positions..."
+                            className="w-full px-4 py-2 rounded-lg text-black border-2 border-green-900 focus:outline-none focus:border-green-700"
+                        />
+                    </div>
+                </div>
+
                 {showSuccessMessage && (
                     <div className="success-message bg-green-100 text-green-700 p-4 rounded mb-4 text-center">
                         {showSuccessMessage}
                     </div>
                 )}
+
                 <PositionsList
-                    positions={positions}
+                    positions={filteredPositions}
                     openModal={openModal}
                     openViewAllModal={openViewAllModal}
                 />
