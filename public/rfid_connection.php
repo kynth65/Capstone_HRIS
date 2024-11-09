@@ -18,32 +18,50 @@ if ($conn->connect_error) {
   die("Connection failed: " . $conn->connect_error);
 }
 
+
 function hasTimeInToday($userId)
 {
   global $conn;
   $today = date('Y-m-d');
-  $sql = "SELECT * FROM attendances WHERE user_id = ? AND date = ? AND time_in IS NOT NULL";
+  $sql = "SELECT * FROM attendances WHERE user_id = ? AND date = ? AND time_in IS NOT NULL ORDER BY time_in DESC LIMIT 1";
   $stmt = $conn->prepare($sql);
   $stmt->bind_param("ss", $userId, $today);
   $stmt->execute();
   $result = $stmt->get_result();
-  $hasTimeIn = $result->num_rows > 0;
+  $row = $result->fetch_assoc();
   $stmt->close();
-  return $hasTimeIn;
+
+  if ($row) {
+    return $row['time_out'] === null;
+  }
+  return false;
 }
 
 function hasTimeOutToday($userId)
 {
   global $conn;
   $today = date('Y-m-d');
-  $sql = "SELECT * FROM attendances WHERE user_id = ? AND date = ? AND time_out IS NOT NULL";
+  $sql = "SELECT * FROM attendances WHERE user_id = ? AND date = ? AND time_out IS NOT NULL ORDER BY time_out DESC LIMIT 1";
   $stmt = $conn->prepare($sql);
   $stmt->bind_param("ss", $userId, $today);
   $stmt->execute();
   $result = $stmt->get_result();
-  $hasTimeOut = $result->num_rows > 0;
+  $row = $result->fetch_assoc();
   $stmt->close();
-  return $hasTimeOut;
+
+  // Return true if there's a more recent time out than time in
+  if ($row) {
+    $timeOutQuery = "SELECT * FROM attendances WHERE user_id = ? AND date = ? AND time_in > ? LIMIT 1";
+    $timeOutStmt = $conn->prepare($timeOutQuery);
+    $lastTimeOut = $row['time_out'];
+    $timeOutStmt->bind_param("sss", $userId, $today, $lastTimeOut);
+    $timeOutStmt->execute();
+    $timeOutResult = $timeOutStmt->get_result();
+    $hasNewTimeIn = $timeOutResult->num_rows > 0;
+    $timeOutStmt->close();
+    return !$hasNewTimeIn;
+  }
+  return false;
 }
 
 function isNewDay($userId)
@@ -76,8 +94,27 @@ function isLate($userId, $timeIn)
   // Default schedule settings
   $defaultStartTime = "09:00:00"; // 9 AM default start time
   $gracePeriod = 15; // 15 minutes grace period
+  $today = date('Y-m-d');
 
   try {
+    // Extract only the time component from the timeIn input
+    $timeInTimeOnly = (new DateTime($timeIn))->format('H:i:s');
+
+    // Check if the current time_in is the first of the day
+    $sqlFirstTimeIn = "SELECT MIN(time_in) AS first_time_in FROM attendances WHERE user_id = ? AND date = ?";
+    $stmtFirstTimeIn = $conn->prepare($sqlFirstTimeIn);
+    $stmtFirstTimeIn->bind_param("ss", $userId, $today);
+    $stmtFirstTimeIn->execute();
+    $resultFirstTimeIn = $stmtFirstTimeIn->get_result();
+    $firstTimeInRow = $resultFirstTimeIn->fetch_assoc();
+    $stmtFirstTimeIn->close();
+
+    // If current time_in is not the first of the day, skip lateness check
+    if ($firstTimeInRow['first_time_in'] !== null && $firstTimeInRow['first_time_in'] !== $timeIn) {
+      return false; // Do not check lateness for subsequent time-ins of the day
+    }
+
+    // Fetch the user's schedule
     $sql = "SELECT schedule FROM users WHERE user_id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $userId);
@@ -93,33 +130,39 @@ function isLate($userId, $timeIn)
       if ($schedule !== null && strpos($schedule, ' - ') !== false) {
         $scheduleParts = explode(' - ', $schedule);
         if (count($scheduleParts) === 2) {
+          // Extract start time from schedule
           $startTime = trim($scheduleParts[0]);
-          $startTimeObj = new DateTime(date('Y-m-d') . ' ' . $startTime);
-          $startTimeWithGrace = $startTimeObj->add(new DateInterval("PT{$gracePeriod}M"));
-          $timeInObj = new DateTime($timeIn);
-          return $timeInObj > $startTimeWithGrace;
+
+          // Convert start time to DateTime object and apply grace period
+          $startTimeWithGrace = (new DateTime($startTime))->add(new DateInterval("PT{$gracePeriod}M"));
+          $startTimeOnly = $startTimeWithGrace->format('H:i:s');
+
+          // Compare the time_in time with the start time (ignoring the date)
+          if ($timeInTimeOnly > $startTimeOnly) {
+            return true; // Late
+          }
         }
       }
     }
 
     // Use default schedule if no valid schedule is found
-    $defaultStartTimeObj = new DateTime(date('Y-m-d') . ' ' . $defaultStartTime);
-    $defaultStartWithGrace = $defaultStartTimeObj->add(new DateInterval("PT{$gracePeriod}M"));
-    $timeInObj = new DateTime($timeIn);
+    $defaultStartTimeWithGrace = (new DateTime($defaultStartTime))->add(new DateInterval("PT{$gracePeriod}M"));
+    $defaultStartTimeOnly = $defaultStartTimeWithGrace->format('H:i:s');
 
-    return $timeInObj > $defaultStartWithGrace;
+    // Compare time_in with default start time (ignoring the date)
+    return $timeInTimeOnly > $defaultStartTimeOnly;
   } catch (Exception $e) {
     // Log error if needed
     error_log("Error in isLate function: " . $e->getMessage());
 
     // Use default schedule in case of any error
-    $defaultStartTimeObj = new DateTime(date('Y-m-d') . ' ' . $defaultStartTime);
-    $defaultStartWithGrace = $defaultStartTimeObj->add(new DateInterval("PT{$gracePeriod}M"));
-    $timeInObj = new DateTime($timeIn);
+    $defaultStartTimeWithGrace = (new DateTime($defaultStartTime))->add(new DateInterval("PT{$gracePeriod}M"));
+    $defaultStartTimeOnly = $defaultStartTimeWithGrace->format('H:i:s');
 
-    return $timeInObj > $defaultStartWithGrace;
+    return $timeInTimeOnly > $defaultStartTimeOnly;
   }
 }
+
 
 // Function to check if RFID exists in rfid_cards table
 function isRfidExists($rfid)
