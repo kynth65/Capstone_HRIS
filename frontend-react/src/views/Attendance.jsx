@@ -194,11 +194,9 @@ function Attendance() {
     };
 
     const handleGenerateReport = () => {
-        // Get current date at midnight for consistent comparison
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        // Convert form dates to Date objects
         const fromDateObj = new Date(fromDate);
         const toDateObj = new Date(toDate);
 
@@ -218,6 +216,13 @@ function Attendance() {
 
         if (fromDateObj > toDateObj) {
             alert("From date cannot be later than to date");
+            return;
+        }
+
+        // Additional validation for reasonable date range
+        const oneYearInMs = 365 * 24 * 60 * 60 * 1000;
+        if (toDateObj - fromDateObj > oneYearInMs) {
+            alert("Date range cannot exceed 1 year");
             return;
         }
 
@@ -748,7 +753,7 @@ function Attendance() {
                                                         colSpan="5"
                                                         className="px-6 py-4 text-sm text-center text-gray-500"
                                                     >
-                                                        No employees found.
+                                                        No attendance found.
                                                     </td>
                                                 </tr>
                                             )}
@@ -963,6 +968,7 @@ function Attendance() {
                                 <input
                                     type="date"
                                     value={fromDate}
+                                    max={new Date().toISOString().split("T")[0]} // Prevents future dates
                                     onChange={(e) =>
                                         setFromDate(e.target.value)
                                     }
@@ -976,6 +982,7 @@ function Attendance() {
                                 <input
                                     type="date"
                                     value={toDate}
+                                    max={new Date().toISOString().split("T")[0]} // Prevents future dates
                                     onChange={(e) => setToDate(e.target.value)}
                                     className="w-full rounded-lg border border-gray-200 p-2"
                                 />
