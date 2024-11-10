@@ -57,6 +57,8 @@ function Recruitment_Management() {
     const [tagCache, setTagCache] = useState({});
     const debounceTimer = useRef(null);
     const [applicantCounts, setApplicantCounts] = useState({});
+    const [searchQuery, setSearchQuery] = useState("");
+    const [filteredPositions, setFilteredPositions] = useState([]);
     const [newPosition, setNewPosition] = useState({
         title: "",
         type: "",
@@ -121,6 +123,23 @@ function Recruitment_Management() {
 
     const handleDocumentChange = (event) => {
         setDocumentContent(event.target.value);
+    };
+
+    const handleSearchInputChange = (e) => {
+        const searchTerm = e.target.value;
+        setSearchQuery(searchTerm);
+
+        // Filter positions based on search term
+        const filtered = positions.filter((position) => {
+            const term = searchTerm.toLowerCase();
+            return (
+                position.title.toLowerCase().includes(term) ||
+                position.type.toLowerCase().includes(term) ||
+                position.hr_tags.toLowerCase().includes(term) ||
+                position.base_salary.toLowerCase().includes(term)
+            );
+        });
+        setFilteredPositions(filtered);
     };
 
     const handleOpenPdf = (pdfUrl) => {
@@ -229,9 +248,12 @@ function Recruitment_Management() {
             .get("/open-positions")
             .then((response) => {
                 setPositions(response.data);
+                setFilteredPositions(response.data); // Initialize filtered positions
             })
             .catch((error) => {
                 console.error("Error fetching positions:", error);
+                setPositions([]);
+                setFilteredPositions([]);
             });
     }, []);
 
@@ -656,15 +678,27 @@ function Recruitment_Management() {
                                 </div>
                             )}
                         </div>
-                        <button
-                            onClick={() => setShowModal(true)}
-                            className="w-fit text-black px-5 py-3 bg-white rounded-lg"
-                        >
-                            Add Position
-                        </button>
+                        <div className="flex flex-col items-center md:flex-row md:justify-center md:items-center px-6 gap-4">
+                            <button
+                                onClick={() => setShowModal(true)}
+                                className="w-fit text-black px-5 py-3 bg-white rounded-lg hover:bg-gray-50 transition"
+                            >
+                                Add Position
+                            </button>
+
+                            <div className="relative w-full md:w-96">
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={handleSearchInputChange}
+                                    placeholder="Search positions..."
+                                    className="w-full mb-0 px-4 py-3 pl-12 rounded-lg text-black border-2 border-green-900 focus:outline-none focus:border-green-700 transition-colors"
+                                />
+                            </div>
+                        </div>
                         <div className="flex flex-col gap-6 p-6">
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                {positions.map((position, index) => (
+                                {filteredPositions.map((position, index) => (
                                     <div
                                         key={index}
                                         className="bg-white w-full h-full mt-6 p-6 rounded-lg shadow-md flex flex-col items-center gap-4 transition-transform transform hover:scale-105 font-kodchasan"

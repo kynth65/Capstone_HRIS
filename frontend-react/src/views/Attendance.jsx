@@ -193,6 +193,38 @@ function Attendance() {
         }
     };
 
+    const handleGenerateReport = () => {
+        // Get current date at midnight for consistent comparison
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // Convert form dates to Date objects
+        const fromDateObj = new Date(fromDate);
+        const toDateObj = new Date(toDate);
+
+        fromDateObj.setHours(0, 0, 0, 0);
+        toDateObj.setHours(0, 0, 0, 0);
+
+        // Error checks
+        if (!fromDate || !toDate) {
+            alert("Please select both from and to dates");
+            return;
+        }
+
+        if (fromDateObj > today || toDateObj > today) {
+            alert("Cannot generate report for future dates");
+            return;
+        }
+
+        if (fromDateObj > toDateObj) {
+            alert("From date cannot be later than to date");
+            return;
+        }
+
+        // If all validations pass, proceed with report generation
+        generateReport();
+    };
+
     const downloadMonthlyReport = async () => {
         try {
             const response = await axiosClient.get("/generate-monthly-report", {
@@ -242,12 +274,79 @@ function Attendance() {
         }
     };
 
-    const handleModalSubmit = async () => {
+    const handlePreviewReport = () => {
+        // Get current date at midnight for consistent comparison
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // Convert form dates to Date objects
+        const fromDateObj = new Date(modalFromDate);
+        const toDateObj = new Date(modalToDate);
+
+        fromDateObj.setHours(0, 0, 0, 0);
+        toDateObj.setHours(0, 0, 0, 0);
+
+        // Error checks
         if (!modalFromDate || !modalToDate) {
             alert("Please select both from and to dates");
             return;
         }
 
+        if (fromDateObj > today || toDateObj > today) {
+            alert("Cannot preview report for future dates");
+            return;
+        }
+
+        if (fromDateObj > toDateObj) {
+            alert("From date cannot be later than to date");
+            return;
+        }
+
+        // Additional validation for reasonable date range (e.g., maximum 1 year)
+        const oneYearInMs = 365 * 24 * 60 * 60 * 1000;
+        if (toDateObj - fromDateObj > oneYearInMs) {
+            alert("Date range cannot exceed 1 year");
+            return;
+        }
+
+        // If all validations pass, proceed with preview
+        handleModalSubmit();
+    };
+
+    const handleModalSubmit = async () => {
+        // Get current date at midnight for consistent comparison
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // Convert form dates to Date objects
+        const fromDateObj = new Date(modalFromDate);
+        const toDateObj = new Date(modalToDate);
+
+        fromDateObj.setHours(0, 0, 0, 0);
+        toDateObj.setHours(0, 0, 0, 0);
+
+        // Error checks
+        if (!modalFromDate || !modalToDate) {
+            alert("Please select both from and to dates");
+            return;
+        }
+
+        if (fromDateObj > today || toDateObj > today) {
+            alert(`Cannot ${modalAction} report for future dates`);
+            return;
+        }
+
+        if (fromDateObj > toDateObj) {
+            alert("From date cannot be later than to date");
+            return;
+        }
+
+        // Additional validation for reasonable date range
+        const oneYearInMs = 365 * 24 * 60 * 60 * 1000;
+        if (toDateObj - fromDateObj > oneYearInMs) {
+            alert("Date range cannot exceed 1 year");
+            return;
+        }
         try {
             if (modalAction === "preview") {
                 const response = await axiosClient.get(
@@ -292,7 +391,9 @@ function Attendance() {
             setIsDateModalOpen(false);
         } catch (error) {
             console.error("Error generating report:", error);
-            alert("Error generating report. Please try again.");
+            alert(
+                `Error ${modalAction === "preview" ? "previewing" : "downloading"} report. Please try again.`,
+            );
         }
     };
 
@@ -791,6 +892,7 @@ function Attendance() {
                                 <input
                                     type="date"
                                     value={modalFromDate}
+                                    max={new Date().toISOString().split("T")[0]} // Prevents selecting future dates
                                     onChange={(e) =>
                                         setModalFromDate(e.target.value)
                                     }
@@ -805,6 +907,7 @@ function Attendance() {
                                 <input
                                     type="date"
                                     value={modalToDate}
+                                    max={new Date().toISOString().split("T")[0]} // Prevents selecting future dates
                                     onChange={(e) =>
                                         setModalToDate(e.target.value)
                                     }
@@ -821,7 +924,11 @@ function Attendance() {
                                 Cancel
                             </button>
                             <button
-                                onClick={handleModalSubmit}
+                                onClick={
+                                    modalAction === "preview"
+                                        ? handlePreviewReport
+                                        : handleModalSubmit
+                                }
                                 disabled={!modalFromDate || !modalToDate}
                                 className={`px-4 py-2 rounded transition-colors ${
                                     modalAction === "preview"
@@ -916,7 +1023,7 @@ function Attendance() {
                                 Close
                             </button>
                             <button
-                                onClick={generateReport}
+                                onClick={handleGenerateReport}
                                 disabled={!fromDate || !toDate}
                                 className="px-4 py-2 bg-green-800 text-white rounded hover:bg-green-900 disabled:opacity-50"
                             >
