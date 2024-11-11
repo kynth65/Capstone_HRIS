@@ -241,7 +241,7 @@ class ApplicantController extends Controller
             ]);
 
             // First, check if user has already applied for this position
-            $existingApplication = ResumeRanking::where('email', $validatedData['email'])
+               $existingApplication = ResumeRanking::where('email', $validatedData['email'])
                 ->where('position_id', $validatedData['position_id'])
                 ->first();
 
@@ -264,7 +264,7 @@ class ApplicantController extends Controller
             }
 
             // OpenAI API call
-            $apiKey = env('OPENAI_API_KEY');
+            $apiKey = env('AI_API_KEY');
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $apiKey,
                 'Content-Type' => 'application/json',

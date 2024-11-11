@@ -8,20 +8,72 @@ use Illuminate\Support\Facades\Log;
 
 class callOpenAi extends Controller
 {
+    private function getOpenAIResponse($endpoint, $payload)
+    {
+        // Directly fetch the API key from the environment
+        $apiKey = env('AI_API_KEY');
 
+        // Debug logging
+        Log::info('Full API Key being used:', [
+            'key' => $apiKey,  // Temporarily log full key for debugging
+            'length' => strlen($apiKey)
+        ]);
+
+        if (empty($apiKey)) {
+            Log::error('API key is not configured');
+            throw new \Exception('API key is not configured');
+        }
+
+        try {
+            $baseUrl = "https://api.openai.com/v1";
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . trim($apiKey),
+                'Content-Type' => 'application/json',
+            ])->post("{$baseUrl}/{$endpoint}", $payload);
+
+            Log::debug('API Response', [
+                'status' => $response->status(),
+                'headers' => $response->headers(),
+                'body' => $response->json()
+            ]);
+
+            if ($response->failed()) {
+                $errorBody = $response->json();
+                Log::error('API request failed', [
+                    'status' => $response->status(),
+                    'error' => $errorBody['error'] ?? 'Unknown error',
+                    'raw_response' => $response->body()
+                ]);
+
+                throw new \Exception($errorBody['error']['message'] ?? 'Failed to get response from API');
+            }
+
+            return $response->json();
+        } catch (\Exception $e) {
+            Log::error('Error in API request: ' . $e->getMessage(), [
+                'endpoint' => $endpoint,
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
+    }
 
     public function generateDocument(Request $request)
     {
+        // Validate the request
+        $request->validate([
+            'documentType' => 'required|string',
+            'reason' => 'required|string',
+            'tone' => 'string|in:formal,informal,casual,professional'
+        ]);
+
         try {
-            $apiKey = env('OPENAI_API_KEY');
             $documentType = $request->input('documentType');
             $reason = $request->input('reason');
-            $tone = $request->input('tone', 'formal'); // Default to formal if not provided
+            $tone = $request->input('tone', 'formal');
 
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $apiKey,
-                'Content-Type' => 'application/json',
-            ])->post('https://api.openai.com/v1/chat/completions', [
+            $payload = [
                 'model' => 'gpt-4',
                 'messages' => [
                     [
@@ -35,40 +87,46 @@ class callOpenAi extends Controller
                 ],
                 'max_tokens' => 500,
                 'temperature' => 0.7
+            ];
+
+            $response = $this->getOpenAIResponse('chat/completions', $payload);
+            return response()->json($response);
+
+        } catch (\Exception $e) {
+            Log::error('Document generation failed', [
+                'error' => $e->getMessage(),
+                'documentType' => $documentType ?? null,
+                'reason' => $reason ?? null
             ]);
 
-            // Check if the OpenAI response is successful
-            if ($response->failed()) {
-                Log::error('OpenAI API request failed', ['response' => $response->body()]);
-                return response()->json(['error' => 'Failed to generate document content'], 500);
-            }
-
-            return response()->json($response->json());
-        } catch (\Exception $e) {
-            // Log the error and return a user-friendly response
-            Log::error('Error generating document: ' . $e->getMessage());
-            return response()->json(['error' => 'An error occurred while generating the document. Please try again later.'], 500);
+            return response()->json([
+                'error' => $e->getMessage(),
+                'details' => 'An error occurred while generating the document.'
+            ], 500);
         }
     }
 
     public function rankResumes(Request $request)
     {
+        // Validate the request
+        $request->validate([
+            'hrTags' => 'required|string',
+            'resumes' => 'required|array',
+            'resumes.*' => 'required|string'
+        ]);
+
         try {
-            $apiKey = env('OPENAI_API_KEY');
             $hrTags = $request->input('hrTags');
             $resumes = $request->input('resumes');
 
             $rankedResumes = [];
-            foreach ($resumes as $resume) {
-                $response = Http::withHeaders([
-                    'Authorization' => 'Bearer ' . $apiKey,
-                    'Content-Type' => 'application/json',
-                ])->post('https://api.openai.com/v1/chat/completions', [
+            foreach ($resumes as $index => $resume) {
+                $payload = [
                     'model' => 'gpt-4',
                     'messages' => [
                         [
                             'role' => 'system',
-                            'content' => 'You are an assistant that matches resumes with job requirements.'
+                            'content' => 'You are an assistant that matches resumes with job requirements. Rate matches on a scale of 1-100 and provide specific reasons for the rating.'
                         ],
                         [
                             'role' => 'user',
@@ -81,20 +139,44 @@ class callOpenAi extends Controller
                     ],
                     'max_tokens' => 500,
                     'temperature' => 0.7
-                ]);
+                ];
 
-                if ($response->failed()) {
-                    Log::error('OpenAI API request failed for resume ranking', ['response' => $response->body()]);
+                try {
+                    $response = $this->getOpenAIResponse('chat/completions', $payload);
+                    $rankedResumes[] = [
+                        'index' => $index,
+                        'resume' => $resume,
+                        'analysis' => $response
+                    ];
+                } catch (\Exception $e) {
+                    Log::warning("Failed to analyze resume at index {$index}", [
+                        'error' => $e->getMessage()
+                    ]);
+                    // Continue with next resume instead of failing completely
                     continue;
                 }
-
-                $rankedResumes[] = $response->json();
             }
 
-            return response()->json(['ranked_resumes' => $rankedResumes]);
+            if (empty($rankedResumes)) {
+                throw new \Exception('Failed to analyze any resumes');
+            }
+
+            return response()->json([
+                'ranked_resumes' => $rankedResumes,
+                'total_processed' => count($rankedResumes),
+                'total_submitted' => count($resumes)
+            ]);
+
         } catch (\Exception $e) {
-            Log::error('Error ranking resumes: ' . $e->getMessage());
-            return response()->json(['error' => 'An error occurred while ranking the resumes. Please try again later.'], 500);
+            Log::error('Resume ranking failed', [
+                'error' => $e->getMessage(),
+                'total_resumes' => count($resumes ?? [])
+            ]);
+
+            return response()->json([
+                'error' => $e->getMessage(),
+                'details' => 'An error occurred while ranking the resumes.'
+            ], 500);
         }
     }
 }
