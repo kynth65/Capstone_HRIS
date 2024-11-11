@@ -269,6 +269,14 @@ function AdminLayout() {
                         </span>
                     </Link>
                     <Link
+                        to="/services_management"
+                        onClick={() => handleHeaderChange("Services Management")}
+                    >
+                        <span className="block h-10 pt-3 cursor-pointer text-white hover:bg-opacity-70 hover:bg-gray-600 rounded-lg transition">
+                            Services Management
+                        </span>
+                    </Link>
+                    <Link
                         to="/admin-chat"
                         onClick={() => handleHeaderChange("Chat")}
                     >

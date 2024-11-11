@@ -39,6 +39,7 @@ use App\Http\Controllers\DashboardAttendanceController;
 use App\Http\Controllers\DocumentManagementController;
 use App\Http\Controllers\TodoController;
 use App\Http\Controllers\EmployeeRequirementsController;
+use App\Http\Controllers\ServiceController;
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -377,4 +378,12 @@ Route::get('/debug/my-archived-requirements', function (Request $request) {
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/my-requirements', [EmployeeRequirementsController::class, 'getMyRequirements']);
     Route::get('/my-requirements/{requirementId}', [EmployeeRequirementsController::class, 'getRequirementDetail']);
+});
+
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/services', [ServiceController::class, 'index']);
+    Route::post('/services', [ServiceController::class, 'store']);
+    Route::put('/services/{service}', [ServiceController::class, 'update']);
+    Route::delete('/services/{service}', [ServiceController::class, 'destroy']);
 });

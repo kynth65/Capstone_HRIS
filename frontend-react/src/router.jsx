@@ -33,6 +33,7 @@ import RfidManagement from "./views/RfidManagement.jsx";
 import ChatBox from "./views/ChatBox.jsx";
 import DocumentRequirementsManagement from "./views/DocumentManagement.jsx";
 import EmployeeDocumentsView from "./views/EmployeeDocumentsView.jsx";
+import ServicesManagement from "./views/ServicesManagement.jsx";
 
 const ErrorPage = () => (
     <div>
@@ -94,6 +95,10 @@ const router = createBrowserRouter([
             {
                 path: "rfid_management",
                 element: <RfidManagement />,
+            },
+            {
+                path: "services_management",
+                element: <ServicesManagement />,
             },
             {
                 path: "admin-chat",

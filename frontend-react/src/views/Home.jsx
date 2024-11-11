@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axiosClient from "../axiosClient";
 import AboutImage from "../assets/images/AboutImage.gif";
 import AboutSlide1 from "../assets/images/about-us-1.jpg";
 import AboutSlide2 from "../assets/images/about-us-2.jpg";
@@ -37,63 +38,35 @@ function Home() {
         AboutSlide5,
     ];
 
-    const services = [
-        {
-            title: "2d Echo w/ Doppler",
-            description:
-                "A 2D Echo with Doppler is a non-invasive test that uses ultrasound to visualize the heart and measure blood flow.",
-        },
-        {
-            title: "12-Lead ECG",
-            description:
-                "A 12-Lead ECG records the electrical activity of the heart from twelve different angles to diagnose heart conditions.",
-        },
-        {
-            title: "Covid-19 Tests",
-            description:
-                "Covid-19 tests detect the presence of the virus through various methods, including nasal swabs and antibody tests.",
-        },
-        {
-            title: "Doctor's Clinic",
-            description:
-                "A doctor's clinic is a healthcare facility where patients can receive medical consultations and treatment from physicians.",
-        },
-        {
-            title: "Laboratory Tests",
-            description:
-                "Laboratory tests are medical tests conducted in a lab to analyze blood, urine, or other samples for diagnosis.",
-        },
-        {
-            title: "Minor Surgery",
-            description:
-                "Minor surgery refers to small, low-risk surgical procedures performed on an outpatient basis.",
-        },
-        {
-            title: "Pharmacy",
-            description:
-                "A pharmacy is a place where medications are dispensed and healthcare advice is provided by licensed pharmacists.",
-        },
-        {
-            title: "Ultrasound",
-            description:
-                "An ultrasound is a diagnostic tool that uses sound waves to create images of internal organs, tissues, and the fetus during pregnancy.",
-        },
-        {
-            title: "X-Ray",
-            description:
-                "An X-ray is a type of imaging test that uses radiation to create images of bones and other internal structures.",
-        },
-        {
-            title: "Drug Testing",
-            description:
-                "Drug testing is a medical procedure that analyzes biological samples to detect the presence of drugs or their metabolites.",
-        },
-    ];
-
+    const [services, setServices] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    
+    // Keep other state variables
     const itemsPerGroup = 4;
     const [currentGroup, setCurrentGroup] = useState(0);
-    const totalGroups = Math.ceil(services.length / itemsPerGroup);
     const [showNavigator, setShowNavigator] = useState(false);
+    const [slideNumber, setSlideNumber] = useState(0);
+
+    // Fetch services from API
+    useEffect(() => {
+        fetchServices();
+    }, []);
+
+    const fetchServices = async () => {
+        try {
+            const response = await axiosClient.get('/services');
+            setServices(Array.isArray(response.data.data) ? response.data.data : []);
+            setLoading(false);
+        } catch (err) {
+            console.error('Error fetching services:', err);
+            setError('Failed to fetch services');
+            setServices([]);
+            setLoading(false);
+        }
+    };
+
+    const totalGroups = Math.ceil(services.length / itemsPerGroup);
 
     const nextGroup = () => {
         setCurrentGroup((prev) => (prev === totalGroups - 1 ? 0 : prev + 1));
@@ -102,14 +75,6 @@ function Home() {
     const prevGroup = () => {
         setCurrentGroup((prev) => (prev === 0 ? totalGroups - 1 : prev - 1));
     };
-
-    // Get current group of services
-    const getCurrentGroup = () => {
-        const start = currentGroup * itemsPerGroup;
-        return services.slice(start, start + itemsPerGroup);
-    };
-
-    const [slideNumber, setSlideNumber] = useState(0);
 
     const nextSlide = () => {
         setSlideNumber((prevState) =>
@@ -122,6 +87,8 @@ function Home() {
             prevState === 0 ? slides.length - 1 : prevState - 1,
         );
     };
+
+    
 
     return (
         <>
@@ -340,12 +307,7 @@ function Home() {
                                                                 service.description
                                                             }
                                                         </p>
-                                                        <button
-                                                            className="mt-4 px-4 py-2 border-2 border-green-800 text-green-800 rounded 
-                                                 hover:bg-green-800 hover:text-white transition-colors duration-300"
-                                                        >
-                                                            READ MORE
-                                                        </button>
+                                                       
                                                     </div>
                                                 </div>
                                             ))}
