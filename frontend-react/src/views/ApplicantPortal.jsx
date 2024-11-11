@@ -1109,79 +1109,65 @@ const ApplicantPortal = () => {
                                                 {selectedPosition.title}{" "}
                                                 Specific Questions
                                             </h3>
-                                            {selectedPosition.title.toLowerCase() ===
-                                                "accounting" && (
-                                                <>
-                                                    <p>
-                                                        Bachelor's Degree:{" "}
-                                                        <strong>
-                                                            {questions.question1 ||
-                                                                "Not answered"}
-                                                        </strong>
-                                                    </p>
-                                                    <p>
-                                                        Willing to undergo a
-                                                        background check:{" "}
-                                                        <strong>
-                                                            {questions.question2 ||
-                                                                "Not answered"}
-                                                        </strong>
-                                                    </p>
-                                                    <p>
-                                                        Comfortable commuting:{" "}
-                                                        <strong>
-                                                            {questions.question3 ||
-                                                                "Not answered"}
-                                                        </strong>
-                                                    </p>
-
-                                                    <p>
-                                                        Willing to work
-                                                        Saturdays:{" "}
-                                                        <strong>
-                                                            {questions.question4 ||
-                                                                "Not answered"}
-                                                        </strong>
-                                                    </p>
-                                                    <p>
-                                                        Accountancy Graduate:{" "}
-                                                        <strong>
-                                                            {questions.question5 ||
-                                                                "Not answered"}
-                                                        </strong>
-                                                    </p>
-                                                    <p>
-                                                        English Proficiency:{" "}
-                                                        <strong>
-                                                            {questions.question6 ||
-                                                                "Not answered"}
-                                                        </strong>
-                                                    </p>
-                                                    <p>
-                                                        Accounting Experience:{" "}
-                                                        <strong>
-                                                            {questions.question7 ||
-                                                                "Not answered"}
-                                                        </strong>
-                                                    </p>
-                                                    <p>
-                                                        Experience with
-                                                        Accounting Software:{" "}
-                                                        <strong>
-                                                            {questions.question8 ||
-                                                                "Not answered"}
-                                                        </strong>
-                                                    </p>
-                                                    <p>
-                                                        Experience with Business
-                                                        Process:{" "}
-                                                        <strong>
-                                                            {questions.question9 ||
-                                                                "Not answered"}
-                                                        </strong>
-                                                    </p>
-                                                </>
-                                            )}
+                                          {selectedPosition.title.toLowerCase() === "accounting" && (
+    <>
+        {questions.question1 && (
+            <p>
+                Software familiarity:{" "}
+                <strong>{questions.question1}</strong>
+            </p>
+        )}
+        {questions.question2 && (
+            <p>
+                Financial statement experience:{" "}
+                <strong>{questions.question2}</strong>
+            </p>
+        )}
+        {questions.question3 && (
+            <p>
+                Audit experience:{" "}
+                <strong>{questions.question3}</strong>
+            </p>
+        )}
+        {questions.question4 && (
+            <p>
+                Budgeting experience:{" "}
+                <strong>{questions.question4}</strong>
+            </p>
+        )}
+        {/* Only show these if they have answers */}
+        {questions.question5 && (
+            <p>
+                Accountancy Graduate:{" "}
+                <strong>{questions.question5}</strong>
+            </p>
+        )}
+        {questions.question6 && (
+            <p>
+                English Proficiency:{" "}
+                <strong>{questions.question6}</strong>
+            </p>
+        )}
+        {questions.question7 && (
+            <p>
+                Accounting Experience:{" "}
+                <strong>{questions.question7}</strong>
+            </p>
+        )}
+        {questions.question8 && (
+            <p>
+                Experience with Accounting Software:{" "}
+                <strong>{questions.question8}</strong>
+            </p>
+        )}
+        {questions.question9 && (
+            <p>
+                Experience with Business Process:{" "}
+                <strong>{questions.question9}</strong>
+            </p>
+        )}
+    </>
+)}
                                             {selectedPosition.title.toLowerCase() ===
                                                 "maintenance" && (
                                                 <>
