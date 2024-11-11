@@ -18,19 +18,24 @@ class IncidentController extends Controller
 
     public function index(Request $request)
     {
-        $query = Incident::query();
-
-        if ($request->has('status')) {
-            $query->where('status', $request->status);
+        try {
+            $query = Incident::query();
+    
+            if ($request->has('status')) {
+                $query->where('status', $request->status);
+            }
+    
+            $query->withCount(['reportedIncidents as compliance_reports_count' => function ($query) {
+                $query->has('complianceReports');
+            }]);
+    
+            $incidents = $query->get();
+    
+            return response()->json($incidents);
+        } catch (\Exception $e) {
+            Log::error('Error in IncidentController@index: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to fetch incidents'], 500);
         }
-
-        $query->withCount(['reportedIncidents as compliance_reports_count' => function ($query) {
-            $query->has('complianceReports');
-        }]);
-
-        $incidents = $query->get();
-
-        return response()->json($incidents);
     }
 
     public function show($id)

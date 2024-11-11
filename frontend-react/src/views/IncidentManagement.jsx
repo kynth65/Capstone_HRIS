@@ -9,6 +9,7 @@ const IncidentManagement = () => {
     const [investigatingIncidents, setInvestigatingIncidents] = useState([]);
     const [resolvedIncidents, setResolvedIncidents] = useState([]);
     const [selectedIncident, setSelectedIncident] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [viewMode, setViewMode] = useState(false);
     const [form, setForm] = useState({
         status: "pending",
@@ -33,6 +34,7 @@ const IncidentManagement = () => {
 
     const fetchAllIncidents = async () => {
         try {
+            setIsLoading(true);
             const pendingResponse = await axiosClient.get(
                 "/incidents?status=pending&include_compliance_reports_count=true",
             );
@@ -42,13 +44,19 @@ const IncidentManagement = () => {
             const resolvedResponse = await axiosClient.get(
                 "/incidents?status=resolved&include_compliance_reports_count=true",
             );
-
-            setPendingIncidents(pendingResponse.data);
-            setInvestigatingIncidents(investigatingResponse.data);
-            setResolvedIncidents(resolvedResponse.data);
+    
+            setPendingIncidents(pendingResponse.data || []);
+            setInvestigatingIncidents(investigatingResponse.data || []);
+            setResolvedIncidents(resolvedResponse.data || []);
         } catch (error) {
             console.error("Error fetching incidents:", error);
             setErrorMessage("Failed to fetch incidents. Please try again.");
+            // Initialize with empty arrays in case of error
+            setPendingIncidents([]);
+            setInvestigatingIncidents([]);
+            setResolvedIncidents([]);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -185,290 +193,212 @@ const IncidentManagement = () => {
             setTimeout(() => setErrorMessage(""), 3000);
         }
     };
-    const renderIncidentTable = (incidents) => (
-        <div className="md:bg-white md:shadow-lg rounded-lg mr-3 text-black sm:ml-0">
-            {/* Mobile View */}
-            <div className="md:hidden">
-                <div className="max-h-[500px] overflow-y-auto p-4">
-                    {incidents && incidents.length > 0 ? (
-                        incidents.map((incident) => (
-                            <div
-                                key={incident.id}
-                                className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
-                            >
-                                <div className="flex justify-between items-start mb-3">
-                                    <div>
-                                        <h3 className="font-medium text-black">
-                                            {incident.title}
-                                        </h3>
-                                        <p className="text-sm text-gray-600">
-                                            {incident.name}
-                                        </p>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        {incident.status === "investigating" &&
-                                            incident.reported_employee_ids
-                                                ?.length > 0 && (
-                                                <button
-                                                    onClick={() =>
-                                                        handleSendComplianceClick(
-                                                            incident,
-                                                        )
-                                                    }
-                                                    className="p-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600"
-                                                >
-                                                    <BsSendExclamationFill
-                                                        size={18}
-                                                    />
-                                                </button>
-                                            )}
-                                        <button
-                                            onClick={() => handleView(incident)}
-                                            className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
-                                        >
-                                            <IoMdEye size={18} />
-                                        </button>
-                                        <button
-                                            onClick={() =>
-                                                handleDeleteClick(incident)
-                                            }
-                                            className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600"
-                                        >
-                                            <MdDelete size={18} />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <div>
-                                        <p className="text-xs text-gray-500">
-                                            Description
-                                        </p>
-                                        <p className="text-sm">
-                                            {incident.description}
-                                        </p>
-                                    </div>
-                                    <div className="flex justify-between">
+    const renderIncidentTable = (incidents) => {
+        if (isLoading) {
+            return <div className="text-center py-8 text-black">Loading...</div>;
+        }
+    
+        if (!incidents || !Array.isArray(incidents)) {
+            return <div className="text-center py-8 text-black">No incidents available</div>;
+        }
+    
+        return (
+            <div className="md:bg-white md:shadow-lg rounded-lg mr-3 text-black sm:ml-0">
+                {/* Mobile View */}
+                <div className="md:hidden">
+                    <div className="max-h-[500px] overflow-y-auto p-4">
+                        {incidents.length > 0 ? (
+                            incidents.map((incident) => (
+                                <div
+                                    key={incident?.id || Math.random()}
+                                    className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
+                                >
+                                    <div className="flex justify-between items-start mb-3">
                                         <div>
-                                            <p className="text-xs text-gray-500">
-                                                Severity
-                                            </p>
-                                            <p className="text-sm font-medium">
-                                                {incident.severity}
+                                            <h3 className="font-medium text-black">
+                                                {incident?.title || 'Untitled'}
+                                            </h3>
+                                            <p className="text-sm text-gray-600">
+                                                {incident?.name || 'No name'}
                                             </p>
                                         </div>
-                                        <div>
-                                            <p className="text-xs text-gray-500">
-                                                Response
-                                            </p>
-                                            {incident.compliance_reports_count >
-                                            0 ? (
-                                                <p className="text-green-600 font-bold text-sm">
-                                                    {
-                                                        incident.compliance_reports_count
-                                                    }
-                                                </p>
-                                            ) : (
-                                                <p className="text-red-600 text-sm">
-                                                    No response
-                                                </p>
-                                            )}
+                                        <div className="flex items-center gap-2">
+                                            {incident?.status === "investigating" &&
+                                                incident?.reported_employee_ids?.length > 0 && (
+                                                    <button
+                                                        onClick={() => handleSendComplianceClick(incident)}
+                                                        className="p-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600"
+                                                    >
+                                                        <BsSendExclamationFill size={18} />
+                                                    </button>
+                                                )}
+                                            <button
+                                                onClick={() => handleView(incident)}
+                                                className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
+                                            >
+                                                <IoMdEye size={18} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteClick(incident)}
+                                                className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600"
+                                            >
+                                                <MdDelete size={18} />
+                                            </button>
                                         </div>
                                     </div>
-                                    <div>
-                                        <p className="text-xs text-gray-500">
-                                            Reported Employees
-                                        </p>
-                                        <p className="text-sm">
-                                            {incident.reported_employee_ids &&
-                                            incident.reported_employee_ids
-                                                ?.length > 0
-                                                ? incident.reported_employee_ids.map(
-                                                      (employeeId, index) => (
-                                                          <span
-                                                              key={employeeId}
-                                                          >
-                                                              {
-                                                                  employees.find(
-                                                                      (e) =>
-                                                                          e.user_id ===
-                                                                          employeeId,
-                                                                  )?.name
-                                                              }
-                                                              {index <
-                                                              incident
-                                                                  .reported_employee_ids
-                                                                  .length -
-                                                                  1
-                                                                  ? ", "
-                                                                  : ""}
-                                                          </span>
-                                                      ),
-                                                  )
-                                                : "None"}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <div className="text-center py-8 text-gray-500">
-                            No incidents currently
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Desktop View */}
-            <div className="hidden md:block">
-                <div className="max-h-[500px] overflow-y-auto">
-                    <table className="w-full">
-                        <thead className="bg-gray-50 sticky top-0">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Name
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Title
-                                </th>
-                                <th className="hidden px-6 py-3 text-left text-xs font-medium  text-gray-500 uppercase tracking-wider">
-                                    Description
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Severity
-                                </th>
-                                <th className="hidden lg:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Reported Employees
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Response
-                                </th>
-                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {incidents && incidents.length > 0 ? (
-                                incidents.map((incident) => (
-                                    <tr
-                                        key={incident.id}
-                                        className="hover:bg-gray-50"
-                                    >
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {incident.name}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {incident.title}
-                                        </td>
-                                        <td className="hidden px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                                            <span title={incident.description}>
-                                                {incident.description}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {incident.severity}
-                                        </td>
-                                        <td className="hidden lg:table-cell px-6 py-4 text-sm text-gray-900">
-                                            {incident.reported_employee_ids &&
-                                            incident.reported_employee_ids
-                                                .length > 0
-                                                ? incident.reported_employee_ids.map(
-                                                      (employeeId, index) => (
-                                                          <span
-                                                              key={employeeId}
-                                                          >
-                                                              {
-                                                                  employees.find(
-                                                                      (e) =>
-                                                                          e.user_id ===
-                                                                          employeeId,
-                                                                  )?.name
-                                                              }
-                                                              {index <
-                                                              incident
-                                                                  .reported_employee_ids
-                                                                  .length -
-                                                                  1
-                                                                  ? ", "
-                                                                  : ""}
-                                                          </span>
-                                                      ),
-                                                  )
-                                                : "None"}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                            {incident.compliance_reports_count >
-                                            0 ? (
-                                                <span className="text-green-600 font-bold">
-                                                    {
-                                                        incident.compliance_reports_count
-                                                    }
-                                                </span>
-                                            ) : (
-                                                <span className="text-red-600">
-                                                    No response
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                                            <div className="flex justify-center items-center space-x-2">
-                                                {incident.status ===
-                                                    "investigating" &&
-                                                    incident
-                                                        .reported_employee_ids
-                                                        .length > 0 && (
-                                                        <button
-                                                            onClick={() =>
-                                                                handleSendComplianceClick(
-                                                                    incident,
-                                                                )
-                                                            }
-                                                            className="p-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600"
-                                                        >
-                                                            <BsSendExclamationFill
-                                                                size={18}
-                                                            />
-                                                        </button>
-                                                    )}
-                                                <button
-                                                    onClick={() =>
-                                                        handleView(incident)
-                                                    }
-                                                    className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
-                                                >
-                                                    <IoMdEye size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={() =>
-                                                        handleDeleteClick(
-                                                            incident,
-                                                        )
-                                                    }
-                                                    className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600"
-                                                >
-                                                    <MdDelete size={18} />
-                                                </button>
+    
+                                    <div className="space-y-2">
+                                        <div>
+                                            <p className="text-xs text-gray-500">Description</p>
+                                            <p className="text-sm">{incident?.description || 'No description'}</p>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <div>
+                                                <p className="text-xs text-gray-500">Severity</p>
+                                                <p className="text-sm font-medium">
+                                                    {incident?.severity || 'N/A'}
+                                                </p>
                                             </div>
+                                            <div>
+                                                <p className="text-xs text-gray-500">Response</p>
+                                                {(incident?.compliance_reports_count || 0) > 0 ? (
+                                                    <p className="text-green-600 font-bold text-sm">
+                                                        {incident.compliance_reports_count}
+                                                    </p>
+                                                ) : (
+                                                    <p className="text-red-600 text-sm">No response</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-500">Reported Employees</p>
+                                            <p className="text-sm">
+                                                {incident?.reported_employee_ids?.length > 0
+                                                    ? incident.reported_employee_ids.map((employeeId, index) => (
+                                                          <span key={employeeId}>
+                                                              {employees.find(e => e.user_id === employeeId)?.name || 'Unknown'}
+                                                              {index < incident.reported_employee_ids.length - 1 ? ", " : ""}
+                                                          </span>
+                                                      ))
+                                                    : "None"}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="text-center py-8 text-gray-500">No incidents currently</div>
+                        )}
+                    </div>
+                </div>
+    
+                {/* Desktop View */}
+                <div className="hidden md:block">
+                    <div className="max-h-[500px] overflow-y-auto">
+                        <table className="w-full">
+                            <thead className="bg-gray-50 sticky top-0">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Name
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Title
+                                    </th>
+                                    <th className="hidden px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Description
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Severity
+                                    </th>
+                                    <th className="hidden lg:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Reported Employees
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Response
+                                    </th>
+                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {incidents.length > 0 ? (
+                                    incidents.map((incident) => (
+                                        <tr key={incident?.id || Math.random()} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {incident?.name || 'No name'}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {incident?.title || 'Untitled'}
+                                            </td>
+                                            <td className="hidden px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                                                <span title={incident?.description}>
+                                                    {incident?.description || 'No description'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {incident?.severity || 'N/A'}
+                                            </td>
+                                            <td className="hidden lg:table-cell px-6 py-4 text-sm text-gray-900">
+                                                {incident?.reported_employee_ids?.length > 0
+                                                    ? incident.reported_employee_ids.map((employeeId, index) => (
+                                                          <span key={employeeId}>
+                                                              {employees.find(e => e.user_id === employeeId)?.name || 'Unknown'}
+                                                              {index < incident.reported_employee_ids.length - 1 ? ", " : ""}
+                                                          </span>
+                                                      ))
+                                                    : "None"}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                {(incident?.compliance_reports_count || 0) > 0 ? (
+                                                    <span className="text-green-600 font-bold">
+                                                        {incident.compliance_reports_count}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-red-600">No response</span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                                <div className="flex justify-center items-center space-x-2">
+                                                    {incident?.status === "investigating" &&
+                                                        incident?.reported_employee_ids?.length > 0 && (
+                                                            <button
+                                                                onClick={() => handleSendComplianceClick(incident)}
+                                                                className="p-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600"
+                                                            >
+                                                                <BsSendExclamationFill size={18} />
+                                                            </button>
+                                                        )}
+                                                    <button
+                                                        onClick={() => handleView(incident)}
+                                                        className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
+                                                    >
+                                                        <IoMdEye size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteClick(incident)}
+                                                        className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600"
+                                                    >
+                                                        <MdDelete size={18} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan="7" className="px-6 py-4 text-sm text-center text-gray-500">
+                                            No incidents currently
                                         </td>
                                     </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td
-                                        colSpan="7"
-                                        className="px-6 py-4 text-sm text-center text-gray-500"
-                                    >
-                                        No incidents currently
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
