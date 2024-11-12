@@ -163,8 +163,6 @@ Route::get('/csrf-token', function () {
 Route::get('/sync-attendance', [AttendanceController::class, 'getAttendanceRecords']);
 Route::get('/monthly-attendance', [AttendanceController::class, 'getMonthlyAttendanceRecords']);
 
-Route::get('/monthly-attendance', [AttendanceController::class, 'getMonthlyAttendanceRecords']);
-
 Route::delete('/delete-position/{ranking_id}', [OpenPositionController::class, 'deletePosition']);
 
 

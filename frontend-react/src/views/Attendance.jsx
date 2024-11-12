@@ -9,6 +9,7 @@ function Attendance() {
     const [activeButton, setActiveButton] = useState("monitoring");
     const [monitoringData, setMonitoringData] = useState([]);
     const [allEmployeesData, setAllEmployeesData] = useState([]);
+    const [filteredEmployees, setFilteredEmployees] = useState([]);
     const [filteredMonitoringEmployees, setFilteredMonitoringEmployees] =
         useState([]);
     const [filteredAllEmployeesData, setFilteredAllEmployeesData] = useState(
@@ -34,6 +35,9 @@ function Attendance() {
     const [modalFromDate, setModalFromDate] = useState("");
     const [modalToDate, setModalToDate] = useState("");
     const [modalAction, setModalAction] = useState(""); // 'preview' or 'download'
+    const [showPreviewButton, setShowPreviewButton] = useState(false);
+    const [reportData, setReportData] = useState(null);
+  
 
     // Add this effect at the top of your component
     useEffect(() => {
@@ -42,14 +46,16 @@ function Attendance() {
                 try {
                     const response = await axiosClient.get("/employees");
                     setEmployees(response.data);
+                    setFilteredEmployees(response.data); // Initialize filtered employees
                 } catch (error) {
                     console.error("Error fetching employees:", error);
                 }
             }
         };
-
+    
         fetchEmployees();
     }, [activeButton]);
+
 
     // Fetch monitoring data
     const fetchMonitoringData = async () => {
@@ -99,9 +105,10 @@ function Attendance() {
             // If search term is empty, reset the filtered data
             setFilteredMonitoringEmployees(monitoringData);
             setFilteredAllEmployeesData(allEmployeesData);
+            setFilteredEmployees(employees); // Reset filtered employees
             return;
         }
-
+    
         if (activeButton === "monitoring") {
             const filtered = monitoringData.filter(
                 (employee) =>
@@ -116,20 +123,28 @@ function Attendance() {
                     employee.user_id.toString().includes(searchTerm),
             );
             setFilteredAllEmployeesData(filtered);
+        } else if (activeButton === "dateRange") {
+            const filtered = employees.filter(
+                (employee) =>
+                    employee.name.toLowerCase().includes(searchTerm) ||
+                    employee.user_id.toString().includes(searchTerm),
+            );
+            setFilteredEmployees(filtered);
         }
     };
 
     useEffect(() => {
         const debounceTimeout = setTimeout(() => {
             handleSearch();
-        }, 300); // Wait for 300ms before running the search
-
-        return () => clearTimeout(debounceTimeout); // Cleanup on each render
+        }, 300);
+    
+        return () => clearTimeout(debounceTimeout);
     }, [
         searchRef.current?.value,
         activeButton,
         monitoringData,
         allEmployeesData,
+        employees,
     ]);
 
     const formatDate = (dateString) => {
@@ -178,7 +193,7 @@ function Attendance() {
 
     const generateReport = async () => {
         if (!selectedEmployee || !fromDate || !toDate) return;
-
+    
         try {
             const response = await axiosClient.get("/attendance-range", {
                 params: {
@@ -187,47 +202,72 @@ function Attendance() {
                     to_date: toDate,
                 },
             });
+            
             setDateRangeData(response.data);
+            setShowPreviewButton(true); // Show the preview button after successful generation
         } catch (error) {
             console.error("Error generating report:", error);
+            alert("Error generating report. Please try again.");
         }
     };
+      
 
     const handleGenerateReport = () => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-
+    
         const fromDateObj = new Date(fromDate);
         const toDateObj = new Date(toDate);
-
+    
         fromDateObj.setHours(0, 0, 0, 0);
         toDateObj.setHours(0, 0, 0, 0);
-
+    
         // Error checks
         if (!fromDate || !toDate) {
-            alert("Please select both from and to dates");
-            return;
+          alert("Please select both from and to dates");
+          return;
         }
-
+    
         if (fromDateObj > today || toDateObj > today) {
-            alert("Cannot generate report for future dates");
-            return;
+          alert("Cannot generate report for future dates");
+          return;
         }
-
+    
         if (fromDateObj > toDateObj) {
-            alert("From date cannot be later than to date");
-            return;
+          alert("From date cannot be later than to date");
+          return;
         }
-
-        // Additional validation for reasonable date range
+    
         const oneYearInMs = 365 * 24 * 60 * 60 * 1000;
         if (toDateObj - fromDateObj > oneYearInMs) {
-            alert("Date range cannot exceed 1 year");
-            return;
+          alert("Date range cannot exceed 1 year");
+          return;
         }
-
+    
         // If all validations pass, proceed with report generation
         generateReport();
+      };
+
+      const handlePreviewIndividualReport = async () => {
+        if (!selectedEmployee || !fromDate || !toDate) return;
+    
+        try {
+            const response = await axiosClient.get("/preview-date-range-report", {  // Changed endpoint
+                params: {
+                    user_id: selectedEmployee.user_id,
+                    from_date: fromDate,
+                    to_date: toDate,
+                },
+            });
+    
+            // Open preview in new tab
+            const newWindow = window.open("", "_blank");
+            newWindow.document.write(response.data.html);
+            newWindow.document.close();
+        } catch (error) {
+            console.error("Error previewing report:", error);
+            alert("Error previewing report. Please try again.");
+        }
     };
 
     const downloadMonthlyReport = async () => {
@@ -427,6 +467,7 @@ function Attendance() {
             console.error("Error previewing report:", error);
         }
     };
+    
 
     const downloadDateRangeExcel = async () => {
         if (!fromDate || !toDate) {
@@ -780,84 +821,93 @@ function Attendance() {
                         <div className="bg-white shadow-lg rounded-lg">
                             {/* Mobile View */}
                             <div className="md:hidden">
-                                <div className="max-h-[500px] overflow-y-auto p-4">
-                                    {employees.map((employee) => (
-                                        <div
-                                            key={employee.user_id}
-                                            className="border border-gray-200 p-4 rounded-lg mb-4 bg-gray-50"
-                                        >
-                                            <div className="flex justify-between items-center">
-                                                <div>
-                                                    <h3 className="font-medium text-black">
-                                                        {employee.name}
-                                                    </h3>
-                                                    <p className="text-xs text-gray-500">
-                                                        ID: {employee.user_id}
-                                                    </p>
-                                                </div>
-                                                <button
-                                                    onClick={() =>
-                                                        openDateRangeModal(
-                                                            employee,
-                                                        )
-                                                    }
-                                                    className="bg-green-800 text-white px-4 py-1.5 rounded-md text-sm hover:bg-green-900 transition-colors"
-                                                >
-                                                    Generate Report
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
+    <div className="max-h-[500px] overflow-y-auto p-4">
+        {filteredEmployees.length > 0 ? (
+            filteredEmployees.map((employee) => (
+                <div
+                    key={employee.user_id}
+                    className="border border-gray-200 p-4 rounded-lg mb-4 bg-gray-50"
+                >
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <h3 className="font-medium text-black">
+                                {employee.name}
+                            </h3>
+                            <p className="text-xs text-gray-500">
+                                ID: {employee.user_id}
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => openDateRangeModal(employee)}
+                            className="bg-green-800 text-white px-4 py-1.5 rounded-md text-sm hover:bg-green-900 transition-colors"
+                        >
+                            Generate Report
+                        </button>
+                    </div>
+                </div>
+            ))
+        ) : (
+            <div className="text-center py-8 text-gray-500">
+                No employees found.
+            </div>
+        )}
+    </div>
+</div>
 
-                            {/* Desktop View */}
-                            <div className="hidden md:block">
-                                <div className="max-h-[500px] overflow-y-auto">
-                                    <table className="w-full">
-                                        <thead className="bg-gray-50 sticky top-0">
-                                            <tr>
-                                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    User ID
-                                                </th>
-                                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Name
-                                                </th>
-                                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Generate Report
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {employees.map((employee) => (
-                                                <tr
-                                                    key={employee.user_id}
-                                                    className="hover:bg-gray-50"
-                                                >
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                        {employee.user_id}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                        {employee.name}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                        <button
-                                                            onClick={() =>
-                                                                openDateRangeModal(
-                                                                    employee,
-                                                                )
-                                                            }
-                                                            className="bg-green-800 text-white px-4 py-2 rounded-md hover:bg-green-900"
-                                                        >
-                                                            Generate Report
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+{/* Desktop View */}
+<div className="hidden md:block">
+    <div className="max-h-[500px] overflow-y-auto">
+        <table className="w-full">
+            <thead className="bg-gray-50 sticky top-0">
+                <tr>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        User ID
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Name
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Generate Report
+                    </th>
+                </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+                {filteredEmployees.length > 0 ? (
+                    filteredEmployees.map((employee) => (
+                        <tr
+                            key={employee.user_id}
+                            className="hover:bg-gray-50"
+                        >
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {employee.user_id}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {employee.name}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <button
+                                    onClick={() => openDateRangeModal(employee)}
+                                    className="bg-green-800 text-white px-4 py-2 rounded-md hover:bg-green-900"
+                                >
+                                    Generate Report
+                                </button>
+                            </td>
+                        </tr>
+                    ))
+                ) : (
+                    <tr>
+                        <td
+                            colSpan="3"
+                            className="px-6 py-4 text-sm text-center text-gray-500"
+                        >
+                            No employees found.
+                        </td>
+                    </tr>
+                )}
+            </tbody>
+        </table>
+    </div>
+</div>
                         </div>
                         <div className="flex justify-center md:justify-end py-2 pr-2 space-x-2">
                             <button
@@ -950,95 +1000,85 @@ function Attendance() {
                 </Modal>
 
                 <Modal
-                    isOpen={isDateRangeModalOpen}
-                    onRequestClose={closeDateRangeModal}
-                    className="modal"
-                    overlayClassName="overlay"
+    isOpen={isDateRangeModalOpen}
+    onRequestClose={closeDateRangeModal}
+    className="modal"
+    overlayClassName="overlay"
+>
+    <div className="modal-content bg-white p-6 rounded-lg max-w-2xl w-full">
+        <h2 className="text-xl font-bold mb-4 text-black">
+            {dateRangeData ? 'Attendance Report' : 'Generate Attendance Report'}
+        </h2>
+
+        <div className="grid grid-cols-2 gap-4 mb-6">
+            <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                    From Date:
+                </label>
+                <input
+                    type="date"
+                    value={fromDate}
+                    max={new Date().toISOString().split("T")[0]}
+                    onChange={(e) => setFromDate(e.target.value)}
+                    className="w-full rounded-lg border border-gray-200 p-2"
+                    disabled={!!dateRangeData}
+                />
+            </div>
+            <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                    To Date:
+                </label>
+                <input
+                    type="date"
+                    value={toDate}
+                    max={new Date().toISOString().split("T")[0]}
+                    onChange={(e) => setToDate(e.target.value)}
+                    className="w-full rounded-lg border border-gray-200 p-2"
+                    disabled={!!dateRangeData}
+                />
+            </div>
+        </div>
+
+        {dateRangeData && (
+            <div className="space-y-4 text-black bg-gray-50 p-4 rounded-lg">
+                <p><strong>Employee:</strong> {dateRangeData.name}</p>
+                <p><strong>Total Work Hours:</strong> {dateRangeData.total_hours}</p>
+                <p><strong>Days Worked:</strong> {dateRangeData.days_worked}</p>
+                <p><strong>Average Hours/Day:</strong> {dateRangeData.avg_hours_per_day}</p>
+                <p><strong>Average Time In:</strong> {dateRangeData.avg_time_in}</p>
+                <p><strong>Average Time Out:</strong> {dateRangeData.avg_time_out}</p>
+                <p><strong>Total Lates:</strong> {dateRangeData.total_lates}</p>
+                
+                <div className="mt-4">
+                    <button
+                        onClick={handlePreviewIndividualReport}
+                        className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                    >
+                        Preview Detailed Report
+                    </button>
+                </div>
+            </div>
+        )}
+
+        <div className="flex justify-end space-x-4 mt-6">
+            <button
+                onClick={closeDateRangeModal}
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+            >
+                Close
+            </button>
+            {!dateRangeData && (
+                <button
+                    onClick={handleGenerateReport}
+                    disabled={!fromDate || !toDate}
+                    className="px-4 py-2 bg-green-800 text-white rounded hover:bg-green-900 disabled:opacity-50"
                 >
-                    <div className="modal-content bg-white p-6 rounded-lg max-w-2xl w-full">
-                        <h2 className="text-xl font-bold mb-4 text-black">
-                            Generate Attendance Report
-                        </h2>
-
-                        <div className="grid grid-cols-2 gap-4 mb-6">
-                            <div>
-                                <label className="block text-sm text-gray-600 mb-1">
-                                    From Date:
-                                </label>
-                                <input
-                                    type="date"
-                                    value={fromDate}
-                                    max={new Date().toISOString().split("T")[0]} // Prevents future dates
-                                    onChange={(e) =>
-                                        setFromDate(e.target.value)
-                                    }
-                                    className="w-full rounded-lg border border-gray-200 p-2"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm text-gray-600 mb-1">
-                                    To Date:
-                                </label>
-                                <input
-                                    type="date"
-                                    value={toDate}
-                                    max={new Date().toISOString().split("T")[0]} // Prevents future dates
-                                    onChange={(e) => setToDate(e.target.value)}
-                                    className="w-full rounded-lg border border-gray-200 p-2"
-                                />
-                            </div>
-                        </div>
-
-                        {dateRangeData && (
-                            <div className="space-y-4 text-black">
-                                <p>
-                                    <strong>Employee:</strong>{" "}
-                                    {dateRangeData.name}
-                                </p>
-                                <p>
-                                    <strong>Total Work Hours:</strong>{" "}
-                                    {dateRangeData.total_hours}
-                                </p>
-                                <p>
-                                    <strong>Days Worked:</strong>{" "}
-                                    {dateRangeData.days_worked}
-                                </p>
-                                <p>
-                                    <strong>Average Hours/Day:</strong>{" "}
-                                    {dateRangeData.avg_hours_per_day}
-                                </p>
-                                <p>
-                                    <strong>Average Time In:</strong>{" "}
-                                    {dateRangeData.avg_time_in}
-                                </p>
-                                <p>
-                                    <strong>Average Time Out:</strong>{" "}
-                                    {dateRangeData.avg_time_out}
-                                </p>
-                                <p>
-                                    <strong>Total Lates:</strong>{" "}
-                                    {dateRangeData.total_lates}{" "}
-                                </p>
-                            </div>
-                        )}
-
-                        <div className="flex justify-end space-x-4 mt-6">
-                            <button
-                                onClick={closeDateRangeModal}
-                                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                            >
-                                Close
-                            </button>
-                            <button
-                                onClick={handleGenerateReport}
-                                disabled={!fromDate || !toDate}
-                                className="px-4 py-2 bg-green-800 text-white rounded hover:bg-green-900 disabled:opacity-50"
-                            >
-                                Generate
-                            </button>
-                        </div>
-                    </div>
-                </Modal>
+                    Generate Report
+                </button>
+            )}
+        </div>
+    </div>
+</Modal>
 
                 {activeButton === "allEmployees" && (
                     <div className="w-full max-w-7xl mx-auto ml-[-7px] sm:ml-0 px-4 text-black">

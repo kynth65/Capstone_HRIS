@@ -110,68 +110,94 @@ class AttendanceController extends Controller
     {
         $month = $request->input('month', date('m'));
         $year = $request->input('year', date('Y'));
-
+    
         try {
-            $attendanceRecords = DB::table('attendances')
-                ->join('users', 'attendances.user_id', '=', 'users.user_id')
+            // First get the daily totals using a subquery
+            $dailyTotals = DB::table('attendances AS a')
+                ->select(
+                    'a.user_id',
+                    'a.date',
+                    DB::raw('MIN(time_in) as first_time_in'),
+                    DB::raw('
+                        CASE 
+                            WHEN MAX(time_out) = MIN(time_in) THEN NULL
+                            ELSE MAX(time_out)
+                        END as last_time_out
+                    ')
+                )
+                ->whereYear('a.date', $year)
+                ->whereMonth('a.date', $month)
+                ->whereNotNull('time_in')
+                ->groupBy('a.user_id', 'a.date');
+    
+            // Then get the monthly totals
+            $attendanceRecords = DB::table('users')
+                ->joinSub($dailyTotals, 'daily', function ($join) {
+                    $join->on('users.user_id', '=', 'daily.user_id');
+                })
                 ->select(
                     'users.user_id',
                     'users.name',
-                    DB::raw('SUM(attendances.accumulated_work_time) AS total_minutes'),
+                    // Calculate total minutes for the month
                     DB::raw('
-                    AVG(
-                        TIME_TO_SEC(
-                            (SELECT MIN(time_in) 
-                             FROM attendances a2 
-                             WHERE a2.user_id = attendances.user_id 
-                             AND a2.date = attendances.date)
-                        )
-                    ) AS avg_time_in_seconds
-                '),
+                        SUM(
+                            CASE 
+                                WHEN last_time_out IS NOT NULL 
+                                THEN TIMESTAMPDIFF(MINUTE, first_time_in, last_time_out)
+                                ELSE 0
+                            END
+                        ) as total_minutes
+                    '),
+                    // Calculate average time in
                     DB::raw('
-                    AVG(
-                        TIME_TO_SEC(
-                            COALESCE(
-                                (SELECT MAX(time_out) 
-                                 FROM attendances a3 
-                                 WHERE a3.user_id = attendances.user_id 
-                                 AND a3.date = attendances.date),
-                                (SELECT MAX(time_in) 
-                                 FROM attendances a4 
-                                 WHERE a4.user_id = attendances.user_id 
-                                 AND a4.date = attendances.date)
+                        SEC_TO_TIME(
+                            AVG(
+                                TIME_TO_SEC(TIME(first_time_in))
                             )
-                        )
-                    ) AS avg_time_out_seconds
-                '),
-                    DB::raw('AVG(TIMESTAMPDIFF(MINUTE, 
-                    (SELECT MIN(time_in) FROM attendances a2 WHERE a2.user_id = attendances.user_id AND a2.date = attendances.date),
-                    COALESCE(
-                        (SELECT MAX(time_out) FROM attendances a3 WHERE a3.user_id = attendances.user_id AND a3.date = attendances.date),
-                        (SELECT MAX(time_in) FROM attendances a4 WHERE a4.user_id = attendances.user_id AND a4.date = attendances.date)
-                    )
-                )) AS avg_daily_minutes')
+                        ) as avg_time_in
+                    '),
+                    // Calculate average time out
+                    DB::raw('
+                        SEC_TO_TIME(
+                            AVG(
+                                TIME_TO_SEC(TIME(COALESCE(last_time_out, first_time_in)))
+                            )
+                        ) as avg_time_out
+                    '),
+                    // Calculate daily average
+                    DB::raw('
+                        AVG(
+                            CASE 
+                                WHEN last_time_out IS NOT NULL 
+                                THEN TIMESTAMPDIFF(MINUTE, first_time_in, last_time_out)
+                                ELSE 0
+                            END
+                        ) as avg_daily_minutes
+                    '),
+                    // Count work days
+                    DB::raw('COUNT(DISTINCT daily.date) as days_worked')
                 )
-                ->whereYear('attendances.date', $year)
-                ->whereMonth('attendances.date', $month)
                 ->groupBy('users.user_id', 'users.name')
                 ->get();
-
+    
             $attendanceRecords->transform(function ($record) {
+                // Format total hours
                 $hours = floor($record->total_minutes / 60);
                 $minutes = $record->total_minutes % 60;
                 $record->total_hours = $hours . ' hours ' . $minutes . ' minutes';
-
-                $record->avg_time_in = gmdate("H:i", $record->avg_time_in_seconds);
-                $record->avg_time_out = gmdate("H:i", $record->avg_time_out_seconds);
-
+    
+                // Format average time in/out
+                $record->avg_time_in = substr($record->avg_time_in, 0, 5);
+                $record->avg_time_out = substr($record->avg_time_out, 0, 5);
+    
+                // Format average hours per day
                 $avgHours = floor($record->avg_daily_minutes / 60);
-                $avgMinutes = $record->avg_daily_minutes % 60;
+                $avgMinutes = round($record->avg_daily_minutes) % 60;
                 $record->avg_hours = $avgHours . ' hours ' . $avgMinutes . ' minutes';
-
+    
                 return $record;
             });
-
+    
             return response()->json($attendanceRecords);
         } catch (\Exception $e) {
             Log::error('Error fetching monthly attendance records: ' . $e->getMessage());
@@ -180,7 +206,7 @@ class AttendanceController extends Controller
             ], 500);
         }
     }
-
+    
     public function archiveDailyAttendance()
     {
         $today = Carbon::now()->toDateString();
@@ -226,83 +252,95 @@ class AttendanceController extends Controller
                 'from_date' => 'required|date',
                 'to_date' => 'required|date|after_or_equal:from_date'
             ]);
-
-            $records = DB::table('attendances')
-                ->join('users', 'attendances.user_id', '=', 'users.user_id')
-                ->where('attendances.user_id', $request->user_id)
-                ->whereBetween('attendances.date', [$request->from_date, $request->to_date])
+    
+            // First get daily totals
+            $dailyTotals = DB::table('attendances AS a')
                 ->select(
-                    'users.name',
-                    DB::raw('COUNT(DISTINCT attendances.date) as days_worked'),
+                    'a.user_id',
+                    'a.date',
+                    DB::raw('MIN(time_in) as first_time_in'),
                     DB::raw('
-                    SUM(
-                        TIMESTAMPDIFF(MINUTE,
-                            (SELECT MIN(time_in) FROM attendances a2 
-                             WHERE a2.user_id = attendances.user_id 
-                             AND a2.date = attendances.date),
-                            COALESCE(
-                                (SELECT MAX(time_out) FROM attendances a3 
-                                 WHERE a3.user_id = attendances.user_id 
-                                 AND a3.date = attendances.date),
-                                (SELECT MAX(time_in) FROM attendances a4 
-                                 WHERE a4.user_id = attendances.user_id 
-                                 AND a4.date = attendances.date)
-                            )
-                        )
-                    ) as total_minutes
-                '),
-                    DB::raw('
-                    AVG(
-                        TIME_TO_SEC(
-                            (SELECT MIN(time_in) 
-                             FROM attendances a2 
-                             WHERE a2.user_id = attendances.user_id 
-                             AND a2.date = attendances.date)
-                        )
-                    ) as avg_time_in_seconds
-                '),
-                    DB::raw('
-                    AVG(
-                        TIME_TO_SEC(
-                            COALESCE(
-                                (SELECT MAX(time_out) 
-                                 FROM attendances a3 
-                                 WHERE a3.user_id = attendances.user_id 
-                                 AND a3.date = attendances.date),
-                                (SELECT MAX(time_in) 
-                                 FROM attendances a4 
-                                 WHERE a4.user_id = attendances.user_id 
-                                 AND a4.date = attendances.date)
-                            )
-                        )
-                    ) as avg_time_out_seconds
-                '),
-                    // Count of late days, using a case-insensitive check for the 'late' field
-                    DB::raw("
-                    SUM(CASE WHEN LOWER(attendances.late) = 'late' THEN 1 ELSE 0 END) as total_lates
-                ")
+                        CASE 
+                            WHEN MAX(time_out) = MIN(time_in) THEN NULL
+                            ELSE MAX(time_out)
+                        END as last_time_out
+                    ')
                 )
-                ->groupBy('users.name')
+                ->where('a.user_id', $request->user_id)
+                ->whereBetween('a.date', [$request->from_date, $request->to_date])
+                ->whereNotNull('time_in')
+                ->groupBy('a.user_id', 'a.date');
+    
+            // Calculate totals
+            $records = DB::table('users')
+                ->joinSub($dailyTotals, 'daily', function ($join) {
+                    $join->on('users.user_id', '=', 'daily.user_id');
+                })
+                ->where('users.user_id', $request->user_id)
+                ->select(
+                    'users.user_id',
+                    'users.name',
+                    // Calculate total minutes
+                    DB::raw('
+                        SUM(
+                            CASE 
+                                WHEN last_time_out IS NOT NULL 
+                                THEN TIMESTAMPDIFF(MINUTE, first_time_in, last_time_out)
+                                ELSE 0
+                            END
+                        ) as total_minutes
+                    '),
+                    // Calculate average time in
+                    DB::raw('
+                        SEC_TO_TIME(
+                            AVG(
+                                TIME_TO_SEC(TIME(first_time_in))
+                            )
+                        ) as avg_time_in
+                    '),
+                    // Calculate average time out
+                    DB::raw('
+                        SEC_TO_TIME(
+                            AVG(
+                                TIME_TO_SEC(TIME(COALESCE(last_time_out, first_time_in)))
+                            )
+                        ) as avg_time_out
+                    '),
+                    // Count work days
+                    DB::raw('COUNT(DISTINCT daily.date) as days_worked'),
+                    // Count late days
+                    DB::raw('
+                        SUM(
+                            EXISTS (
+                                SELECT 1 FROM attendances a2 
+                                WHERE a2.user_id = users.user_id 
+                                AND DATE(a2.date) = DATE(daily.date)
+                                AND LOWER(a2.late) = "late"
+                            )
+                        ) as total_lates
+                    ')
+                )
+                ->groupBy('users.user_id', 'users.name')
                 ->first();
-
+    
             if (!$records) {
                 return response()->json([
                     'message' => 'No attendance records found for the specified date range.'
                 ], 404);
             }
-
+    
             $avgMinutesPerDay = $records->total_minutes / $records->days_worked;
-
+    
             $response = [
                 'name' => $records->name,
                 'days_worked' => $records->days_worked,
                 'total_hours' => floor($records->total_minutes / 60) . ' hours ' . ($records->total_minutes % 60) . ' minutes',
                 'avg_hours_per_day' => floor($avgMinutesPerDay / 60) . ' hours ' . (round($avgMinutesPerDay) % 60) . ' minutes',
-                'avg_time_in' => gmdate('H:i', $records->avg_time_in_seconds),
-                'avg_time_out' => gmdate('H:i', $records->avg_time_out_seconds),
-                'total_lates' => $records->total_lates // Include the count of late days
+                'avg_time_in' => substr($records->avg_time_in, 0, 5),
+                'avg_time_out' => substr($records->avg_time_out, 0, 5),
+                'total_lates' => $records->total_lates
             ];
-
+    
             return response()->json($response);
         } catch (\Exception $e) {
             Log::error('Error generating date range report: ' . $e->getMessage());
@@ -310,151 +348,250 @@ class AttendanceController extends Controller
         }
     }
 
-    public function downloadAttendanceExcel(Request $request)
-    {
-        try {
-            // Validate the request
-            $request->validate([
-                'month' => 'required|integer|between:1,12',
-                'year' => 'required|integer|min:2000'
-            ]);
+public function downloadAttendanceExcel(Request $request)
+{
+    try {
+        $request->validate([
+            'month' => 'required|integer|between:1,12',
+            'year' => 'required|integer|min:2000'
+        ]);
 
-            // Fetch the attendance records for the given month and year
-            $records = DB::table('attendances')
-                ->join('users', 'attendances.user_id', '=', 'users.user_id')
-                ->whereYear('attendances.date', $request->year)
-                ->whereMonth('attendances.date', $request->month)
-                ->select(
-                    'users.user_id',
-                    'users.name',
-                    DB::raw('AVG(TIME_TO_SEC(TIME(time_in))) as avg_time_in_seconds'),
-                    DB::raw('AVG(TIME_TO_SEC(TIME(time_out))) as avg_time_out_seconds'),
-                    DB::raw('AVG(TIMESTAMPDIFF(MINUTE, time_in, time_out)) as avg_minutes_per_day'),
-                    DB::raw('SUM(TIMESTAMPDIFF(MINUTE, time_in, time_out)) as total_minutes')
-                )
-                ->groupBy('users.user_id', 'users.name')
-                ->get();
+        // First get the daily totals using a subquery
+        $dailyTotals = DB::table('attendances AS a')
+            ->select(
+                'a.user_id',
+                'a.date',
+                DB::raw('MIN(time_in) as first_time_in'),
+                DB::raw('
+                    CASE 
+                        WHEN MAX(time_out) = MIN(time_in) THEN NULL
+                        ELSE MAX(time_out)
+                    END as last_time_out
+                ')
+            )
+            ->whereYear('a.date', $request->year)
+            ->whereMonth('a.date', $request->month)
+            ->whereNotNull('time_in')
+            ->groupBy('a.user_id', 'a.date');
 
-            // Create a new spreadsheet
-            $spreadsheet = new Spreadsheet();
-            $sheet = $spreadsheet->getActiveSheet();
+        // Get monthly totals
+        $records = DB::table('users')
+            ->joinSub($dailyTotals, 'daily', function ($join) {
+                $join->on('users.user_id', '=', 'daily.user_id');
+            })
+            ->select(
+                'users.user_id',
+                'users.name',
+                // Calculate total minutes
+                DB::raw('
+                    SUM(
+                        CASE 
+                            WHEN last_time_out IS NOT NULL 
+                            THEN TIMESTAMPDIFF(MINUTE, first_time_in, last_time_out)
+                            ELSE 0
+                        END
+                    ) as total_minutes
+                '),
+                // Calculate average time in
+                DB::raw('
+                    SEC_TO_TIME(
+                        AVG(
+                            TIME_TO_SEC(TIME(first_time_in))
+                        )
+                    ) as avg_time_in
+                '),
+                // Calculate average time out
+                DB::raw('
+                    SEC_TO_TIME(
+                        AVG(
+                            TIME_TO_SEC(TIME(COALESCE(last_time_out, first_time_in)))
+                        )
+                    ) as avg_time_out
+                '),
+                // Calculate daily average
+                DB::raw('
+                    AVG(
+                        CASE 
+                            WHEN last_time_out IS NOT NULL 
+                            THEN TIMESTAMPDIFF(MINUTE, first_time_in, last_time_out)
+                            ELSE 0
+                        END
+                    ) as avg_daily_minutes
+                '),
+                DB::raw('COUNT(DISTINCT daily.date) as days_worked')
+            )
+            ->groupBy('users.user_id', 'users.name')
+            ->get();
 
-            // Set the spreadsheet headers
-            $sheet->setCellValue('A1', 'User ID');
-            $sheet->setCellValue('B1', 'Name');
-            $sheet->setCellValue('C1', 'Average Time In');
-            $sheet->setCellValue('D1', 'Average Time Out');
-            $sheet->setCellValue('E1', 'Average Hours/Day');
-            $sheet->setCellValue('F1', 'Total Hours');
+        // Create Excel file
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
 
-            // Fill the spreadsheet with data
-            $rowIndex = 2;
-            foreach ($records as $record) {
-                // Convert seconds to time format for avg_time_in and avg_time_out
-                $avgTimeIn = gmdate("H:i", round($record->avg_time_in_seconds));
-                $avgTimeOut = gmdate("H:i", round($record->avg_time_out_seconds));
+        // Set headers
+        $sheet->setCellValue('A1', 'User ID');
+        $sheet->setCellValue('B1', 'Name');
+        $sheet->setCellValue('C1', 'Average Time In');
+        $sheet->setCellValue('D1', 'Average Time Out');
+        $sheet->setCellValue('E1', 'Average Hours/Day');
+        $sheet->setCellValue('F1', 'Total Hours');
+        $sheet->setCellValue('G1', 'Days Worked');
 
-                // Calculate average hours per day
-                $avgHoursPerDay = floor($record->avg_minutes_per_day / 60) . ' hours ' .
-                    ($record->avg_minutes_per_day % 60) . ' minutes';
+        // Fill data
+        $rowIndex = 2;
+        foreach ($records as $record) {
+            $sheet->setCellValue('A' . $rowIndex, $record->user_id);
+            $sheet->setCellValue('B' . $rowIndex, $record->name);
+            $sheet->setCellValue('C' . $rowIndex, substr($record->avg_time_in, 0, 5));
+            $sheet->setCellValue('D' . $rowIndex, substr($record->avg_time_out, 0, 5));
+            
+            // Calculate and format average hours per day
+            $avgHours = floor($record->avg_daily_minutes / 60);
+            $avgMinutes = round($record->avg_daily_minutes) % 60;
+            $sheet->setCellValue('E' . $rowIndex, $avgHours . ' hours ' . $avgMinutes . ' minutes');
 
-                // Calculate total hours
-                $totalHours = floor($record->total_minutes / 60) . ' hours ' .
-                    ($record->total_minutes % 60) . ' minutes';
-
-                $sheet->setCellValue('A' . $rowIndex, $record->user_id);
-                $sheet->setCellValue('B' . $rowIndex, $record->name);
-                $sheet->setCellValue('C' . $rowIndex, $avgTimeIn);
-                $sheet->setCellValue('D' . $rowIndex, $avgTimeOut);
-                $sheet->setCellValue('E' . $rowIndex, $avgHoursPerDay);
-                $sheet->setCellValue('F' . $rowIndex, $totalHours);
-
-                $rowIndex++;
-            }
-
-            // Auto-size columns
-            foreach (range('A', 'F') as $column) {
-                $sheet->getColumnDimension($column)->setAutoSize(true);
-            }
-
-            // Set the filename
-            $fileName = "monthly_attendance_report_{$request->month}_{$request->year}.xlsx";
-
-            // Create the response
-            $response = new StreamedResponse(function () use ($spreadsheet) {
-                $writer = new Xlsx($spreadsheet);
-                $writer->save('php://output');
-            });
-
-            $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            $response->headers->set('Content-Disposition', "attachment;filename=\"{$fileName}\"");
-            $response->headers->set('Cache-Control', 'max-age=0');
-
-            return $response;
-        } catch (\Exception $e) {
-            Log::error('Error generating monthly Excel report: ' . $e->getMessage());
-            return response()->json(['message' => 'Error generating report'], 500);
+            // Calculate and format total hours
+            $totalHours = floor($record->total_minutes / 60);
+            $totalMinutes = $record->total_minutes % 60;
+            $sheet->setCellValue('F' . $rowIndex, $totalHours . ' hours ' . $totalMinutes . ' minutes');
+            
+            $sheet->setCellValue('G' . $rowIndex, $record->days_worked);
+            $rowIndex++;
         }
+
+        // Auto-size columns
+        foreach (range('A', 'G') as $column) {
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+
+        // Set response headers
+        $fileName = "monthly_attendance_report_{$request->month}_{$request->year}.xlsx";
+        $writer = new Xlsx($spreadsheet);
+        
+        $response = new StreamedResponse(function () use ($writer) {
+            $writer->save('php://output');
+        });
+
+        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $response->headers->set('Content-Disposition', "attachment;filename=\"{$fileName}\"");
+        $response->headers->set('Cache-Control', 'max-age=0');
+
+        return $response;
+    } catch (\Exception $e) {
+        Log::error('Error generating monthly Excel report: ' . $e->getMessage());
+        return response()->json(['message' => 'Error generating report'], 500);
     }
+}
 
     public function previewMonthlyReport(Request $request)
-    {
-        try {
-            // Validate the request
-            $request->validate([
-                'month' => 'required|integer|between:1,12',
-                'year' => 'required|integer|min:2000'
-            ]);
+{
+    try {
+        $request->validate([
+            'month' => 'required|integer|between:1,12',
+            'year' => 'required|integer|min:2000'
+        ]);
 
-            // Fetch the attendance records
-            $records = DB::table('attendances')
-                ->join('users', 'attendances.user_id', '=', 'users.user_id')
-                ->whereYear('attendances.date', $request->year)
-                ->whereMonth('attendances.date', $request->month)
-                ->select(
-                    'users.user_id',
-                    'users.name',
-                    DB::raw('AVG(TIME_TO_SEC(TIME(time_in))) as avg_time_in_seconds'),
-                    DB::raw('AVG(TIME_TO_SEC(TIME(time_out))) as avg_time_out_seconds'),
-                    DB::raw('AVG(TIMESTAMPDIFF(MINUTE, time_in, time_out)) as avg_minutes_per_day'),
-                    DB::raw('SUM(TIMESTAMPDIFF(MINUTE, time_in, time_out)) as total_minutes')
-                )
-                ->groupBy('users.user_id', 'users.name')
-                ->get();
+        // First get the daily totals using a subquery
+        $dailyTotals = DB::table('attendances AS a')
+            ->select(
+                'a.user_id',
+                'a.date',
+                DB::raw('MIN(time_in) as first_time_in'),
+                DB::raw('
+                    CASE 
+                        WHEN MAX(time_out) = MIN(time_in) THEN NULL
+                        ELSE MAX(time_out)
+                    END as last_time_out
+                ')
+            )
+            ->whereYear('a.date', $request->year)
+            ->whereMonth('a.date', $request->month)
+            ->whereNotNull('time_in')
+            ->groupBy('a.user_id', 'a.date');
 
-            // Transform the data
-            $records = $records->map(function ($record) {
-                return [
-                    'user_id' => $record->user_id,
-                    'name' => $record->name,
-                    'avg_time_in' => gmdate("H:i", round($record->avg_time_in_seconds)),
-                    'avg_time_out' => gmdate("H:i", round($record->avg_time_out_seconds)),
-                    'avg_hours_per_day' => floor($record->avg_minutes_per_day / 60) . ' hours ' .
-                        ($record->avg_minutes_per_day % 60) . ' minutes',
-                    'total_hours' => floor($record->total_minutes / 60) . ' hours ' .
-                        ($record->total_minutes % 60) . ' minutes'
-                ];
-            });
+        // Then get the monthly totals
+        $records = DB::table('users')
+            ->joinSub($dailyTotals, 'daily', function ($join) {
+                $join->on('users.user_id', '=', 'daily.user_id');
+            })
+            ->select(
+                'users.user_id',
+                'users.name',
+                // Calculate total minutes for the month
+                DB::raw('
+                    SUM(
+                        CASE 
+                            WHEN last_time_out IS NOT NULL 
+                            THEN TIMESTAMPDIFF(MINUTE, first_time_in, last_time_out)
+                            ELSE 0
+                        END
+                    ) as total_minutes
+                '),
+                // Calculate average time in
+                DB::raw('
+                    SEC_TO_TIME(
+                        AVG(
+                            TIME_TO_SEC(TIME(first_time_in))
+                        )
+                    ) as avg_time_in
+                '),
+                // Calculate average time out
+                DB::raw('
+                    SEC_TO_TIME(
+                        AVG(
+                            TIME_TO_SEC(TIME(COALESCE(last_time_out, first_time_in)))
+                        )
+                    ) as avg_time_out
+                '),
+                // Calculate daily average
+                DB::raw('
+                    AVG(
+                        CASE 
+                            WHEN last_time_out IS NOT NULL 
+                            THEN TIMESTAMPDIFF(MINUTE, first_time_in, last_time_out)
+                            ELSE 0
+                        END
+                    ) as avg_daily_minutes
+                '),
+                // Count work days
+                DB::raw('COUNT(DISTINCT daily.date) as days_worked')
+            )
+            ->groupBy('users.user_id', 'users.name')
+            ->get();
 
-            // Get month name
-            $monthName = date('F', mktime(0, 0, 0, $request->month, 1));
+        // Transform the data
+        $formattedRecords = $records->map(function ($record) {
+            return [
+                'user_id' => $record->user_id,
+                'name' => $record->name,
+                'avg_time_in' => substr($record->avg_time_in, 0, 5),
+                'avg_time_out' => substr($record->avg_time_out, 0, 5),
+                'avg_hours_per_day' => floor($record->avg_daily_minutes / 60) . ' hours ' . 
+                    (round($record->avg_daily_minutes) % 60) . ' minutes',
+                'total_hours' => floor($record->total_minutes / 60) . ' hours ' . 
+                    ($record->total_minutes % 60) . ' minutes',
+                'days_worked' => $record->days_worked
+            ];
+        });
 
-            // Generate HTML content
-            $html = view('reports.monthly-attendance', [
-                'records' => $records,
-                'month' => $monthName,
-                'year' => $request->year
-            ])->render();
+        // Get month name
+        $monthName = date('F', mktime(0, 0, 0, $request->month, 1));
 
-            return response()->json([
-                'html' => $html,
-                'title' => "Monthly Attendance Report - $monthName $request->year"
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error generating monthly report preview: ' . $e->getMessage());
-            return response()->json(['message' => 'Error generating report preview'], 500);
-        }
+        // Generate HTML content
+        $html = view('reports.monthly-attendance', [
+            'records' => $formattedRecords,
+            'month' => $monthName,
+            'year' => $request->year
+        ])->render();
+
+        return response()->json([
+            'html' => $html,
+            'title' => "Monthly Attendance Report - $monthName $request->year"
+        ]);
+    } catch (\Exception $e) {
+        Log::error('Error generating monthly report preview: ' . $e->getMessage());
+        return response()->json(['message' => 'Error generating report preview'], 500);
     }
+}
 
     // Add these new methods to your AttendanceController
 
@@ -465,31 +602,89 @@ class AttendanceController extends Controller
                 'from_date' => 'required|date',
                 'to_date' => 'required|date|after_or_equal:from_date'
             ]);
-
-            $fromDate = $request->from_date;
-            $toDate = $request->to_date;
-
-            // Fetch records for all employees within date range
-            $records = DB::table('attendances')
-                ->join('users', 'attendances.user_id', '=', 'users.user_id')
-                ->whereBetween('attendances.date', [$fromDate, $toDate])
+    
+            // First get the daily totals using a subquery
+            $dailyTotals = DB::table('attendances AS a')
+                ->select(
+                    'a.user_id',
+                    'a.date',
+                    DB::raw('MIN(time_in) as first_time_in'),
+                    DB::raw('
+                        CASE 
+                            WHEN MAX(time_out) = MIN(time_in) THEN NULL
+                            ELSE MAX(time_out)
+                        END as last_time_out
+                    ')
+                )
+                ->whereBetween('a.date', [$request->from_date, $request->to_date])
+                ->whereNotNull('time_in')
+                ->groupBy('a.user_id', 'a.date');
+    
+            // Get totals for the date range
+            $records = DB::table('users')
+                ->joinSub($dailyTotals, 'daily', function ($join) {
+                    $join->on('users.user_id', '=', 'daily.user_id');
+                })
                 ->select(
                     'users.user_id',
                     'users.name',
-                    DB::raw('COUNT(DISTINCT attendances.date) as days_worked'),
-                    DB::raw('AVG(TIME_TO_SEC(TIME(time_in))) as avg_time_in_seconds'),
-                    DB::raw('AVG(TIME_TO_SEC(TIME(time_out))) as avg_time_out_seconds'),
-                    DB::raw('AVG(TIMESTAMPDIFF(MINUTE, time_in, time_out)) as avg_minutes_per_day'),
-                    DB::raw('SUM(TIMESTAMPDIFF(MINUTE, time_in, time_out)) as total_minutes'),
-                    DB::raw('SUM(CASE WHEN LOWER(attendances.late) = "late" THEN 1 ELSE 0 END) as total_lates')
+                    // Calculate total minutes
+                    DB::raw('
+                        SUM(
+                            CASE 
+                                WHEN last_time_out IS NOT NULL 
+                                THEN TIMESTAMPDIFF(MINUTE, first_time_in, last_time_out)
+                                ELSE 0
+                            END
+                        ) as total_minutes
+                    '),
+                    // Calculate average time in
+                    DB::raw('
+                        SEC_TO_TIME(
+                            AVG(
+                                TIME_TO_SEC(TIME(first_time_in))
+                            )
+                        ) as avg_time_in
+                    '),
+                    // Calculate average time out
+                    DB::raw('
+                        SEC_TO_TIME(
+                            AVG(
+                                TIME_TO_SEC(TIME(COALESCE(last_time_out, first_time_in)))
+                            )
+                        ) as avg_time_out
+                    '),
+                    // Calculate daily average
+                    DB::raw('
+                        AVG(
+                            CASE 
+                                WHEN last_time_out IS NOT NULL 
+                                THEN TIMESTAMPDIFF(MINUTE, first_time_in, last_time_out)
+                                ELSE 0
+                            END
+                        ) as avg_daily_minutes
+                    '),
+                    // Count work days
+                    DB::raw('COUNT(DISTINCT daily.date) as days_worked'),
+                    // Count late days
+                    DB::raw('
+                        SUM(
+                            EXISTS (
+                                SELECT 1 FROM attendances a2 
+                                WHERE a2.user_id = users.user_id 
+                                AND DATE(a2.date) = DATE(daily.date)
+                                AND LOWER(a2.late) = "late"
+                            )
+                        ) as total_lates
+                    ')
                 )
                 ->groupBy('users.user_id', 'users.name')
                 ->get();
-
+    
             // Create Excel file
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
-
+    
             // Set headers
             $sheet->setCellValue('A1', 'User ID');
             $sheet->setCellValue('B1', 'Name');
@@ -499,40 +694,47 @@ class AttendanceController extends Controller
             $sheet->setCellValue('F1', 'Average Hours/Day');
             $sheet->setCellValue('G1', 'Total Hours');
             $sheet->setCellValue('H1', 'Total Lates');
-
+    
             // Fill data
             $row = 2;
             foreach ($records as $record) {
                 $sheet->setCellValue('A' . $row, $record->user_id);
                 $sheet->setCellValue('B' . $row, $record->name);
                 $sheet->setCellValue('C' . $row, $record->days_worked);
-                $sheet->setCellValue('D' . $row, gmdate("H:i", round($record->avg_time_in_seconds)));
-                $sheet->setCellValue('E' . $row, gmdate("H:i", round($record->avg_time_out_seconds)));
-                $sheet->setCellValue('F' . $row, floor($record->avg_minutes_per_day / 60) . ' hours ' .
-                    ($record->avg_minutes_per_day % 60) . ' minutes');
-                $sheet->setCellValue('G' . $row, floor($record->total_minutes / 60) . ' hours ' .
-                    ($record->total_minutes % 60) . ' minutes');
+                $sheet->setCellValue('D' . $row, substr($record->avg_time_in, 0, 5));
+                $sheet->setCellValue('E' . $row, substr($record->avg_time_out, 0, 5));
+                
+                // Format average hours per day
+                $avgHours = floor($record->avg_daily_minutes / 60);
+                $avgMinutes = round($record->avg_daily_minutes) % 60;
+                $sheet->setCellValue('F' . $row, $avgHours . ' hours ' . $avgMinutes . ' minutes');
+                
+                // Format total hours
+                $totalHours = floor($record->total_minutes / 60);
+                $totalMinutes = $record->total_minutes % 60;
+                $sheet->setCellValue('G' . $row, $totalHours . ' hours ' . $totalMinutes . ' minutes');
+                
                 $sheet->setCellValue('H' . $row, $record->total_lates);
                 $row++;
             }
-
+    
             // Auto-size columns
             foreach (range('A', 'H') as $column) {
                 $sheet->getColumnDimension($column)->setAutoSize(true);
             }
-
-            // Create response
-            $fileName = "attendance_report_{$fromDate}_to_{$toDate}.xlsx";
-
+    
+            // Set response headers
+            $fileName = "attendance_report_{$request->from_date}_to_{$request->to_date}.xlsx";
             $writer = new Xlsx($spreadsheet);
+            
             $response = new StreamedResponse(function () use ($writer) {
                 $writer->save('php://output');
             });
-
+    
             $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             $response->headers->set('Content-Disposition', "attachment;filename=\"{$fileName}\"");
             $response->headers->set('Cache-Control', 'max-age=0');
-
+    
             return $response;
         } catch (\Exception $e) {
             Log::error('Error generating date range Excel report: ' . $e->getMessage());
@@ -547,53 +749,111 @@ class AttendanceController extends Controller
                 'from_date' => 'required|date',
                 'to_date' => 'required|date|after_or_equal:from_date'
             ]);
-
-            $fromDate = $request->from_date;
-            $toDate = $request->to_date;
-
-            // Fetch records (same query as above)
-            $records = DB::table('attendances')
-                ->join('users', 'attendances.user_id', '=', 'users.user_id')
-                ->whereBetween('attendances.date', [$fromDate, $toDate])
+    
+            // First get the daily totals using a subquery
+            $dailyTotals = DB::table('attendances AS a')
+                ->select(
+                    'a.user_id',
+                    'a.date',
+                    DB::raw('MIN(time_in) as first_time_in'),
+                    DB::raw('
+                        CASE 
+                            WHEN MAX(time_out) = MIN(time_in) THEN NULL
+                            ELSE MAX(time_out)
+                        END as last_time_out
+                    ')
+                )
+                ->whereBetween('a.date', [$request->from_date, $request->to_date])
+                ->whereNotNull('time_in')
+                ->groupBy('a.user_id', 'a.date');
+    
+            // Then get the totals for the date range
+            $records = DB::table('users')
+                ->joinSub($dailyTotals, 'daily', function ($join) {
+                    $join->on('users.user_id', '=', 'daily.user_id');
+                })
                 ->select(
                     'users.user_id',
                     'users.name',
-                    DB::raw('COUNT(DISTINCT attendances.date) as days_worked'),
-                    DB::raw('AVG(TIME_TO_SEC(TIME(time_in))) as avg_time_in_seconds'),
-                    DB::raw('AVG(TIME_TO_SEC(TIME(time_out))) as avg_time_out_seconds'),
-                    DB::raw('AVG(TIMESTAMPDIFF(MINUTE, time_in, time_out)) as avg_minutes_per_day'),
-                    DB::raw('SUM(TIMESTAMPDIFF(MINUTE, time_in, time_out)) as total_minutes'),
-                    DB::raw('SUM(CASE WHEN LOWER(attendances.late) = "late" THEN 1 ELSE 0 END) as total_lates')
+                    // Calculate total minutes
+                    DB::raw('
+                        SUM(
+                            CASE 
+                                WHEN last_time_out IS NOT NULL 
+                                THEN TIMESTAMPDIFF(MINUTE, first_time_in, last_time_out)
+                                ELSE 0
+                            END
+                        ) as total_minutes
+                    '),
+                    // Calculate average time in
+                    DB::raw('
+                        SEC_TO_TIME(
+                            AVG(
+                                TIME_TO_SEC(TIME(first_time_in))
+                            )
+                        ) as avg_time_in
+                    '),
+                    // Calculate average time out
+                    DB::raw('
+                        SEC_TO_TIME(
+                            AVG(
+                                TIME_TO_SEC(TIME(COALESCE(last_time_out, first_time_in)))
+                            )
+                        ) as avg_time_out
+                    '),
+                    // Calculate daily average
+                    DB::raw('
+                        AVG(
+                            CASE 
+                                WHEN last_time_out IS NOT NULL 
+                                THEN TIMESTAMPDIFF(MINUTE, first_time_in, last_time_out)
+                                ELSE 0
+                            END
+                        ) as avg_daily_minutes
+                    '),
+                    // Count work days
+                    DB::raw('COUNT(DISTINCT daily.date) as days_worked'),
+                    // Count late days
+                    DB::raw('
+                        SUM(
+                            EXISTS (
+                                SELECT 1 FROM attendances a2 
+                                WHERE a2.user_id = users.user_id 
+                                AND DATE(a2.date) = DATE(daily.date)
+                                AND LOWER(a2.late) = "late"
+                            )
+                        ) as total_lates
+                    ')
                 )
                 ->groupBy('users.user_id', 'users.name')
                 ->get();
-
+    
             // Transform records for view
-            $records = $records->map(function ($record) {
+            $formattedRecords = $records->map(function ($record) {
                 return [
                     'user_id' => $record->user_id,
                     'name' => $record->name,
                     'days_worked' => $record->days_worked,
-                    'avg_time_in' => gmdate("H:i", round($record->avg_time_in_seconds)),
-                    'avg_time_out' => gmdate("H:i", round($record->avg_time_out_seconds)),
-                    'avg_hours_per_day' => floor($record->avg_minutes_per_day / 60) . ' hours ' .
-                        ($record->avg_minutes_per_day % 60) . ' minutes',
-                    'total_hours' => floor($record->total_minutes / 60) . ' hours ' .
+                    'avg_time_in' => substr($record->avg_time_in, 0, 5),
+                    'avg_time_out' => substr($record->avg_time_out, 0, 5),
+                    'avg_hours_per_day' => floor($record->avg_daily_minutes / 60) . ' hours ' . 
+                        (round($record->avg_daily_minutes) % 60) . ' minutes',
+                    'total_hours' => floor($record->total_minutes / 60) . ' hours ' . 
                         ($record->total_minutes % 60) . ' minutes',
                     'total_lates' => $record->total_lates
                 ];
             });
-
+    
             // Generate HTML view
             $html = view('reports.date-range-attendance', [
-                'records' => $records,
-                'fromDate' => $fromDate,
-                'toDate' => $toDate
+                'records' => $formattedRecords,
+                'fromDate' => $request->from_date,
+                'toDate' => $request->to_date
             ])->render();
-
+    
             return response()->json([
                 'html' => $html,
-                'title' => "Attendance Report ($fromDate to $toDate)"
+                'title' => "Attendance Report ({$request->from_date} to {$request->to_date})"
             ]);
         } catch (\Exception $e) {
             Log::error('Error generating date range report preview: ' . $e->getMessage());
