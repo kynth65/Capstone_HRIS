@@ -615,6 +615,7 @@ const Onboarding = () => {
                                         <input
                                             type="date"
                                             value={newCandidate.date}
+                                            min={new Date().toISOString().split('T')[0]}
                                             onChange={(e) =>
                                                 setNewCandidate({
                                                     ...newCandidate,
@@ -634,6 +635,8 @@ const Onboarding = () => {
                                         <input
                                             type="time"
                                             value={newCandidate.time}
+                                            min={newCandidate.date === new Date().toISOString().split('T')[0] ? 
+                                                new Date().toTimeString().slice(0,5) : undefined} 
                                             onChange={(e) =>
                                                 setNewCandidate({
                                                     ...newCandidate,
@@ -1040,6 +1043,7 @@ const Onboarding = () => {
                                         <input
                                             type="date"
                                             value={newCandidate.date}
+                                            min={new Date().toISOString().split('T')[0]}  // This prevents selecting past dates
                                             onChange={(e) =>
                                                 setNewCandidate({
                                                     ...newCandidate,
@@ -1059,6 +1063,8 @@ const Onboarding = () => {
                                         <input
                                             type="time"
                                             value={newCandidate.time}
+                                            min={newCandidate.date === new Date().toISOString().split('T')[0] ? 
+                                                new Date().toTimeString().slice(0,5) : undefined}
                                             onChange={(e) =>
                                                 setNewCandidate({
                                                     ...newCandidate,
@@ -1426,6 +1432,7 @@ const Onboarding = () => {
                                         <input
                                             type="date"
                                             value={newCandidate.date}
+                                            min={new Date().toISOString().split('T')[0]}  // This prevents selecting past dates
                                             onChange={(e) =>
                                                 setNewCandidate({
                                                     ...newCandidate,
@@ -1443,6 +1450,8 @@ const Onboarding = () => {
                                         <input
                                             type="time"
                                             value={newCandidate.time}
+                                            min={newCandidate.date === new Date().toISOString().split('T')[0] ? 
+                                                new Date().toTimeString().slice(0,5) : undefined}
                                             onChange={(e) =>
                                                 setNewCandidate({
                                                     ...newCandidate,
@@ -1501,6 +1510,7 @@ const Onboarding = () => {
                                         <input
                                             type="date"
                                             value={newCandidate.date}
+                                            min={new Date().toISOString().split('T')[0]}  // This prevents selecting past dates
                                             onChange={(e) =>
                                                 setNewCandidate({
                                                     ...newCandidate,
@@ -1518,6 +1528,8 @@ const Onboarding = () => {
                                         <input
                                             type="time"
                                             value={newCandidate.time}
+                                            min={newCandidate.date === new Date().toISOString().split('T')[0] ? 
+                                                new Date().toTimeString().slice(0,5) : undefined}
                                             onChange={(e) =>
                                                 setNewCandidate({
                                                     ...newCandidate,
