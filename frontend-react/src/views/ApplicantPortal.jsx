@@ -589,7 +589,7 @@ const ApplicantPortal = () => {
                     </div>
                     <div className="w-full flex justify-start gap-3">
                         <span className="text-black bg-slate-200 px-3 py-2 rounded-md font-semibold">
-                            Base salaray: {position.base_salary}
+                            Base salary: &#8369; {position.base_salary}
                         </span>
                         <span className="text-black bg-slate-200 px-3 py-2 rounded-md font-semibold">
                             {position.type}
@@ -707,7 +707,7 @@ const ApplicantPortal = () => {
                                         <div className="flex gap-4">
                                             <strong>Base Salary:</strong>
                                             <p className="font-poppins font-normal">
-                                                {selectedPosition.base_salary}
+                                            &#8369; {selectedPosition.base_salary}
                                             </p>
                                         </div>
                                     </div>
