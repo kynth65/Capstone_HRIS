@@ -72,7 +72,7 @@ GammaCare HRIS is a comprehensive Human Resource Information System developed fo
 
 1. Clone the repository
 ```bash
-git clone https://github.com/kynth65/gammacare-hris.git
+git clone https://github.com/kynth65/Capstone_HRIS.git
 ```
 
 2. Install PHP dependencies
